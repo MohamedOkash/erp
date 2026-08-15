@@ -116,7 +116,7 @@ describe('Business Rules Validation (Task 5)', () => {
       .post(`/api/v1/production/${submittedRecordId}/approve`)
       .set('Authorization', `Bearer ${authToken}`)
       .send({ step: 'final' })
-      .expect(400);
+      .expect(422);
 
     expect(response.body.code).toBe('INVALID_TRANSITION');
   });

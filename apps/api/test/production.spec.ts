@@ -170,7 +170,7 @@ describe('Production Endpoints & Business Rules (R5 & Corrections)', () => {
       .post(`/api/v1/production/${submittedRecordId}/correct`)
       .set('Authorization', `Bearer ${authToken}`)
       .send(correctionRequest)
-      .expect(400);
+      .expect(422);
 
     expect(response.body.code).toBe('RECORD_NOT_LOCKED');
   });

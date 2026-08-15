@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -206,7 +207,10 @@ export class ProductionService {
       );
 
       if (recordRes.rows.length === 0) {
-        throw new NotFoundException(`Production record with id '${recordId}' not found`);
+        throw new NotFoundException({
+          code: 'PRODUCTION_RECORD_NOT_FOUND',
+          message: `Production record with id '${recordId}' not found`,
+        });
       }
 
       const record = recordRes.rows[0];
@@ -214,12 +218,11 @@ export class ProductionService {
       if (record.status !== 'final_approved') {
         throw new HttpException(
           {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message:
-              "Corrections can only be requested on locked records with status 'final_approved'",
+            statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+            message: 'Only final_approved records can be corrected',
             code: 'RECORD_NOT_LOCKED',
           },
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
 
@@ -239,11 +242,16 @@ export class ProductionService {
 
   /**
    * Approve production record step-by-step per State Machine (Section 3 & 4 of HANDOFF.md)
+   * 1) draft -> submitted (any role)
+   * 2) submitted -> supervisor_approved (supervisor only)
+   * 3) supervisor_approved -> engineer_approved (engineer only)
+   * 4) engineer_approved -> final_approved (admin only)
    */
   async approveProductionRecord(
     companyId: string,
     recordId: string,
     dto: ApproveProductionDto,
+    userRoles: string[] = [],
   ) {
     return this.db.withTenantTransaction(companyId, async (client) => {
       const recordRes = await client.query(
@@ -255,7 +263,10 @@ export class ProductionService {
       );
 
       if (recordRes.rows.length === 0) {
-        throw new NotFoundException(`Production record with id '${recordId}' not found`);
+        throw new NotFoundException({
+          code: 'PRODUCTION_RECORD_NOT_FOUND',
+          message: `Production record with id '${recordId}' not found`,
+        });
       }
 
       const record = recordRes.rows[0];
@@ -264,15 +275,40 @@ export class ProductionService {
       let timestampColumn: string;
 
       switch (dto.step) {
+        case 'submit':
+          if (currentStatus !== 'draft') {
+            throw new HttpException(
+              {
+                statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                message: `Invalid state machine transition: cannot submit record from status '${currentStatus}'`,
+                code: 'INVALID_TRANSITION',
+              },
+              HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+          }
+          nextStatus = 'submitted';
+          timestampColumn = 'submitted_at';
+          break;
+
         case 'supervisor':
+          if (!userRoles.includes('supervisor')) {
+            throw new HttpException(
+              {
+                statusCode: HttpStatus.FORBIDDEN,
+                message: 'Role not authorized for supervisor approval. Supervisor role required.',
+                code: 'ROLE_NOT_AUTHORIZED_FOR_APPROVAL',
+              },
+              HttpStatus.FORBIDDEN,
+            );
+          }
           if (currentStatus !== 'submitted') {
             throw new HttpException(
               {
-                statusCode: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
                 message: `Invalid state machine transition: cannot approve as supervisor from status '${currentStatus}'`,
                 code: 'INVALID_TRANSITION',
               },
-              HttpStatus.BAD_REQUEST,
+              HttpStatus.UNPROCESSABLE_ENTITY,
             );
           }
           nextStatus = 'supervisor_approved';
@@ -280,14 +316,24 @@ export class ProductionService {
           break;
 
         case 'engineer':
+          if (!userRoles.includes('engineer')) {
+            throw new HttpException(
+              {
+                statusCode: HttpStatus.FORBIDDEN,
+                message: 'Role not authorized for engineer approval. Engineer role required.',
+                code: 'ROLE_NOT_AUTHORIZED_FOR_APPROVAL',
+              },
+              HttpStatus.FORBIDDEN,
+            );
+          }
           if (currentStatus !== 'supervisor_approved') {
             throw new HttpException(
               {
-                statusCode: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
                 message: `Invalid state machine transition: cannot approve as engineer from status '${currentStatus}'`,
                 code: 'INVALID_TRANSITION',
               },
-              HttpStatus.BAD_REQUEST,
+              HttpStatus.UNPROCESSABLE_ENTITY,
             );
           }
           nextStatus = 'engineer_approved';
@@ -295,14 +341,27 @@ export class ProductionService {
           break;
 
         case 'final':
+          const isAdmin = userRoles.some((r) =>
+            ['admin', 'company_admin', 'super_admin'].includes(r),
+          );
+          if (!isAdmin) {
+            throw new HttpException(
+              {
+                statusCode: HttpStatus.FORBIDDEN,
+                message: 'Role not authorized for final approval. Admin role required.',
+                code: 'ROLE_NOT_AUTHORIZED_FOR_APPROVAL',
+              },
+              HttpStatus.FORBIDDEN,
+            );
+          }
           if (currentStatus !== 'engineer_approved') {
             throw new HttpException(
               {
-                statusCode: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
                 message: `Invalid state machine transition: cannot give final approval from status '${currentStatus}'`,
                 code: 'INVALID_TRANSITION',
               },
-              HttpStatus.BAD_REQUEST,
+              HttpStatus.UNPROCESSABLE_ENTITY,
             );
           }
           nextStatus = 'final_approved';
@@ -312,11 +371,11 @@ export class ProductionService {
         default:
           throw new HttpException(
             {
-              statusCode: HttpStatus.BAD_REQUEST,
+              statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
               message: `Unknown approval step '${dto.step}'`,
               code: 'INVALID_TRANSITION',
             },
-            HttpStatus.BAD_REQUEST,
+            HttpStatus.UNPROCESSABLE_ENTITY,
           );
       }
 

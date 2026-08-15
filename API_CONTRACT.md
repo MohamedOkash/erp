@@ -394,35 +394,44 @@
   - `201 Created`: تم تسجيل الإنتاج.
   - `422 Unprocessable Entity`: عدم تطابق مجموع كميات العمال مع الكمية الكلية (`WORKER_QUANTITY_MISMATCH`).
 
-### 3) اعتماد سجل الإنتاج (Approve Production Record)
+### 3) اعتماد سجل الإنتاج (Approve Production Record Step)
 - **المسار:** `POST /api/v1/production/:id/approve`
-- **الوصف:** اعتماد سجل الإنتاجية وترقيته إلى المرحلة التالية (`supervisor_approved` ثم `engineer_approved` ثم `final_approved`).
+- **الوصف:** اعتماد سجل الإنتاجية وترقيته إلى المرحلة التالية وفق مصفوفة الصلاحيات الصارمة:
+  1. `draft` $\rightarrow$ `submitted` (`step: "submit"` — أي دور)
+  2. `submitted` $\rightarrow$ `supervisor_approved` (`step: "supervisor"` — دور `supervisor` فقط)
+  3. `supervisor_approved` $\rightarrow$ `engineer_approved` (`step: "engineer"` — دور `engineer` فقط)
+  4. `engineer_approved` $\rightarrow$ `final_approved` (`step: "final"` — دور `admin` / `company_admin` فقط)
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)
 - **الـ Request Body:**
   ```json
   {
-    "approvedLevel": "supervisor_approved | engineer_approved | final_approved",
-    "notes": "تمت المراجعة والاعتماد"
+    "step": "submit | supervisor | engineer | final"
   }
   ```
 - **الـ Response الناجح (200 OK):**
   ```json
   {
     "id": "d0000000-0000-0000-0000-000000000001",
-    "status": "final_approved",
-    "finalApprovedAt": "2026-08-16T01:00:00Z"
+    "status": "supervisor_approved",
+    "actualQuantity": 100
   }
   ```
+- **رموز الاستجابة والأخطاء:**
+  - `200 OK`: تم الاعتماد والانتقال للحالة التالية بنجاح.
+  - `403 Forbidden`: المستخدم لا يملك الدور المطلوب للاعتماد (`ROLE_NOT_AUTHORIZED_FOR_APPROVAL`).
+  - `422 Unprocessable Entity`: محاولة تخطي مرحلة في دورة الاعتماد (`INVALID_TRANSITION`).
+  - `404 Not Found`: السجل غير موجود (`PRODUCTION_RECORD_NOT_FOUND`).
 
 ### 4) طلب تعديل / تصحيح إنتاج (Create Production Correction)
-- **المسار:** `POST /api/v1/production/:id/correction`
-- **الوصف:** تسجيل طلب تصحيح لكمية الإنتاج مع بيان السبب والكمية المصححة.
+- **المسار:** `POST /api/v1/production/:id/correct` أو `POST /api/v1/production/:id/correction`
+- **الوصف:** تسجيل طلب تصحيح لسجل إنتاج معتمد نهائيًا (`final_approved`) ومغلق. لا يُقبل التصحيح على السجلات غير المغلقة.
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)
 - **الـ Request Body:**
   ```json
   {
-    "correctedQuantity": 110,
-    "reason": "تصحيح خطأ قياس المساح"
+    "type": "quantity_adjust",
+    "delta": 5,
+    "reason": "طلب تعديل كمية بسبب خطأ في القياس الميداني"
   }
   ```
 - **الـ Response الناجح (201 Created):**
@@ -430,11 +439,15 @@
   {
     "id": "uuid-generated",
     "productionRecordId": "d0000000-0000-0000-0000-000000000001",
-    "previousQuantity": 100,
-    "correctedQuantity": 110,
-    "status": "pending"
+    "correctionType": "quantity_adjust",
+    "adjustmentQuantity": 5,
+    "status": "submitted"
   }
   ```
+- **رموز الاستجابة والأخطاء:**
+  - `201 Created`: تم تسجيل طلب التصحيح بنجاح.
+  - `422 Unprocessable Entity`: السجل غير مغلق بحالة `final_approved` (`RECORD_NOT_LOCKED`).
+  - `404 Not Found`: السجل غير موجود (`PRODUCTION_RECORD_NOT_FOUND`).
 
 ---
 

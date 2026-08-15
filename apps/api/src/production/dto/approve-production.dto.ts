@@ -3,6 +3,6 @@ import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 export class ApproveProductionDto {
   @IsNotEmpty()
   @IsString()
-  @IsIn(['supervisor', 'engineer', 'final'])
-  step: 'supervisor' | 'engineer' | 'final';
+  @IsIn(['submit', 'supervisor', 'engineer', 'final'])
+  step: 'submit' | 'supervisor' | 'engineer' | 'final';
 }

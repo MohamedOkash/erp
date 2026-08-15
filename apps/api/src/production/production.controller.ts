@@ -22,7 +22,7 @@ export class ProductionController {
   constructor(private readonly productionService: ProductionService) {}
 
   /**
-   * Create production record (Section 3 & 4 & 9 of HANDOFF.md)
+   * Create production record
    * Route: POST /api/v1/production
    */
   @Post()
@@ -34,7 +34,7 @@ export class ProductionController {
   }
 
   /**
-   * List production records with filters (Section 9 of HANDOFF.md)
+   * List production records with filters
    * Route: GET /api/v1/production
    */
   @Get()
@@ -46,10 +46,19 @@ export class ProductionController {
   }
 
   /**
-   * Request correction on locked final_approved record (Section 3 & 9 of HANDOFF.md)
-   * Route: POST /api/v1/production/:id/correct
+   * Request correction on locked final_approved record
+   * Route: POST /api/v1/production/:id/correct & POST /api/v1/production/:id/correction
    */
   @Post(':id/correct')
+  async requestCorrectionAlias(
+    @Param('id') id: string,
+    @Body() dto: CreateCorrectionDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.productionService.requestCorrection(user.companyId, id, dto);
+  }
+
+  @Post(':id/correction')
   async requestCorrection(
     @Param('id') id: string,
     @Body() dto: CreateCorrectionDto,
@@ -59,7 +68,7 @@ export class ProductionController {
   }
 
   /**
-   * Approve production record step (Section 3 & 4 of HANDOFF.md)
+   * Approve production record step with strict state machine and role checks
    * Route: POST /api/v1/production/:id/approve
    */
   @Post(':id/approve')
@@ -68,6 +77,14 @@ export class ProductionController {
     @Body() dto: ApproveProductionDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.productionService.approveProductionRecord(user.companyId, id, dto);
+    const roleCodes = (user.roles || []).map((r: any) =>
+      typeof r === 'string' ? r : r.roleCode,
+    );
+    return this.productionService.approveProductionRecord(
+      user.companyId,
+      id,
+      dto,
+      roleCodes,
+    );
   }
 }
