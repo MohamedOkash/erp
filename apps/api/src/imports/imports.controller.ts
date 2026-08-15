@@ -70,7 +70,24 @@ export class ImportsController {
   }
 
   /**
-   * Commit valid rows from staging to employees, production, or boq table
+   * Upload & stage attendance XLSX file
+   * Route: POST /api/v1/imports/attendance/upload
+   */
+  @Post('attendance/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAttendance(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
+  ) {
+    const companyId =
+      req.user?.companyId ||
+      req.headers['x-company-id'] ||
+      req.headers['x-tenant-id'];
+    return this.importsService.uploadAttendanceXlsx(companyId, file);
+  }
+
+  /**
+   * Commit valid rows from staging to employees, production, boq, or attendance table
    * Route: POST /api/v1/imports/:jobId/commit
    */
   @Post(':jobId/commit')
@@ -78,6 +95,7 @@ export class ImportsController {
     @Param('jobId') jobId: string,
     @Req() req: any,
   ) {
+
     const companyId =
       req.user?.companyId ||
       req.headers['x-company-id'] ||

@@ -1035,6 +1035,35 @@ export class ImportsService {
             }
           }
         }
+      } else if (job.job_type === 'attendance') {
+        for (const row of validRows) {
+          const p = row.parsed_data;
+          await client.query(
+            `INSERT INTO attendance (
+              company_id, employee_id, project_id, branch_id, date, status_id,
+              check_in_time, check_out_time, overtime_hours
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (company_id, employee_id, date) DO UPDATE SET
+              status_id = EXCLUDED.status_id,
+              project_id = EXCLUDED.project_id,
+              branch_id = EXCLUDED.branch_id,
+              check_in_time = EXCLUDED.check_in_time,
+              check_out_time = EXCLUDED.check_out_time,
+              overtime_hours = EXCLUDED.overtime_hours,
+              updated_at = CURRENT_TIMESTAMP`,
+            [
+              companyId,
+              p.employeeId,
+              p.projectId,
+              p.branchId,
+              p.date,
+              p.statusId,
+              p.checkIn || null,
+              p.checkOut || null,
+              p.overtime || 0,
+            ],
+          );
+        }
       }
 
       // Update staging rows to committed
@@ -1067,4 +1096,408 @@ export class ImportsService {
       };
     });
   }
+
+  /**
+   * Upload & stage attendance XLSX file
+   * Section 7 Item 2 of HANDOFF.md
+   */
+  async uploadAttendanceXlsx(
+    companyId: string,
+    file: Express.Multer.File,
+  ) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('No file provided or file buffer is empty');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as any);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Worksheet not found in Excel file');
+    }
+
+    // Auto-detect columns from Row 1
+    const headerRow = worksheet.getRow(1);
+    const colMap: { [key: string]: number } = {};
+
+    headerRow.eachCell((cell, colNumber) => {
+      const headerVal = cell.text ? cell.text.trim().toLowerCase() : '';
+      if (!headerVal) return;
+
+      if (['date', 'التاريخ', 'تاريخ', 'attendance_date'].includes(headerVal)) {
+        colMap['date'] = colNumber;
+      } else if (
+        [
+          'employee',
+          'الموظف',
+          'موظف',
+          'national_id',
+          'identity',
+          'الرقم القومي',
+          'رقم قومي',
+          'هوية',
+          'قومي',
+        ].includes(headerVal)
+      ) {
+        colMap['employee'] = colNumber;
+      } else if (['status', 'الحالة', 'حالة', 'attendance_status'].includes(headerVal)) {
+        colMap['status'] = colNumber;
+      } else if (
+        ['checkin', 'check_in', 'وقت_الدخول', 'وقت الدخول', 'دخول', 'حضور_وقت'].includes(
+          headerVal,
+        )
+      ) {
+        colMap['checkIn'] = colNumber;
+      } else if (
+        ['checkout', 'check_out', 'وقت_الخروج', 'وقت الخروج', 'خروج', 'انصراف_وقت'].includes(
+          headerVal,
+        )
+      ) {
+        colMap['checkOut'] = colNumber;
+      } else if (
+        ['overtime', 'إضافي', 'اضافي', 'ساعات_إضافية', 'ساعات اضافية', 'overtime_hours'].includes(
+          headerVal,
+        )
+      ) {
+        colMap['overtime'] = colNumber;
+      }
+    });
+
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      // 1. Fetch Employees
+      const employeesRes = await client.query(
+        `SELECT id, national_id, name, primary_branch_id FROM employees WHERE company_id = $1`,
+        [companyId],
+      );
+      const employeeMap = new Map<
+        string,
+        { id: string; name: string; primaryBranchId: string | null }
+      >();
+      for (const emp of employeesRes.rows) {
+        employeeMap.set(emp.national_id.trim(), {
+          id: emp.id,
+          name: emp.name,
+          primaryBranchId: emp.primary_branch_id,
+        });
+      }
+
+      // 2. Fetch Employee active assignments
+      const assignmentsRes = await client.query(
+        `SELECT employee_id, project_id, branch_id FROM employee_assignments
+         WHERE company_id = $1 AND is_active = true
+         ORDER BY start_date DESC`,
+        [companyId],
+      );
+      const assignmentMap = new Map<string, { projectId: string; branchId: string }>();
+      for (const a of assignmentsRes.rows) {
+        if (!assignmentMap.has(a.employee_id)) {
+          assignmentMap.set(a.employee_id, {
+            projectId: a.project_id,
+            branchId: a.branch_id,
+          });
+        }
+      }
+
+      // 3. Fetch fallback projects
+      const projectsRes = await client.query(
+        `SELECT id, branch_id FROM projects WHERE company_id = $1 AND status = 'active' ORDER BY created_at ASC`,
+        [companyId],
+      );
+      const fallbackProjectByBranch = new Map<string, string>();
+      for (const p of projectsRes.rows) {
+        if (!fallbackProjectByBranch.has(p.branch_id)) {
+          fallbackProjectByBranch.set(p.branch_id, p.id);
+        }
+      }
+      const defaultProjectId = projectsRes.rows.length > 0 ? projectsRes.rows[0].id : null;
+      const defaultBranchId = projectsRes.rows.length > 0 ? projectsRes.rows[0].branch_id : null;
+
+      // 4. Fetch Attendance Statuses
+      const statusesRes = await client.query(
+        `SELECT id, code, name FROM attendance_statuses WHERE company_id IS NULL OR company_id = $1`,
+        [companyId],
+      );
+      const statusMap = new Map<string, string>();
+      for (const st of statusesRes.rows) {
+        statusMap.set(st.code.trim().toLowerCase(), st.id);
+        statusMap.set(st.name.trim().toLowerCase(), st.id);
+      }
+
+      // Synonym mapping
+      const synonymMap: { [key: string]: string } = {
+        حاضر: 'present',
+        حضور: 'present',
+        موجود: 'present',
+        present: 'present',
+        غائب: 'absent',
+        غياب: 'absent',
+        absent: 'absent',
+        متأخر: 'late',
+        تاخير: 'late',
+        تأخير: 'late',
+        late: 'late',
+        مرضي: 'excused',
+        'إجازة مرضية': 'excused',
+        إجازة: 'excused',
+        اجازة: 'excused',
+        إذن: 'excused',
+        اذن: 'excused',
+        'إذن / إجازة': 'excused',
+        leave: 'excused',
+        vacation: 'excused',
+        sick: 'excused',
+        excused: 'excused',
+        راحة: 'rest_day',
+        عطلة: 'rest_day',
+        'عطلة رسمية': 'rest_day',
+        'عطلة رسمية / راحة': 'rest_day',
+        off: 'rest_day',
+        rest_day: 'rest_day',
+      };
+
+      // 5. Fetch existing attendance for DB duplicate detection
+      const existingAttendanceRes = await client.query(
+        `SELECT to_char(date, 'YYYY-MM-DD') AS date_str, employee_id FROM attendance WHERE company_id = $1`,
+        [companyId],
+      );
+      const dbAttendanceKeys = new Set<string>();
+      for (const ea of existingAttendanceRes.rows) {
+        dbAttendanceKeys.add(`${ea.date_str}|${ea.employee_id}`);
+      }
+
+      const seenFileAttendanceKeys = new Set<string>();
+      const parsedRows: any[] = [];
+      const rowDbRecords: any[] = [];
+
+      const rowCount = worksheet.rowCount;
+
+      for (let r = 2; r <= rowCount; r++) {
+        const row = worksheet.getRow(r);
+        const dateVal = colMap['date'] ? row.getCell(colMap['date']).text?.trim() : null;
+        const empVal = colMap['employee']
+          ? row.getCell(colMap['employee']).text?.trim()
+          : null;
+        const statusVal = colMap['status']
+          ? row.getCell(colMap['status']).text?.trim()
+          : null;
+        const checkInVal = colMap['checkIn']
+          ? row.getCell(colMap['checkIn']).text?.trim()
+          : null;
+        const checkOutVal = colMap['checkOut']
+          ? row.getCell(colMap['checkOut']).text?.trim()
+          : null;
+        const overtimeVal = colMap['overtime']
+          ? row.getCell(colMap['overtime']).value
+          : 0;
+
+        if (!dateVal && !empVal && !statusVal) {
+          continue;
+        }
+
+        const errors: string[] = [];
+        let status: 'valid' | 'duplicate' | 'invalid' = 'valid';
+
+        // 1. Validate Date
+        let normalizedDate: string | null = null;
+        if (!dateVal || isNaN(Date.parse(dateVal))) {
+          errors.push('تاريخ غير صالح');
+        } else {
+          try {
+            normalizedDate = new Date(dateVal).toISOString().split('T')[0];
+          } catch {
+            errors.push('تاريخ غير صالح');
+          }
+        }
+
+        // 2. Validate Employee
+        let employeeId: string | null = null;
+        let branchId: string | null = null;
+        let projectId: string | null = null;
+
+        if (!empVal) {
+          errors.push('رقم هوية الموظف حقل إلزامي');
+        } else {
+          const empObj = employeeMap.get(empVal);
+          if (!empObj) {
+            errors.push('الموظف غير موجود');
+          } else {
+            employeeId = empObj.id;
+
+            // Resolve assignment or fallback
+            const asg = assignmentMap.get(empObj.id);
+            if (asg) {
+              branchId = asg.branchId;
+              projectId = asg.projectId;
+            } else {
+              branchId = empObj.primaryBranchId || defaultBranchId;
+              projectId =
+                (branchId ? fallbackProjectByBranch.get(branchId) : null) ||
+                defaultProjectId;
+            }
+          }
+        }
+
+        // 3. Validate Status
+        let statusId: string | null = null;
+        if (!statusVal) {
+          errors.push('حالة الحضور حقل إلزامي');
+        } else {
+          const lowerVal = statusVal.toLowerCase();
+          const canonicalCode = synonymMap[lowerVal] || lowerVal;
+          statusId = statusMap.get(canonicalCode) || statusMap.get(lowerVal) || null;
+          if (!statusId) {
+            errors.push('حالة الحضور غير صالحة');
+          }
+        }
+
+        // 4. Validate Check-in & Check-out time range
+        const parseTimeMinutes = (timeStr: string | null): number | null => {
+          if (!timeStr) return null;
+          const m = timeStr.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+          if (!m) return null;
+          const h = parseInt(m[1], 10);
+          const min = parseInt(m[2], 10);
+          if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+          return h * 60 + min;
+        };
+
+        if (checkInVal && checkOutVal) {
+          const inMin = parseTimeMinutes(checkInVal);
+          const outMin = parseTimeMinutes(checkOutVal);
+          if (inMin !== null && outMin !== null && outMin <= inMin) {
+            errors.push('وقت الخروج يجب أن يكون بعد وقت الدخول');
+          }
+        }
+
+        const overtimeNum = parseFloat(String(overtimeVal || '0')) || 0;
+
+        // 5. Duplicate Check
+        if (errors.length === 0 && normalizedDate && employeeId) {
+          const fileKey = `${normalizedDate}|${employeeId}`;
+          if (dbAttendanceKeys.has(fileKey)) {
+            status = 'duplicate';
+            errors.push('سجل الحضور مكرر لنفس الموظف في هذا اليوم');
+          } else if (seenFileAttendanceKeys.has(fileKey)) {
+            status = 'duplicate';
+            errors.push('سجل الحضور مكرر داخل نفس الملف');
+          } else {
+            seenFileAttendanceKeys.add(fileKey);
+          }
+        }
+
+        if (errors.length > 0 && status !== 'duplicate') {
+          status = 'invalid';
+        }
+
+        const parsedData = {
+          date: normalizedDate || dateVal,
+          employeeId,
+          nationalId: empVal,
+          branchId,
+          projectId,
+          statusId,
+          statusName: statusVal,
+          checkIn: checkInVal,
+          checkOut: checkOutVal,
+          overtime: overtimeNum,
+        };
+
+        const rawData: any = {};
+        row.eachCell((cell, colNumber) => {
+          rawData[`col_${colNumber}`] = cell.text;
+        });
+
+        parsedRows.push({
+          rowIndex: r,
+          date: dateVal,
+          employee: empVal,
+          status: statusVal,
+          checkIn: checkInVal,
+          checkOut: checkOutVal,
+          overtime: overtimeNum,
+          rowStatus: status,
+          errors,
+        });
+
+        rowDbRecords.push({
+          rowIndex: r,
+          rawData,
+          parsedData,
+          dbStatus: status === 'valid' ? 'valid' : 'error',
+          errors,
+        });
+      }
+
+      const validCount = parsedRows.filter((r) => r.rowStatus === 'valid').length;
+      const duplicateCount = parsedRows.filter((r) => r.rowStatus === 'duplicate').length;
+      const invalidCount = parsedRows.filter((r) => r.rowStatus === 'invalid').length;
+      const totalCount = parsedRows.length;
+
+      const summary: ImportSummary = {
+        total: totalCount,
+        valid: validCount,
+        duplicate: duplicateCount,
+        invalid: invalidCount,
+      };
+
+      // Create record in import_jobs (status = 'staged')
+      const jobRes = await client.query(
+        `INSERT INTO import_jobs (
+          company_id, job_type, file_name, status, total_rows, valid_rows, error_rows
+        ) VALUES ($1, 'attendance', $2, 'staged', $3, $4, $5)
+        RETURNING id`,
+        [
+          companyId,
+          file.originalname || 'attendance.xlsx',
+          totalCount,
+          validCount,
+          duplicateCount + invalidCount,
+        ],
+      );
+
+      const jobId = jobRes.rows[0].id;
+
+      // Insert staging rows & row errors
+      for (const item of rowDbRecords) {
+        const stagingRes = await client.query(
+          `INSERT INTO import_staging_rows (
+            company_id, import_job_id, row_index, raw_data, parsed_data, status
+          ) VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING id`,
+          [
+            companyId,
+            jobId,
+            item.rowIndex,
+            JSON.stringify(item.rawData),
+            JSON.stringify(item.parsedData),
+            item.dbStatus,
+          ],
+        );
+
+        const stagingId = stagingRes.rows[0].id;
+
+        for (const err of item.errors) {
+          const errCode =
+            item.dbStatus === 'error' && err.includes('مكرر')
+              ? 'DUPLICATE_ATTENDANCE_RECORD'
+              : 'INVALID_DATA';
+
+          await client.query(
+            `INSERT INTO import_row_errors (
+              company_id, staging_row_id, column_name, error_code, error_message
+            ) VALUES ($1, $2, 'attendance', $3, $4)`,
+            [companyId, stagingId, errCode, err],
+          );
+        }
+      }
+
+      return {
+        jobId,
+        summary,
+        rows: parsedRows,
+      };
+    });
+  }
 }
+

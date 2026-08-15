@@ -237,6 +237,95 @@ export class ExportsService {
       return Buffer.from(buffer);
     });
   }
+
+  /**
+   * Export attendance records to XLSX
+   * Columns: Date, Employee Name, Identity, Branch, Status, Check In, Check Out, Overtime
+   */
+  async exportAttendanceXlsx(
+    companyId: string,
+    query?: {
+      fromDate?: string;
+      toDate?: string;
+      employeeId?: string;
+      branchId?: string;
+    },
+  ): Promise<Buffer> {
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      const conditions: string[] = ['a.company_id = $1'];
+      const params: any[] = [companyId];
+      let paramIdx = 2;
+
+      if (query?.fromDate) {
+        conditions.push(`a.date >= $${paramIdx++}`);
+        params.push(query.fromDate);
+      }
+      if (query?.toDate) {
+        conditions.push(`a.date <= $${paramIdx++}`);
+        params.push(query.toDate);
+      }
+      if (query?.employeeId) {
+        conditions.push(`a.employee_id = $${paramIdx++}`);
+        params.push(query.employeeId);
+      }
+      if (query?.branchId) {
+        conditions.push(`a.branch_id = $${paramIdx++}`);
+        params.push(query.branchId);
+      }
+
+      const sql = `
+        SELECT to_char(a.date, 'YYYY-MM-DD') AS date_str,
+               e.name AS employee_name,
+               e.national_id,
+               b.name AS branch_name,
+               ast.name AS status_name,
+               to_char(a.check_in_time, 'HH24:MI') AS check_in,
+               to_char(a.check_out_time, 'HH24:MI') AS check_out,
+               a.overtime_hours
+        FROM attendance a
+        JOIN employees e ON a.employee_id = e.id AND a.company_id = e.company_id
+        JOIN branches b ON a.branch_id = b.id AND a.company_id = b.company_id
+        JOIN attendance_statuses ast ON a.status_id = ast.id
+        WHERE ${conditions.join(' AND ')}
+        ORDER BY a.date ASC, e.name ASC
+      `;
+
+      const attRes = await client.query(sql, params);
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Attendance');
+
+      worksheet.columns = [
+        { header: 'Date', key: 'date', width: 15 },
+        { header: 'Employee Name', key: 'name', width: 25 },
+        { header: 'Identity', key: 'identity', width: 20 },
+        { header: 'Branch', key: 'branch', width: 18 },
+        { header: 'Status', key: 'status', width: 18 },
+        { header: 'Check In', key: 'checkIn', width: 15 },
+        { header: 'Check Out', key: 'checkOut', width: 15 },
+        { header: 'Overtime', key: 'overtime', width: 12 },
+      ];
+
+      worksheet.getRow(1).font = { bold: true };
+
+      for (const row of attRes.rows) {
+        worksheet.addRow({
+          date: row.date_str,
+          name: row.employee_name || '',
+          identity: row.national_id || '',
+          branch: row.branch_name || '',
+          status: row.status_name || '',
+          checkIn: row.check_in || '',
+          checkOut: row.check_out || '',
+          overtime: parseFloat(row.overtime_hours || '0'),
+        });
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      return Buffer.from(buffer);
+    });
+  }
 }
+
 
 

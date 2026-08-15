@@ -84,6 +84,30 @@ export class ExportsController {
 
     res.end(buffer);
   }
+
+  /**
+   * Export attendance records to XLSX
+   * Route: GET /api/v1/exports/attendance.xlsx
+   */
+  @Get('attendance.xlsx')
+  async exportAttendance(
+    @Res() res: Response,
+    @CurrentUser() user: AuthenticatedUser,
+    @Headers('x-company-id') headerCompanyId?: string,
+  ) {
+    const companyId = user?.companyId || headerCompanyId;
+    const buffer = await this.exportsService.exportAttendanceXlsx(companyId);
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="attendance.xlsx"',
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
+  }
 }
+
 
 
