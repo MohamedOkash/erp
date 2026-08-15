@@ -56,6 +56,16 @@ export class AuthService {
   }
 
   /**
+   * Invalidate/Delete session token on logout
+   */
+  async logout(token: string) {
+    if (token) {
+      await this.db.query(`DELETE FROM sessions WHERE token = $1`, [token]);
+    }
+    return { success: true, message: 'Logged out successfully' };
+  }
+
+  /**
    * Authenticate user with username and password, create session and return tokens
    */
   async login(

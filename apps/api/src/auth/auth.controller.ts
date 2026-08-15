@@ -52,4 +52,18 @@ export class AuthController {
       companyId: user.companyId,
     };
   }
+
+  /**
+   * User logout endpoint (invalidates current session)
+   * Route: POST /api/v1/auth/logout
+   */
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(SessionAuthGuard)
+  async logout(@Req() req: Request) {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    return this.authService.logout(token);
+  }
 }
+

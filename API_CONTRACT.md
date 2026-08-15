@@ -78,6 +78,21 @@
   - `200 OK`: استرجاع البيانات بنجاح.
   - `401 Unauthorized`: الـ Token غير موجود أو منتهي الصلاحية (`UNAUTHORIZED`).
 
+### 3) تسجيل الخروج (Logout)
+- **المسار:** `POST /api/v1/auth/logout`
+- **الوصف:** إلغاء وحذف جلسة العمل الحالية من قاعدة البيانات فورًا.
+- **المصادقة:** إلزامي (`Bearer <TOKEN>`)
+- **الـ Response الناجح (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Logged out successfully"
+  }
+  ```
+- **رموز الاستجابة والأخطاء:**
+  - `200 OK`: تم تسجيل الخروج وإلغاء الجلسة بنجاح.
+  - `401 Unauthorized`: الجلسة غير صالحة.
+
 ---
 
 ## 3. موديول البيانات المرجعية والمشاريع (Reference Data Module)
@@ -264,7 +279,44 @@
   ```
 - **رموز الاستجابة والأخطاء:**
   - `201 Created`: تم إنشاء الموظف بنجاح.
-  - `409 Conflict`: كود الموظف أو الرقم القومي مكرر (`EMPLOYEE_CODE_DUPLICATE` أو `NATIONAL_ID_DUPLICATE`).
+  - `409 Conflict`: كود الموظف أو الرقم القومي مكرر (`EMPLOYEE_CODE_DUPLICATE` أو `IDENTITY_DUPLICATE`).
+
+### 4) تعديل بيانات موظف (Update Employee)
+- **المسار:** `PATCH /api/v1/employees/:id`
+- **الوصف:** تعديل بيانات موظف مع فحص فرادة الرقم القومي / رقم الهوية.
+- **المصادقة:** إلزامي (`Bearer <TOKEN>`)
+- **الـ Request Body:** اختياري (نفس حقول الإنشاء)
+- **الـ Response الناجح (200 OK):**
+  ```json
+  {
+    "id": "uuid",
+    "companyId": "uuid",
+    "name": "أحمد محمود المعدل",
+    "nationalId": "29001011234567",
+    "dailyWage": 320,
+    "isActive": true
+  }
+  ```
+- **رموز الاستجابة والأخطاء:**
+  - `200 OK`: تم التعديل بنجاح.
+  - `404 Not Found`: الموظف غير موجود (`EMPLOYEE_NOT_FOUND`).
+  - `409 Conflict`: رقم الهوية مكرر لموظف آخر (`IDENTITY_DUPLICATE`).
+
+### 5) إلغاء تفعيل / حذف ناعم لموظف (Soft Delete / Deactivate Employee)
+- **المسار:** `DELETE /api/v1/employees/:id`
+- **الوصف:** تعطيل حساب الموظف (`isActive = false`) مع الحفاظ على سجلات الإنتاجية والحضور المرتبطة به.
+- **المصادقة:** إلزامي (`Bearer <TOKEN>`)
+- **الـ Response الناجح (200 OK):**
+  ```json
+  {
+    "id": "uuid",
+    "isActive": false,
+    "message": "Employee deactivated successfully"
+  }
+  ```
+- **رموز الاستجابة والأخطاء:**
+  - `200 OK`: تم إلغاء التفعيل بنجاح.
+  - `404 Not Found`: الموظف غير موجود (`EMPLOYEE_NOT_FOUND`).
 
 ---
 
