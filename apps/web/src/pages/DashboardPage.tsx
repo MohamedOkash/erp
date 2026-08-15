@@ -1,8 +1,6 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  Building2,
-  LogOut,
   Shield,
   Layers,
   FileSpreadsheet,
@@ -11,175 +9,179 @@ import {
   FileText,
   Bell,
   CheckCircle2,
+  TrendingUp,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
-    <div style={{ minHeight: '100vh', width: '100vw', paddingBottom: '3rem' }}>
-      <div className="app-bg-glow" />
-
-      {/* Top Navbar */}
-      <header
+    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      {/* Welcome Banner */}
+      <div
+        className="glass-card"
         style={{
-          borderBottom: '1px solid var(--border-subtle)',
-          background: 'rgba(11, 19, 41, 0.85)',
-          backdropFilter: 'blur(12px)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
+          padding: '2rem',
+          marginBottom: '2rem',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(17, 29, 56, 0.8) 100%)',
+          border: '1px solid rgba(59, 130, 246, 0.25)',
+          gap: '1rem',
         }}
       >
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span className="badge badge-success">
+              <CheckCircle2 size={12} />
+              <span>المصادقة نشطة والـ Token موثق</span>
+            </span>
+          </div>
+          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>
+            أهلاً بك، {user?.fullName || user?.username} 👋
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+            منظومة المقاولات والتشطيبات المتكاملة — إدارة الإنتاجية اليومية والمقايسة وحساب التكاليف.
+          </p>
+        </div>
+
         <div
           style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '1rem 1.5rem',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            gap: '0.75rem',
+            background: 'rgba(15, 23, 42, 0.6)',
+            padding: '0.75rem 1.25rem',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-subtle)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
-              }}
-            >
-              <Building2 size={22} color="#ffffff" />
+          <Shield size={24} color="#60a5fa" />
+          <div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>معرف المستخدم</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, fontFamily: 'monospace' }}>
+              {user?.id.substring(0, 13)}...
             </div>
-            <div>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>منظومة إدارة التشطيبات</h2>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                Construction ERP Platform
-              </span>
-            </div>
-          </div>
-
-          {/* User Profile & Logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#ffffff' }}>
-                {user?.fullName || user?.username}
-              </span>
-              <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.15rem' }}>
-                {user?.roles?.map((r) => (
-                  <span key={r.roleCode} className="badge badge-primary" style={{ fontSize: '0.7rem' }}>
-                    {r.roleName}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => logout()}
-              className="btn btn-secondary"
-              style={{ padding: '0.5rem 0.85rem', fontSize: '0.85rem', gap: '0.4rem' }}
-              title="تسجيل الخروج"
-            >
-              <LogOut size={16} color="#ef4444" />
-              <span>خروج</span>
-            </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content Area */}
-      <main style={{ maxWidth: '1280px', margin: '2rem auto', padding: '0 1.5rem' }}>
-        {/* Welcome Banner */}
-        <div
-          className="glass-card animate-fade-in"
-          style={{
-            padding: '2rem',
-            marginBottom: '2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(17, 29, 56, 0.8) 100%)',
-            border: '1px solid rgba(59, 130, 246, 0.25)',
-          }}
-        >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <span className="badge badge-success">
-                <CheckCircle2 size={12} />
-                <span>المصادقة نشطة والـ Token موثق</span>
-              </span>
-            </div>
-            <h1 style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>
-              أهلاً بك، {user?.fullName || user?.username} 👋
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-              تم الاتصال بنجاح بقاعدة البيانات والـ API Backend مع تفعيل العزل السحابي (Tenant Isolation).
-            </p>
-          </div>
-
+      {/* Quick KPI Overview */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1rem',
+          marginBottom: '2rem',
+        }}
+      >
+        <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div
             style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'rgba(37, 99, 235, 0.15)',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
-              background: 'rgba(15, 23, 42, 0.6)',
-              padding: '0.75rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)',
+              justifyContent: 'center',
+              color: '#60a5fa',
             }}
           >
-            <Shield size={24} color="#60a5fa" />
-            <div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>معرف المستخدم</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, fontFamily: 'monospace' }}>
-                {user?.id.substring(0, 13)}...
-              </div>
-            </div>
+            <Layers size={24} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>حالة الإنتاجية</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>سجلات معتمدة</div>
           </div>
         </div>
 
-        {/* Quick Grid Modules Overview */}
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-main)' }}>
-          الموديولات التشغيلية الجاهزة في النظام
-        </h3>
+        <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'rgba(16, 185, 129, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#34d399',
+            }}
+          >
+            <TrendingUp size={24} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>إنجاز المقايسة</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>تراكمي حي</div>
+          </div>
+        </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.25rem',
-          }}
-        >
-          {/* Card 1: Production */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
+        <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'rgba(245, 158, 11, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fbbf24',
+            }}
+          >
+            <Users size={24} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>إدارة الهويات</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>إقامات وهويات</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid Modules Section */}
+      <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--text-main)' }}>
+        الانتقال السريع للموديولات التشغيلية
+      </h3>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '1.25rem',
+        }}
+      >
+        {/* Module 1: Employees */}
+        <Link to="/employees" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="glass-card" style={{ padding: '1.5rem', height: '100%', transition: 'var(--transition-normal)' }}>
             <div
               style={{
                 width: '44px',
                 height: '44px',
                 borderRadius: '10px',
-                background: 'rgba(37, 99, 235, 0.15)',
-                color: '#60a5fa',
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#fbbf24',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '1rem',
               }}
             >
-              <Layers size={24} />
+              <Users size={24} />
             </div>
-            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>الإنتاجية اليومية</h4>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>العمال والموظفون</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              تسجيل تقارير الإنجاز اليومي للبنود واعتمادها عبر مسار الحالات الصارم (مشرف ← مهندس ← مدير).
+              إدارة الهويات (هوية وطنية، إقامة، جواز)، تواريخ الانتهاء، وتعيينات المشاريع.
             </p>
           </div>
+        </Link>
 
-          {/* Card 2: BOQ Progress */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
+        {/* Module 2: Projects & BOQ */}
+        <Link to="/boq" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="glass-card" style={{ padding: '1.5rem', height: '100%' }}>
             <div
               style={{
                 width: '44px',
@@ -197,35 +199,39 @@ export const DashboardPage: React.FC = () => {
             </div>
             <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>المقايسة وتقدم التنفيذ</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              حساب الكميات التراكمية المنفذة ونسب الإنجاز التلقائية من واقع السجلات المعتمدة نهائيًا.
+              حساب الكميات التراكمية المنفذة ونسب الإنجاز التلقائية من واقع السجلات المعتمدة.
             </p>
           </div>
+        </Link>
 
-          {/* Card 3: Employees */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
+        {/* Module 3: Daily Production */}
+        <Link to="/production" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="glass-card" style={{ padding: '1.5rem', height: '100%' }}>
             <div
               style={{
                 width: '44px',
                 height: '44px',
                 borderRadius: '10px',
-                background: 'rgba(245, 158, 11, 0.15)',
-                color: '#fbbf24',
+                background: 'rgba(37, 99, 235, 0.15)',
+                color: '#60a5fa',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '1rem',
               }}
             >
-              <Users size={24} />
+              <Layers size={24} />
             </div>
-            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>العمالة والحضور</h4>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>الإنتاجية اليومية</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              إدارة الهويات (هوية وطنية، إقامة، جواز)، تواريخ الانتهاء، تسجيل الحضور وحساب ساعات الإضافي.
+              تسجيل تقارير الإنجاز اليومي للبنود واعتمادها عبر مسار الحالات الصارم.
             </p>
           </div>
+        </Link>
 
-          {/* Card 4: Costs & Incentives */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
+        {/* Module 4: Costs & Ledger */}
+        <Link to="/costs" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="glass-card" style={{ padding: '1.5rem', height: '100%' }}>
             <div
               style={{
                 width: '44px',
@@ -243,12 +249,14 @@ export const DashboardPage: React.FC = () => {
             </div>
             <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>التكاليف والحوافز</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              حساب أجور العمالة تلقائيًا من الحضور، ومكافآت تجاوز المستهدفات واعتماد الصرفيات.
+              حساب أجور العمالة تلقائيًا من الحضور، ومكافآت تجاوز المستهدفات.
             </p>
           </div>
+        </Link>
 
-          {/* Card 5: Documents */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
+        {/* Module 5: Documents */}
+        <Link to="/documents" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="glass-card" style={{ padding: '1.5rem', height: '100%' }}>
             <div
               style={{
                 width: '44px',
@@ -264,14 +272,16 @@ export const DashboardPage: React.FC = () => {
             >
               <FileText size={24} />
             </div>
-            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>المستندات والملفات</h4>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>المستندات والأرشيف</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              إدارة مخططات المشاريع، مستندات العقود، وإصدارات الملفات المؤرشفة بأمان.
+              إدارة مخططات المشاريع، مستندات العقود، وإصدارات الملفات المؤرشفة.
             </p>
           </div>
+        </Link>
 
-          {/* Card 6: Alerts */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
+        {/* Module 6: Alerts */}
+        <Link to="/alerts" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="glass-card" style={{ padding: '1.5rem', height: '100%' }}>
             <div
               style={{
                 width: '44px',
@@ -287,13 +297,13 @@ export const DashboardPage: React.FC = () => {
             >
               <Bell size={24} />
             </div>
-            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>محرك التنبيهات المجدولة</h4>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>التنبيهات المجدولة</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              فحص دوري لانخفاض الإنتاجية، اقتراب انتهاء الإقامات، والغياب غير المبرر.
+              فحص دوري لانخفاض الإنتاجية، اقتراب انتهاء الإقامات، والغياب.
             </p>
           </div>
-        </div>
-      </main>
+        </Link>
+      </div>
     </div>
   );
 };

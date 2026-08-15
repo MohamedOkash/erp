@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AppLayout } from './components/layout/AppLayout';
 
 export const App: React.FC = () => {
   return (
@@ -10,17 +11,18 @@ export const App: React.FC = () => {
       {/* Public Route */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Protected Routes */}
+      {/* Protected Routes inside AppLayout */}
       <Route
-        path="/dashboard"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
+      </Route>
 
-      {/* Default Fallback Redirect */}
+      {/* Fallback Redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
