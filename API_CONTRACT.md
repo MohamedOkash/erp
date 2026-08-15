@@ -80,7 +80,92 @@
 
 ---
 
-## 3. موديول الموظفين والعمال (Employees Module)
+## 3. موديول البيانات المرجعية والمشاريع (Reference Data Module)
+
+### أ) الفروع (Branches)
+1. **قائمة الفروع (`GET /api/v1/branches`):**
+   - **Query:** `search`, `isActive`, `page`, `limit`
+   - **Response (200 OK):** `{ "data": [{ "id": "uuid", "name": "فرع 1", "code": "BR-01", "location": "...", "phone": "...", "isActive": true }], "total": 5, "page": 1, "limit": 20, "totalPages": 1 }`
+2. **استعراض فرع (`GET /api/v1/branches/:id`):** $\rightarrow$ `200 OK` أو `404` (`BRANCH_NOT_FOUND`)
+3. **إضافة فرع (`POST /api/v1/branches`):**
+   - **Body:** `{ "name": "string (req)", "code": "string", "location": "string", "phone": "string", "isActive": true }`
+   - **Response:** `201 Created` أو `409` (`BRANCH_CODE_DUPLICATE`)
+4. **تعديل فرع (`PATCH /api/v1/branches/:id`):** $\rightarrow$ `200 OK`
+5. **حذف فرع (`DELETE /api/v1/branches/:id`):** $\rightarrow$ `204 No Content`
+
+### ب) المشاريع (Projects)
+1. **قائمة المشاريع (`GET /api/v1/projects`):**
+   - **Query:** `branchId`, `status` (`active`, `completed`, `paused`, `archived`), `search`, `page`, `limit`
+   - **Response (200 OK):** `{ "data": [{ "id": "uuid", "branchId": "uuid", "name": "مشروع 1", "code": "PRJ-01", "clientName": "...", "location": "...", "startDate": "...", "endDate": "...", "status": "active", "branchName": "فرع 1" }], "total": 2, "page": 1, "limit": 20, "totalPages": 1 }`
+2. **استعراض مشروع (`GET /api/v1/projects/:id`):** $\rightarrow$ `200 OK` أو `404` (`PROJECT_NOT_FOUND`)
+3. **إضافة مشروع (`POST /api/v1/projects`):**
+   - **Body:** `{ "branchId": "uuid (req)", "name": "string (req)", "code": "string", "clientName": "string", "location": "string", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "status": "active" }`
+   - **Response:** `201 Created` أو `409` (`PROJECT_CODE_DUPLICATE`) أو `404` (`BRANCH_NOT_FOUND`)
+4. **تعديل مشروع (`PATCH /api/v1/projects/:id`):** $\rightarrow$ `200 OK`
+5. **حذف مشروع (`DELETE /api/v1/projects/:id`):** $\rightarrow$ `204 No Content`
+
+### ج) بنود الأعمال (Work Items)
+1. **قائمة بنود الأعمال (`GET /api/v1/work-items`):**
+   - **Query:** `branchId` (يرجع أسعار ومستهدفات الفرع المخصصة إن وُجدت), `category`, `search`, `page`, `limit`
+   - **Response (200 OK):** `{ "data": [{ "id": "uuid", "unitId": "uuid", "name": "بند 1", "code": "WI-01", "category": "تشطيبات", "defaultUnitRate": 45.0, "defaultDailyTarget": 50.0, "unitRate": 45.0, "dailyTarget": 50.0, "unitName": "متر مربع", "unitSymbol": "م2" }], "total": 5, "page": 1, "limit": 20, "totalPages": 1 }`
+2. **استعراض بند عمل (`GET /api/v1/work-items/:id`):** $\rightarrow$ `200 OK` أو `404` (`WORK_ITEM_NOT_FOUND`)
+3. **إضافة بند عمل (`POST /api/v1/work-items`):**
+   - **Body:** `{ "name": "string (req)", "unitId": "uuid", "code": "string", "category": "string", "description": "string", "defaultUnitRate": 45.0, "defaultDailyTarget": 50.0, "isActive": true, "branchId": "uuid", "customUnitRate": 50.0, "customDailyTarget": 45.0 }`
+   - **Response:** `201 Created` أو `409` (`WORK_ITEM_CODE_DUPLICATE`)
+4. **تعديل بند عمل (`PATCH /api/v1/work-items/:id`):** $\rightarrow$ `200 OK`
+5. **حذف بند عمل (`DELETE /api/v1/work-items/:id`):** $\rightarrow$ `204 No Content`
+
+### د) مناطق العمل الهرمية (Work Areas)
+1. **قائمة مناطق العمل (`GET /api/v1/work-areas`):**
+   - **Query:** `projectId`, `parentId` (`null` للمستوى الجذري الأول أو UUID), `level`, `search`, `page`, `limit`
+   - **Response (200 OK):** `{ "data": [{ "id": "uuid", "projectId": "uuid", "parentId": null, "name": "منطقة 1", "code": "AR-01", "level": 1, "path": "/AR-01", "sortOrder": 1, "isActive": true, "projectName": "مشروع 1" }], "total": 6, "page": 1, "limit": 20, "totalPages": 1 }`
+2. **استعراض منطقة عمل (`GET /api/v1/work-areas/:id`):** $\rightarrow$ `200 OK` أو `404` (`WORK_AREA_NOT_FOUND`)
+3. **إضافة منطقة عمل (`POST /api/v1/work-areas`):**
+   - **Body:** `{ "projectId": "uuid (req)", "parentId": "uuid", "name": "string (req)", "code": "string", "sortOrder": 1, "isActive": true }`
+   - **Response:** `201 Created` (يحسب `level` و `path` تلقائيًا من الأب)
+4. **تعديل منطقة عمل (`PATCH /api/v1/work-areas/:id`):** $\rightarrow$ `200 OK`
+5. **حذف منطقة عمل (`DELETE /api/v1/work-areas/:id`):** $\rightarrow$ `204 No Content`
+
+### هـ) تقدم المقايسة (BOQ Progress)
+1. **استعراض تقدم بنود المقايسة (`GET /api/v1/boq`):**
+   - **الوصف:** عرض نسبة الإنجاز والكمية المنفذة والمتبقية لكل بند مقايسة محسوبة مباشرة من سجلات الإنتاجية المعتمدة نهائيًا (`final_approved`).
+   - **Query:** `projectId`, `branchId`, `workItemId`, `page`, `limit`
+   - **Response (200 OK):**
+     ```json
+     {
+       "data": [
+         {
+           "id": "uuid-boq-item",
+           "boqId": "uuid-boq",
+           "itemNumber": "WI-01",
+           "description": "أعمال تشطيبات الدور الأول",
+           "projectId": "f0000000-0000-0000-0000-000000000001",
+           "projectName": "مشروع 1",
+           "branchId": "b0000000-0000-0000-0000-000000000001",
+           "branchName": "فرع 1",
+           "workItemId": "00000000-0000-0000-0005-000000000001",
+           "workItemName": "بند 1",
+           "unitName": "متر مربع",
+           "unitSymbol": "م2",
+           "unitRate": 45.0,
+           "totalPrice": 45000.0,
+           "totalQuantity": 1000.0,
+           "executedQuantity": 350.0,
+           "remainingQuantity": 650.0,
+           "progressPercentage": 35.0
+         }
+       ],
+       "total": 1,
+       "page": 1,
+       "limit": 20,
+       "totalPages": 1
+     }
+     ```
+2. **استعراض تقدم بند مقايسة مفرد (`GET /api/v1/boq/:id`):** $\rightarrow$ `200 OK` أو `404` (`BOQ_ITEM_NOT_FOUND`)
+
+---
+
+## 4. موديول الموظفين والعمال (Employees Module)
 
 ### 1) قائمة الموظفين مع الفلاتر والترقيم (List Employees)
 - **المسار:** `GET /api/v1/employees`

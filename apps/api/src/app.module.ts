@@ -14,6 +14,11 @@ import { CostsModule } from './costs/costs.module';
 import { IncentivesModule } from './incentives/incentives.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ReportsModule } from './reports/reports.module';
+import { BranchesModule } from './branches/branches.module';
+import { ProjectsModule } from './projects/projects.module';
+import { WorkItemsModule } from './work-items/work-items.module';
+import { WorkAreasModule } from './work-areas/work-areas.module';
+import { BoqModule } from './boq/boq.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -21,6 +26,11 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     ScheduleModule.forRoot(),
     DatabaseModule,
     AuthModule,
+    BranchesModule,
+    ProjectsModule,
+    WorkItemsModule,
+    WorkAreasModule,
+    BoqModule,
     EmployeesModule,
     ProductionModule,
     AttendanceModule,
