@@ -6,6 +6,9 @@ import { EmployeesPage } from './pages/employees/EmployeesPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 import { BoqProgressPage } from './pages/boq/BoqProgressPage';
 import { ProductionPage } from './pages/production/ProductionPage';
+import { AttendancePage } from './pages/attendance/AttendancePage';
+import { CostsPage } from './pages/costs/CostsPage';
+import { AlertsPage } from './pages/alerts/AlertsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 
@@ -28,6 +31,9 @@ export const App: React.FC = () => {
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/boq" element={<BoqProgressPage />} />
         <Route path="/production" element={<ProductionPage />} />
+        <Route path="/attendance" element={<AttendancePage />} />
+        <Route path="/costs" element={<CostsPage />} />
+        <Route path="/alerts" element={<AlertsPage />} />
       </Route>
 
       {/* Fallback Redirect */}
