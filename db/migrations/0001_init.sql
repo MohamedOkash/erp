@@ -1234,3 +1234,12 @@ INSERT INTO attendance_statuses (id, company_id, code, name, is_present, deducti
     ('00000000-0000-0000-0002-000000000004', NULL, 'excused', 'إذن / إجازة', false, 0.00, true),
     ('00000000-0000-0000-0002-000000000005', NULL, 'rest_day', 'عطلة رسمية / راحة', false, 0.00, true)
 ON CONFLICT (id) DO NOTHING;
+
+-- D) Map default permissions to system roles (Section 2 & Section 5)
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.code IN ('super_admin', 'company_admin')
+ON CONFLICT DO NOTHING;
+
