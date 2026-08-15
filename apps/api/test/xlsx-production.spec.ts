@@ -19,11 +19,11 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
     await pglite.waitReady;
 
     const migrationDir = path.resolve(__dirname, '../../../db/migrations');
-    const initSql = fs.readFileSync(path.join(migrationDir, '0001_init.sql'), 'utf8');
-    const seedSql = fs.readFileSync(path.join(migrationDir, '0002_seed_demo.sql'), 'utf8');
-
-    await pglite.exec(initSql);
-    await pglite.exec(seedSql);
+    const files = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();
+    for (const file of files) {
+      const sql = fs.readFileSync(path.join(migrationDir, file), 'utf8');
+      await pglite.exec(sql);
+    }
 
     // Create session token for authentication
     authToken = 'test-token-xlsx-prod-' + Date.now();

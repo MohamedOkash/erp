@@ -1,4 +1,12 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class UpdateEmployeeDto {
   @IsOptional()
@@ -15,7 +23,16 @@ export class UpdateEmployeeDto {
 
   @IsOptional()
   @IsString()
-  identityType?: string;
+  @IsIn(['national_id', 'iqama', 'passport'])
+  identityType?: 'national_id' | 'iqama' | 'passport';
+
+  @IsOptional()
+  @IsDateString()
+  identityExpiryDate?: string;
+
+  @IsOptional()
+  @IsString()
+  nationality?: string;
 
   @IsOptional()
   @IsString()

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   HttpStatus,
@@ -16,7 +17,7 @@ export class EmployeesService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
-   * List employees with filters and pagination
+   * List employees with filters, multi-country identity fields and pagination
    */
   async findEmployees(companyId: string, query: QueryEmployeeDto) {
     return this.db.withTenantClient(companyId, async (client) => {
@@ -36,10 +37,10 @@ export class EmployeesService {
         params.push(role);
       }
 
-      const nationalId = query.nationalId || query.identityNumber;
-      if (nationalId) {
-        conditions.push(`e.national_id = $${paramIdx++}`);
-        params.push(nationalId);
+      const idNumber = query.identityNumber || query.nationalId;
+      if (idNumber) {
+        conditions.push(`e.identity_number = $${paramIdx++}`);
+        params.push(idNumber);
       }
 
       if (query.code) {
@@ -53,7 +54,7 @@ export class EmployeesService {
       }
 
       if (query.search) {
-        conditions.push(`(e.name ILIKE $${paramIdx} OR e.code ILIKE $${paramIdx} OR e.national_id ILIKE $${paramIdx})`);
+        conditions.push(`(e.name ILIKE $${paramIdx} OR e.code ILIKE $${paramIdx} OR e.identity_number ILIKE $${paramIdx})`);
         params.push(`%${query.search}%`);
         paramIdx++;
       }
@@ -71,8 +72,8 @@ export class EmployeesService {
 
       const dataSql = `
         SELECT 
-          e.id, e.company_id, e.national_id, e.name, e.code, e.phone,
-          e.role_type, e.primary_branch_id, e.daily_wage, e.hire_date, e.is_active,
+          e.id, e.company_id, e.identity_number, e.identity_type, e.identity_expiry_date, e.nationality,
+          e.name, e.code, e.phone, e.role_type, e.primary_branch_id, e.daily_wage, e.hire_date, e.is_active,
           e.created_at, e.updated_at,
           b.name AS branch_name
         FROM employees e
@@ -87,7 +88,11 @@ export class EmployeesService {
       const formatted = dataRes.rows.map((row) => ({
         id: row.id,
         companyId: row.company_id,
-        nationalId: row.national_id,
+        identityNumber: row.identity_number,
+        nationalId: row.identity_number,
+        identityType: row.identity_type,
+        identityExpiryDate: row.identity_expiry_date,
+        nationality: row.nationality,
         name: row.name,
         code: row.code,
         phone: row.phone,
@@ -117,8 +122,8 @@ export class EmployeesService {
   async getEmployeeById(companyId: string, id: string): Promise<EmployeeResponseDto> {
     return this.db.withTenantClient(companyId, async (client) => {
       const res = await client.query(
-        `SELECT e.id, e.company_id, e.national_id, e.name, e.code, e.phone,
-                e.role_type, e.primary_branch_id, e.daily_wage, e.hire_date, e.is_active,
+        `SELECT e.id, e.company_id, e.identity_number, e.identity_type, e.identity_expiry_date, e.nationality,
+                e.name, e.code, e.phone, e.role_type, e.primary_branch_id, e.daily_wage, e.hire_date, e.is_active,
                 b.name AS branch_name
          FROM employees e
          LEFT JOIN branches b ON e.primary_branch_id = b.id AND e.company_id = b.company_id
@@ -155,11 +160,16 @@ export class EmployeesService {
       return {
         id: row.id,
         companyId: row.company_id,
-        nationalId: row.national_id,
+        identityNumber: row.identity_number,
+        nationalId: row.identity_number,
+        identityType: row.identity_type,
+        identityExpiryDate: row.identity_expiry_date,
+        nationality: row.nationality,
         name: row.name,
         code: row.code,
         phone: row.phone,
         roleType: row.role_type,
+        role: row.role_type,
         primaryBranchId: row.primary_branch_id,
         branchName: row.branch_name,
         dailyWage: parseFloat(row.daily_wage || '0'),
@@ -171,7 +181,7 @@ export class EmployeesService {
   }
 
   /**
-   * Find employee by national ID (identity number) within tenant company scope.
+   * Find employee by identity number (National ID / Iqama / Passport)
    */
   async findByIdentityNumber(
     companyId: string,
@@ -179,12 +189,12 @@ export class EmployeesService {
   ): Promise<EmployeeResponseDto> {
     return this.db.withTenantTransaction(companyId, async (client) => {
       const employeeRes = await client.query(
-        `SELECT e.id, e.company_id, e.national_id, e.name, e.code, e.phone,
-                e.role_type, e.primary_branch_id, e.daily_wage, e.hire_date, e.is_active,
+        `SELECT e.id, e.company_id, e.identity_number, e.identity_type, e.identity_expiry_date, e.nationality,
+                e.name, e.code, e.phone, e.role_type, e.primary_branch_id, e.daily_wage, e.hire_date, e.is_active,
                 b.name AS branch_name
          FROM employees e
          LEFT JOIN branches b ON e.primary_branch_id = b.id AND e.company_id = b.company_id
-         WHERE e.national_id = $1`,
+         WHERE e.identity_number = $1`,
         [identityNumber],
       );
 
@@ -216,7 +226,11 @@ export class EmployeesService {
       return {
         id: row.id,
         companyId: row.company_id,
-        nationalId: row.national_id,
+        identityNumber: row.identity_number,
+        nationalId: row.identity_number,
+        identityType: row.identity_type,
+        identityExpiryDate: row.identity_expiry_date,
+        nationality: row.nationality,
         name: row.name,
         code: row.code,
         phone: row.phone,
@@ -232,24 +246,34 @@ export class EmployeesService {
   }
 
   /**
-   * Create a new employee with duplicate national ID check
+   * Create a new employee with duplicate identity check
    */
   async createEmployee(
     companyId: string,
     dto: CreateEmployeeDto,
   ): Promise<EmployeeResponseDto> {
     return this.db.withTenantTransaction(companyId, async (client) => {
-      const nationalId = dto.nationalId;
+      const identityNumber = dto.identityNumber || dto.nationalId;
+
+      if (!identityNumber) {
+        throw new BadRequestException({
+          code: 'IDENTITY_NUMBER_REQUIRED',
+          message: 'identityNumber or nationalId is required',
+        });
+      }
+
+      const identityType = dto.identityType || 'national_id';
+
       const existing = await client.query(
-        `SELECT id FROM employees WHERE national_id = $1`,
-        [nationalId],
+        `SELECT id FROM employees WHERE identity_number = $1`,
+        [identityNumber],
       );
 
       if (existing.rows.length > 0) {
         throw new HttpException(
           {
             statusCode: HttpStatus.CONFLICT,
-            message: `Employee with national ID '${nationalId}' already exists in this company`,
+            message: `Employee with identity number '${identityNumber}' already exists in this company`,
             code: 'IDENTITY_DUPLICATE',
           },
           HttpStatus.CONFLICT,
@@ -258,12 +282,17 @@ export class EmployeesService {
 
       const insertRes = await client.query(
         `INSERT INTO employees (
-          company_id, national_id, name, code, phone, role_type, primary_branch_id, daily_wage
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING id, company_id, national_id, name, code, phone, role_type, primary_branch_id, daily_wage, hire_date, is_active`,
+          company_id, identity_number, identity_type, identity_expiry_date, nationality,
+          name, code, phone, role_type, primary_branch_id, daily_wage
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING id, company_id, identity_number, identity_type, identity_expiry_date, nationality,
+                  name, code, phone, role_type, primary_branch_id, daily_wage, hire_date, is_active`,
         [
           companyId,
-          nationalId,
+          identityNumber,
+          identityType,
+          dto.identityExpiryDate || null,
+          dto.nationality || null,
           dto.name,
           dto.code || null,
           dto.phone || null,
@@ -277,7 +306,11 @@ export class EmployeesService {
       return {
         id: row.id,
         companyId: row.company_id,
-        nationalId: row.national_id,
+        identityNumber: row.identity_number,
+        nationalId: row.identity_number,
+        identityType: row.identity_type,
+        identityExpiryDate: row.identity_expiry_date,
+        nationality: row.nationality,
         name: row.name,
         code: row.code,
         phone: row.phone,
@@ -292,7 +325,7 @@ export class EmployeesService {
   }
 
   /**
-   * Update employee details with duplicate nationalId check
+   * Update employee details with duplicate identityNumber check
    */
   async updateEmployee(companyId: string, id: string, dto: UpdateEmployeeDto) {
     return this.db.withTenantTransaction(companyId, async (client) => {
@@ -309,17 +342,17 @@ export class EmployeesService {
       }
 
       const current = curRes.rows[0];
-      const targetNationalId = dto.nationalId || dto.identityNumber;
+      const targetIdNumber = dto.identityNumber || dto.nationalId;
 
-      if (targetNationalId && targetNationalId !== current.national_id) {
+      if (targetIdNumber && targetIdNumber !== current.identity_number) {
         const dupRes = await client.query(
-          `SELECT id FROM employees WHERE company_id = $1 AND national_id = $2 AND id != $3`,
-          [companyId, targetNationalId, id],
+          `SELECT id FROM employees WHERE company_id = $1 AND identity_number = $2 AND id != $3`,
+          [companyId, targetIdNumber, id],
         );
         if (dupRes.rows.length > 0) {
           throw new ConflictException({
             code: 'IDENTITY_DUPLICATE',
-            message: `Employee with national ID '${targetNationalId}' already exists in this company`,
+            message: `Employee with identity number '${targetIdNumber}' already exists in this company`,
           });
         }
       }
@@ -327,21 +360,28 @@ export class EmployeesService {
       const updateRes = await client.query(
         `UPDATE employees
          SET name = COALESCE($3, name),
-             national_id = COALESCE($4, national_id),
-             code = COALESCE($5, code),
-             phone = COALESCE($6, phone),
-             role_type = COALESCE($7, role_type),
-             primary_branch_id = COALESCE($8, primary_branch_id),
-             daily_wage = COALESCE($9, daily_wage),
-             is_active = COALESCE($10, is_active),
+             identity_number = COALESCE($4, identity_number),
+             identity_type = COALESCE($5, identity_type),
+             identity_expiry_date = COALESCE($6, identity_expiry_date),
+             nationality = COALESCE($7, nationality),
+             code = COALESCE($8, code),
+             phone = COALESCE($9, phone),
+             role_type = COALESCE($10, role_type),
+             primary_branch_id = COALESCE($11, primary_branch_id),
+             daily_wage = COALESCE($12, daily_wage),
+             is_active = COALESCE($13, is_active),
              updated_at = CURRENT_TIMESTAMP
          WHERE company_id = $1 AND id = $2
-         RETURNING id, company_id, national_id, name, code, phone, role_type, primary_branch_id, daily_wage, hire_date, is_active, created_at, updated_at`,
+         RETURNING id, company_id, identity_number, identity_type, identity_expiry_date, nationality,
+                   name, code, phone, role_type, primary_branch_id, daily_wage, hire_date, is_active, created_at, updated_at`,
         [
           companyId,
           id,
           dto.name || null,
-          targetNationalId || null,
+          targetIdNumber || null,
+          dto.identityType || null,
+          dto.identityExpiryDate || null,
+          dto.nationality || null,
           dto.code || null,
           dto.phone || null,
           dto.roleType || null,
@@ -355,7 +395,11 @@ export class EmployeesService {
       return {
         id: row.id,
         companyId: row.company_id,
-        nationalId: row.national_id,
+        identityNumber: row.identity_number,
+        nationalId: row.identity_number,
+        identityType: row.identity_type,
+        identityExpiryDate: row.identity_expiry_date,
+        nationality: row.nationality,
         name: row.name,
         code: row.code,
         phone: row.phone,

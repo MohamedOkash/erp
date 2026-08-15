@@ -7,14 +7,12 @@ import { PGlite } from '@electric-sql/pglite';
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/database/database.service';
 
-describe('Employees Extra & Auth Logout (Part 2)', () => {
+describe('Multi-Country Support & Saudi Arabia Data Model (Part 4)', () => {
   let app: INestApplication;
   let pglite: PGlite;
   const companyId = 'c0000000-0000-0000-0000-000000000001';
   const adminUserId = '00000000-0000-0000-0003-000000000001';
   let authToken: string;
-  let employee1Id: string;
-  let employee2Id: string;
 
   beforeAll(async () => {
     pglite = new PGlite();
@@ -27,7 +25,7 @@ describe('Employees Extra & Auth Logout (Part 2)', () => {
       await pglite.exec(sql);
     }
 
-    authToken = 'test-token-emp-extra-' + Date.now();
+    authToken = 'test-token-multi-country-' + Date.now();
     await pglite.query(
       `INSERT INTO sessions (user_id, token, expires_at)
        VALUES ($1, $2, CURRENT_TIMESTAMP + interval '24 hours')`,
@@ -81,29 +79,6 @@ describe('Employees Extra & Auth Logout (Part 2)', () => {
       }),
     );
     await app.init();
-
-    // Create 2 employees for testing
-    const createRes1 = await request(app.getHttpServer())
-      .post('/api/v1/employees')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({
-        name: 'عامل تجربة 1',
-        nationalId: '29801011234501',
-        roleType: 'worker',
-        dailyWage: 200,
-      });
-    employee1Id = createRes1.body.id;
-
-    const createRes2 = await request(app.getHttpServer())
-      .post('/api/v1/employees')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({
-        name: 'عامل تجربة 2',
-        nationalId: '29801011234502',
-        roleType: 'worker',
-        dailyWage: 220,
-      });
-    employee2Id = createRes2.body.id;
   }, 30000);
 
   afterAll(async () => {
@@ -112,61 +87,62 @@ describe('Employees Extra & Auth Logout (Part 2)', () => {
     }
   });
 
-  // Test 1: تعديل موظف → توقع 200 + updated data
-  it('test 1: should update employee with 200', async () => {
-    const res = await request(app.getHttpServer())
-      .patch(`/api/v1/employees/${employee1Id}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({
-        name: 'عامل تجربة 1 بعد التعديل',
-        dailyWage: 260,
-      })
-      .expect(200);
+  // Test 1: إنشاء موظف مع identityType = 'iqama' و nationality = 'Egyptian' و identityExpiryDate → توقع 201
+  it('test 1: should create employee with iqama, nationality and expiry date with 201', async () => {
+    const payload = {
+      name: 'محمود عبد الفتاح',
+      identityNumber: '2456789012',
+      identityType: 'iqama',
+      nationality: 'Egyptian',
+      identityExpiryDate: '2027-08-16',
+      roleType: 'worker',
+      dailyWage: 250,
+      code: 'EMP-IQM-01',
+      phone: '0509876543',
+    };
 
-    expect(res.body.id).toBe(employee1Id);
-    expect(res.body.name).toBe('عامل تجربة 1 بعد التعديل');
-    expect(res.body.dailyWage).toBe(260);
+    const res = await request(app.getHttpServer())
+      .post('/api/v1/employees')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(payload)
+      .expect(201);
+
+    expect(res.body.id).toBeDefined();
+    expect(res.body.identityNumber).toBe('2456789012');
+    expect(res.body.identityType).toBe('iqama');
+    expect(res.body.nationality).toBe('Egyptian');
+    expect(res.body.identityExpiryDate).toContain('2027-08-16');
   });
 
-  // Test 2: محاولة تعديل موظف برقم قومي مكرر → توقع 409
-  it('test 2: should reject updating employee to existing nationalId with 409', async () => {
+  // Test 2: البحث عن الموظف بـ identityNumber → توقع 200
+  it('test 2: should find employee by identity number with 200', async () => {
     const res = await request(app.getHttpServer())
-      .patch(`/api/v1/employees/${employee2Id}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({
-        nationalId: '29801011234501', // Already taken by employee1
-      })
-      .expect(409);
-
-    expect(res.body.code).toBe('IDENTITY_DUPLICATE');
-  });
-
-  // Test 3: soft delete موظف → توقع 200 + isActive = false
-  it('test 3: should soft delete employee (isActive = false) with 200', async () => {
-    const res = await request(app.getHttpServer())
-      .delete(`/api/v1/employees/${employee1Id}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-
-    expect(res.body.id).toBe(employee1Id);
-    expect(res.body.isActive).toBe(false);
-
-    // Verify in database
-    const dbCheck = await pglite.query(`SELECT is_active FROM employees WHERE id = $1`, [employee1Id]);
-    expect((dbCheck.rows[0] as any).is_active).toBe(false);
-  });
-
-  // Test 4: logout → توقع 200 + session محذوف من قاعدة البيانات
-  it('test 4: should logout and invalidate session from database', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/api/v1/auth/logout')
+      .get('/api/v1/employees/by-identity/2456789012')
       .set('Authorization', `Bearer ${authToken}`)
       .expect(200);
 
-    expect(res.body.success).toBe(true);
+    expect(res.body.identityNumber).toBe('2456789012');
+    expect(res.body.name).toBe('محمود عبد الفتاح');
+    expect(res.body.identityType).toBe('iqama');
+    expect(res.body.nationality).toBe('Egyptian');
+  });
 
-    // Verify session token is removed
-    const sessionCheck = await pglite.query(`SELECT id FROM sessions WHERE token = $1`, [authToken]);
-    expect(sessionCheck.rows.length).toBe(0);
+  // Test 3: محاولة إنشاء نوع هوية غير مدعوم → توقع 400
+  it('test 3: should reject unsupported identityType with 400 Bad Request', async () => {
+    const payload = {
+      name: 'سائق تجربة',
+      identityNumber: '9988776655',
+      identityType: 'driver_license', // Unsupported
+      roleType: 'worker',
+      dailyWage: 200,
+    };
+
+    const res = await request(app.getHttpServer())
+      .post('/api/v1/employees')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(payload)
+      .expect(400);
+
+    expect(res.body.message).toBeDefined();
   });
 });

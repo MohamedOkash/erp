@@ -87,7 +87,7 @@ export class ImportsService {
 
       // 2. Fetch existing national IDs to detect DB duplicates
       const existingRes = await client.query(
-        `SELECT national_id FROM employees WHERE company_id = $1`,
+        `SELECT identity_number AS national_id FROM employees WHERE company_id = $1`,
         [companyId],
       );
       const dbNationalIds = new Set<string>(
@@ -935,9 +935,9 @@ export class ImportsService {
           const p = row.parsed_data;
           await client.query(
             `INSERT INTO employees (
-              company_id, national_id, name, phone, role_type, primary_branch_id, daily_wage
+              company_id, identity_number, name, phone, role_type, primary_branch_id, daily_wage
             ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (company_id, national_id) DO NOTHING`,
+            ON CONFLICT (company_id, identity_number) DO NOTHING`,
             [
               companyId,
               p.nationalId,
@@ -1167,7 +1167,7 @@ export class ImportsService {
     return this.db.withTenantTransaction(companyId, async (client) => {
       // 1. Fetch Employees
       const employeesRes = await client.query(
-        `SELECT id, national_id, name, primary_branch_id FROM employees WHERE company_id = $1`,
+        `SELECT id, identity_number AS national_id, name, primary_branch_id FROM employees WHERE company_id = $1`,
         [companyId],
       );
       const employeeMap = new Map<

@@ -184,15 +184,15 @@
 
 ### 1) قائمة الموظفين مع الفلاتر والترقيم (List Employees)
 - **المسار:** `GET /api/v1/employees`
-- **الوصف:** استعراض قائمة الموظفين والعمال للشركة مع إمكانية الفلترة والبحث.
+- **الوصف:** استعراض قائمة الموظفين والعمال للشركة مع دعم فلاتر الهوية والجنسية والفرع والبحث.
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)
 - **الـ Query Parameters:**
   - `branchId`: UUID (اختياري)
-  - `role`: string (اختياري: `worker`, `engineer`, `supervisor`, إلخ)
-  - `isDirectHire`: boolean (اختياري: `true` تعيين مباشر، `false` مقاول باطن)
-  - `search`: string (اختياري: بحث بالاسم أو الكود)
-  - `nationalId`: string (اختياري: بحث بالرقم القومي)
+  - `role` / `roleType`: string (اختياري: `worker`, `engineer`, `supervisor`, إلخ)
+  - `search`: string (اختياري: بحث بالاسم أو الكود أو رقم الهوية)
+  - `identityNumber` / `nationalId`: string (اختياري: بحث برقم الهوية أو الإقامة)
   - `code`: string (اختياري: كود الموظف)
+  - `isActive`: boolean (اختياري)
   - `page`: number (افتراضي 1)
   - `limit`: number (افتراضي 20، أقصى حد 100)
 - **الـ Response الناجح (200 OK):**
@@ -202,16 +202,20 @@
       {
         "id": "e0000000-0000-0000-0000-000000000001",
         "companyId": "c0000000-0000-0000-0000-000000000001",
-        "branchId": "b0000000-0000-0000-0000-000000000001",
-        "name": "أحمد محمود",
-        "code": "EMP-001",
-        "role": "worker",
-        "nationalId": "29001011234567",
-        "phone": "01012345678",
-        "isDirectHire": true,
-        "dailyWage": "250.00",
-        "isActive": true,
-        "branchName": "فرع 1"
+        "identityNumber": "2456789012",
+        "nationalId": "2456789012",
+        "identityType": "iqama",
+        "identityExpiryDate": "2027-08-16",
+        "nationality": "Egyptian",
+        "name": "محمود عبد الفتاح",
+        "code": "EMP-IQM-01",
+        "phone": "0509876543",
+        "roleType": "worker",
+        "primaryBranchId": "b0000000-0000-0000-0000-000000000001",
+        "branchName": "فرع 1",
+        "dailyWage": 250.0,
+        "hireDate": "2026-01-01",
+        "isActive": true
       }
     ],
     "total": 1,
@@ -221,7 +225,7 @@
   }
   ```
 
-### 2) استعراض موظف محدد (Get Employee by ID)
+### 2) استعراض موظف محدد بالمعرف (Get Employee by ID)
 - **المسار:** `GET /api/v1/employees/:id`
 - **الوصف:** استرجاع بيانات موظف محدد وتعييناته الحالية في المشاريع.
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)
@@ -229,16 +233,25 @@
   ```json
   {
     "id": "e0000000-0000-0000-0000-000000000001",
-    "name": "أحمد محمود",
-    "code": "EMP-001",
-    "role": "worker",
-    "nationalId": "29001011234567",
+    "identityNumber": "2456789012",
+    "nationalId": "2456789012",
+    "identityType": "iqama",
+    "identityExpiryDate": "2027-08-16",
+    "nationality": "Egyptian",
+    "name": "محمود عبد الفتاح",
+    "code": "EMP-IQM-01",
+    "roleType": "worker",
+    "primaryBranchId": "b0000000-0000-0000-0000-000000000001",
     "branchName": "فرع 1",
+    "dailyWage": 250.0,
+    "isActive": true,
     "assignments": [
       {
         "projectId": "f0000000-0000-0000-0000-000000000001",
         "projectName": "مشروع 1",
-        "assignedDate": "2026-01-01"
+        "projectCode": "PRJ-MEV",
+        "assignedRole": "worker",
+        "startDate": "2026-01-01"
       }
     ]
   }
@@ -247,23 +260,32 @@
   - `200 OK`: تم العثور على الموظف.
   - `404 Not Found`: الموظف غير موجود (`EMPLOYEE_NOT_FOUND`).
 
-### 3) إضافة موظف جديد (Create Employee)
+### 3) البحث الفوري عن موظف برقم الهوية أو الإقامة (Get Employee by Identity Number)
+- **المسار:** `GET /api/v1/employees/by-identity/:identityNumber`
+- **الوصف:** بحث فوري مباشر برقم الهوية الوطنية أو الإقامة أو جواز السفر مع إرجاع التعيينات النشطة.
+- **المصادقة:** إلزامي (`Bearer <TOKEN>`)
+- **الـ Response الناجح (200 OK):** نفس كائن الموظف مع `assignments`.
+- **رموز الاستجابة والأخطاء:**
+  - `200 OK`: تم العثور على الموظف.
+  - `404 Not Found`: لم يتم العثور على موظف برقم الهوية المعطى.
+
+### 4) إضافة موظف جديد (Create Employee)
 - **المسار:** `POST /api/v1/employees`
-- **الوصف:** إضافة موظف أو عامل جديد مع فحص فرادة الكود والرقم القومي.
+- **الوصف:** إضافة موظف جديد مع دعم حقول التوطين والدول (الهوية، الإقامة، الجواز، تاريخ الانتهاء، الجنسية).
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)
 - **الـ Request Body:**
   ```json
   {
-    "branchId": "b0000000-0000-0000-0000-000000000001",
-    "name": "محمد علي",
-    "code": "EMP-002",
-    "role": "worker",
-    "nationalId": "29501011234568",
-    "phone": "01098765432",
-    "isDirectHire": true,
-    "dailyWage": 300,
-    "contractorName": null,
-    "isActive": true
+    "name": "محمود عبد الفتاح",
+    "identityNumber": "2456789012",
+    "identityType": "national_id | iqama | passport",
+    "identityExpiryDate": "2027-08-16",
+    "nationality": "Egyptian",
+    "roleType": "worker",
+    "dailyWage": 250,
+    "primaryBranchId": "b0000000-0000-0000-0000-000000000001",
+    "code": "EMP-IQM-01",
+    "phone": "0509876543"
   }
   ```
 - **الـ Response الناجح (201 Created):**
@@ -271,19 +293,23 @@
   {
     "id": "uuid-generated",
     "companyId": "c0000000-0000-0000-0000-000000000001",
-    "name": "محمد علي",
-    "code": "EMP-002",
-    "role": "worker",
+    "identityNumber": "2456789012",
+    "identityType": "iqama",
+    "identityExpiryDate": "2027-08-16",
+    "nationality": "Egyptian",
+    "name": "محمود عبد الفتاح",
+    "roleType": "worker",
     "isActive": true
   }
   ```
 - **رموز الاستجابة والأخطاء:**
   - `201 Created`: تم إنشاء الموظف بنجاح.
-  - `409 Conflict`: كود الموظف أو الرقم القومي مكرر (`EMPLOYEE_CODE_DUPLICATE` أو `IDENTITY_DUPLICATE`).
+  - `400 Bad Request`: بيانات ناقصة أو نوع هوية غير مدعوم.
+  - `409 Conflict`: رقم الهوية مكرر في الشركة (`IDENTITY_DUPLICATE`).
 
-### 4) تعديل بيانات موظف (Update Employee)
+### 5) تعديل بيانات موظف (Update Employee)
 - **المسار:** `PATCH /api/v1/employees/:id`
-- **الوصف:** تعديل بيانات موظف مع فحص فرادة الرقم القومي / رقم الهوية.
+- **الوصف:** تعديل بيانات موظف مع التحقق من عدم تكرار رقم الهوية.
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)
 - **الـ Request Body:** اختياري (نفس حقول الإنشاء)
 - **الـ Response الناجح (200 OK):**
@@ -291,9 +317,9 @@
   {
     "id": "uuid",
     "companyId": "uuid",
-    "name": "أحمد محمود المعدل",
-    "nationalId": "29001011234567",
-    "dailyWage": 320,
+    "name": "محمود عبد الفتاح المعدل",
+    "identityNumber": "2456789012",
+    "dailyWage": 270,
     "isActive": true
   }
   ```
@@ -302,7 +328,7 @@
   - `404 Not Found`: الموظف غير موجود (`EMPLOYEE_NOT_FOUND`).
   - `409 Conflict`: رقم الهوية مكرر لموظف آخر (`IDENTITY_DUPLICATE`).
 
-### 5) إلغاء تفعيل / حذف ناعم لموظف (Soft Delete / Deactivate Employee)
+### 6) إلغاء تفعيل / حذف ناعم لموظف (Soft Delete / Deactivate Employee)
 - **المسار:** `DELETE /api/v1/employees/:id`
 - **الوصف:** تعطيل حساب الموظف (`isActive = false`) مع الحفاظ على سجلات الإنتاجية والحضور المرتبطة به.
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)

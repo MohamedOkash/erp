@@ -183,7 +183,7 @@ export class AttendanceService {
                to_char(a.check_in_time, 'HH24:MI') AS check_in_time,
                to_char(a.check_out_time, 'HH24:MI') AS check_out_time,
                a.overtime_hours, a.recorded_by, a.notes, a.created_at, a.updated_at,
-               e.name AS employee_name, e.national_id,
+               e.name AS employee_name, e.identity_number AS national_id,
                b.name AS branch_name,
                p.name AS project_name,
                ast.name AS status_name, ast.code AS status_code
@@ -221,7 +221,7 @@ export class AttendanceService {
                to_char(a.check_in_time, 'HH24:MI') AS check_in_time,
                to_char(a.check_out_time, 'HH24:MI') AS check_out_time,
                a.overtime_hours, a.recorded_by, a.notes, a.created_at, a.updated_at,
-               e.name AS employee_name, e.national_id,
+               e.name AS employee_name, e.identity_number AS national_id,
                b.name AS branch_name,
                p.name AS project_name,
                ast.name AS status_name, ast.code AS status_code

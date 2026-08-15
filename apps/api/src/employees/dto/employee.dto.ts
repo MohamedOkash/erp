@@ -9,12 +9,18 @@ export class EmployeeAssignmentDto {
 export class EmployeeResponseDto {
   id: string;
   companyId: string;
-  nationalId: string;
+  identityNumber: string;
+  nationalId?: string;
+  identityType?: string;
+  identityExpiryDate?: string;
+  nationality?: string;
   name: string;
   code: string;
   phone: string;
   roleType: string;
+  role?: string;
   primaryBranchId: string;
+  branchId?: string;
   branchName?: string;
   dailyWage: number;
   hireDate: string;

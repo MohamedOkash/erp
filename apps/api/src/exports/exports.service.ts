@@ -13,7 +13,7 @@ export class ExportsService {
   async exportEmployeesXlsx(companyId: string): Promise<Buffer> {
     return this.db.withTenantTransaction(companyId, async (client) => {
       const employeesRes = await client.query(
-        `SELECT e.name, e.national_id, e.phone, b.name AS branch_name, e.daily_wage
+        `SELECT e.name, e.identity_number AS national_id, e.phone, b.name AS branch_name, e.daily_wage
          FROM employees e
          LEFT JOIN branches b ON e.primary_branch_id = b.id AND e.company_id = b.company_id
          WHERE e.company_id = $1
@@ -276,7 +276,7 @@ export class ExportsService {
       const sql = `
         SELECT to_char(a.date, 'YYYY-MM-DD') AS date_str,
                e.name AS employee_name,
-               e.national_id,
+               e.identity_number AS national_id,
                b.name AS branch_name,
                ast.name AS status_name,
                to_char(a.check_in_time, 'HH24:MI') AS check_in,
