@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { EmployeesPage } from './pages/employees/EmployeesPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 import { BoqProgressPage } from './pages/boq/BoqProgressPage';
+import { ProductionPage } from './pages/production/ProductionPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 
@@ -26,6 +27,7 @@ export const App: React.FC = () => {
         <Route path="/employees" element={<EmployeesPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/boq" element={<BoqProgressPage />} />
+        <Route path="/production" element={<ProductionPage />} />
       </Route>
 
       {/* Fallback Redirect */}
