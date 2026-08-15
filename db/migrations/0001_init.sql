@@ -3,8 +3,7 @@
 -- Description: Unified Database Schema for Construction ERP (Section 5 HANDOFF.md)
 -- ============================================================================
 
--- Enable pgcrypto for UUID generation
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+-- gen_random_uuid() is built-in in PostgreSQL 13+
 
 -- ============================================================================
 -- 1. Helper Trigger Functions
@@ -1132,7 +1131,9 @@ SELECT
 FROM boq_items bi
 JOIN boq b ON bi.boq_id = b.id
 JOIN work_items wi ON bi.work_item_id = wi.id
-JOIN units u ON bi.unit_id = u.id;
+JOIN units u ON bi.unit_id = u.id
+LEFT JOIN approved_production ap ON bi.company_id = ap.company_id AND b.project_id = ap.project_id AND bi.work_item_id = ap.work_item_id
+LEFT JOIN approved_corrections ac ON bi.company_id = ac.company_id AND b.project_id = ac.project_id AND bi.work_item_id = ac.work_item_id;
 
 -- ============================================================================
 -- 6. Core Seed Data (Section 2 & Section 5)
