@@ -6,7 +6,9 @@ import { EmployeesModule } from './employees/employees.module';
 import { ProductionModule } from './production/production.module';
 import { ImportsModule } from './imports/imports.module';
 import { ExportsModule } from './exports/exports.module';
+import { AttendanceModule } from './attendance/attendance.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AuthModule,
     EmployeesModule,
     ProductionModule,
+    AttendanceModule,
     ImportsModule,
     ExportsModule,
   ],
