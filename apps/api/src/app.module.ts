@@ -4,6 +4,8 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
 import { ProductionModule } from './production/production.module';
+import { ImportsModule } from './imports/imports.module';
+import { ExportsModule } from './exports/exports.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -12,6 +14,8 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AuthModule,
     EmployeesModule,
     ProductionModule,
+    ImportsModule,
+    ExportsModule,
   ],
   providers: [
     {
@@ -21,4 +25,5 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
   ],
 })
 export class AppModule {}
+
 
