@@ -56,6 +56,80 @@ export class AuthService {
   }
 
   /**
+   * Authenticate user with username and password, create session and return tokens
+   */
+  async login(
+    username: string,
+    password: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    if (!username || !password) {
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Username and password are required',
+      });
+    }
+
+    const userRes = await this.db.query(
+      `SELECT id, company_id, username, email, full_name, password_hash, is_active
+       FROM users
+       WHERE username = $1`,
+      [username.trim()],
+    );
+
+    if (userRes.rows.length === 0) {
+      throw new UnauthorizedException({
+        code: 'USER_NOT_FOUND',
+        message: 'User not found',
+      });
+    }
+
+    const user = userRes.rows[0];
+
+    const isMatch = await this.comparePassword(password, user.password_hash);
+    if (!isMatch) {
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid credentials',
+      });
+    }
+
+    if (!user.is_active) {
+      throw new UnauthorizedException({
+        code: 'USER_INACTIVE',
+        message: 'User account is deactivated',
+      });
+    }
+
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + this.sessionDurationHours * 60 * 60 * 1000);
+
+    await this.db.query(
+      `INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [user.id, token, expiresAt, ipAddress || null, userAgent || null],
+    );
+
+    await this.db.query(
+      `UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [user.id],
+    );
+
+    return {
+      token,
+      expiresAt: expiresAt.toISOString(),
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.full_name,
+        email: user.email,
+      },
+      companyId: user.company_id,
+    };
+  }
+
+  /**
    * Validate session token, resolve active user, tenant company_id, roles and permissions
    */
   async validateSession(token: string): Promise<AuthenticatedUser> {
