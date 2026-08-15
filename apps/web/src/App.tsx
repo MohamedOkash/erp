@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { EmployeesPage } from './pages/employees/EmployeesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 
@@ -20,6 +21,7 @@ export const App: React.FC = () => {
         }
       >
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/employees" element={<EmployeesPage />} />
       </Route>
 
       {/* Fallback Redirect */}
