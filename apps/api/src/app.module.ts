@@ -3,6 +3,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
+import { ProductionModule } from './production/production.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -10,6 +11,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     DatabaseModule,
     AuthModule,
     EmployeesModule,
+    ProductionModule,
   ],
   providers: [
     {
@@ -19,3 +21,4 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
   ],
 })
 export class AppModule {}
+
