@@ -7,6 +7,7 @@ import { ProductionModule } from './production/production.module';
 import { ImportsModule } from './imports/imports.module';
 import { ExportsModule } from './exports/exports.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 
@@ -17,6 +18,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     EmployeesModule,
     ProductionModule,
     AttendanceModule,
+    NotificationsModule,
     ImportsModule,
     ExportsModule,
   ],
