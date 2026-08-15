@@ -11,6 +11,9 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { CostsModule } from './costs/costs.module';
+import { IncentivesModule } from './incentives/incentives.module';
+import { DocumentsModule } from './documents/documents.module';
+import { ReportsModule } from './reports/reports.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -24,6 +27,9 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     NotificationsModule,
     AlertsModule,
     CostsModule,
+    IncentivesModule,
+    DocumentsModule,
+    ReportsModule,
     ImportsModule,
     ExportsModule,
   ],
