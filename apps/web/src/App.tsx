@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { EmployeesPage } from './pages/employees/EmployeesPage';
+import { ProjectsPage } from './pages/projects/ProjectsPage';
+import { BoqProgressPage } from './pages/boq/BoqProgressPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 
@@ -22,6 +24,8 @@ export const App: React.FC = () => {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/employees" element={<EmployeesPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/boq" element={<BoqProgressPage />} />
       </Route>
 
       {/* Fallback Redirect */}
