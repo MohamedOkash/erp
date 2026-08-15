@@ -598,7 +598,311 @@ export class ImportsService {
   }
 
   /**
-   * Commit staged valid rows to employees or production table
+   * Upload & stage project BOQ XLSX file
+   * Section 7 Item 2 of HANDOFF.md
+   */
+  async uploadBoqXlsx(
+    companyId: string,
+    file: Express.Multer.File,
+  ) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('No file provided or file buffer is empty');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as any);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Worksheet not found in Excel file');
+    }
+
+    // Auto-detect columns from Row 1
+    const headerRow = worksheet.getRow(1);
+    const colMap: { [key: string]: number } = {};
+
+    headerRow.eachCell((cell, colNumber) => {
+      const headerVal = cell.text ? cell.text.trim().toLowerCase() : '';
+      if (!headerVal) return;
+
+      if (['project', 'المشروع', 'مشروع', 'project_name'].includes(headerVal)) {
+        colMap['project'] = colNumber;
+      } else if (['branch', 'الفرع', 'فرع', 'branch_name'].includes(headerVal)) {
+        colMap['branch'] = colNumber;
+      } else if (['area', 'المنطقة', 'منطقة', 'work_area', 'work_area_name'].includes(headerVal)) {
+        colMap['area'] = colNumber;
+      } else if (['item', 'البند', 'بند', 'work_item', 'work_item_name'].includes(headerVal)) {
+        colMap['item'] = colNumber;
+      } else if (['quantity', 'الكمية', 'كمية', 'total_quantity', 'qty'].includes(headerVal)) {
+        colMap['quantity'] = colNumber;
+      } else if (['rate', 'السعر', 'سعر', 'unit_rate', 'price'].includes(headerVal)) {
+        colMap['rate'] = colNumber;
+      }
+    });
+
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      // 1. Fetch DB entities for FK matching
+      const branchesRes = await client.query(
+        `SELECT id, name, code FROM branches WHERE company_id = $1`,
+        [companyId],
+      );
+      const branchMap = new Map<string, string>();
+      for (const b of branchesRes.rows) {
+        branchMap.set(b.name.trim().toLowerCase(), b.id);
+        if (b.code) branchMap.set(b.code.trim().toLowerCase(), b.id);
+      }
+
+      const projectsRes = await client.query(
+        `SELECT id, name, code, branch_id FROM projects WHERE company_id = $1`,
+        [companyId],
+      );
+      const projectMap = new Map<string, { id: string; branchId: string }>();
+      for (const p of projectsRes.rows) {
+        projectMap.set(p.name.trim().toLowerCase(), { id: p.id, branchId: p.branch_id });
+        if (p.code) projectMap.set(p.code.trim().toLowerCase(), { id: p.id, branchId: p.branch_id });
+      }
+
+      const itemsRes = await client.query(
+        `SELECT id, name, code, unit_id FROM work_items WHERE company_id = $1`,
+        [companyId],
+      );
+      const itemMap = new Map<string, { id: string; unitId: string }>();
+      for (const it of itemsRes.rows) {
+        itemMap.set(it.name.trim().toLowerCase(), { id: it.id, unitId: it.unit_id });
+        if (it.code) itemMap.set(it.code.trim().toLowerCase(), { id: it.id, unitId: it.unit_id });
+      }
+
+      const areasRes = await client.query(
+        `SELECT id, name, code, project_id FROM work_areas WHERE company_id = $1`,
+        [companyId],
+      );
+      const areaMap = new Map<string, { id: string; projectId: string }>();
+      for (const a of areasRes.rows) {
+        areaMap.set(`${a.project_id}_${a.name.trim().toLowerCase()}`, { id: a.id, projectId: a.project_id });
+        if (a.code) areaMap.set(`${a.project_id}_${a.code.trim().toLowerCase()}`, { id: a.id, projectId: a.project_id });
+      }
+
+      // Fetch existing BOQ items for DB duplicate detection
+      const existingBoqRes = await client.query(
+        `SELECT b.project_id, bi.work_item_id, COALESCE(bia.work_area_id::text, '') AS work_area_id
+         FROM boq_items bi
+         JOIN boq b ON bi.boq_id = b.id AND bi.company_id = b.company_id
+         LEFT JOIN boq_item_areas bia ON bi.id = bia.boq_item_id AND bi.company_id = bia.company_id
+         WHERE bi.company_id = $1`,
+        [companyId],
+      );
+      const dbBoqKeys = new Set<string>();
+      for (const eb of existingBoqRes.rows) {
+        dbBoqKeys.add(`${eb.project_id}|${eb.work_item_id}|${eb.work_area_id}`);
+      }
+
+      const seenFileBoqKeys = new Set<string>();
+      const parsedRows: any[] = [];
+      const rowDbRecords: any[] = [];
+
+      const rowCount = worksheet.rowCount;
+
+      for (let r = 2; r <= rowCount; r++) {
+        const row = worksheet.getRow(r);
+        const projectVal = colMap['project'] ? row.getCell(colMap['project']).text?.trim() : null;
+        const branchVal = colMap['branch'] ? row.getCell(colMap['branch']).text?.trim() : null;
+        const areaVal = colMap['area'] ? row.getCell(colMap['area']).text?.trim() : null;
+        const itemVal = colMap['item'] ? row.getCell(colMap['item']).text?.trim() : null;
+        const quantityVal = colMap['quantity'] ? row.getCell(colMap['quantity']).value : null;
+        const rateVal = colMap['rate'] ? row.getCell(colMap['rate']).value : 0;
+
+        if (!projectVal && !branchVal && !itemVal && quantityVal === null) {
+          continue;
+        }
+
+        const errors: string[] = [];
+        let status: 'valid' | 'duplicate' | 'invalid' = 'valid';
+
+        // 1. Validate Project
+        let projectId: string | null = null;
+        if (!projectVal) {
+          errors.push('المشروع حقل إلزامي');
+        } else {
+          const projObj = projectMap.get(projectVal.toLowerCase());
+          if (!projObj) {
+            errors.push('المشروع غير موجود');
+          } else {
+            projectId = projObj.id;
+          }
+        }
+
+        // 2. Validate Branch
+        let branchId: string | null = null;
+        if (!branchVal) {
+          errors.push('الفرع حقل إلزامي');
+        } else {
+          branchId = branchMap.get(branchVal.toLowerCase()) || null;
+          if (!branchId) {
+            errors.push('الفرع غير موجود');
+          }
+        }
+
+        // 3. Validate Work Item
+        let workItemId: string | null = null;
+        let unitId: string | null = null;
+        if (!itemVal) {
+          errors.push('البند حقل إلزامي');
+        } else {
+          const itemObj = itemMap.get(itemVal.toLowerCase());
+          if (!itemObj) {
+            errors.push('البند غير موجود');
+          } else {
+            workItemId = itemObj.id;
+            unitId = itemObj.unitId;
+          }
+        }
+
+        // 4. Validate Area (optional)
+        let workAreaId: string | null = null;
+        if (areaVal && projectId) {
+          const areaObj = areaMap.get(`${projectId}_${areaVal.toLowerCase()}`);
+          if (!areaObj) {
+            errors.push('المنطقة غير موجودة في هذا المشروع');
+          } else {
+            workAreaId = areaObj.id;
+          }
+        }
+
+        // 5. Validate Quantity (> 0)
+        const qtyNum = parseFloat(String(quantityVal ?? ''));
+        if (quantityVal === null || quantityVal === undefined || isNaN(qtyNum) || qtyNum <= 0) {
+          errors.push('الكمية يجب أن تكون أكبر من الصفر');
+        }
+
+        const rateNum = parseFloat(String(rateVal || '0')) || 0;
+
+        // 6. Duplicate Check
+        if (errors.length === 0 && projectId && workItemId) {
+          const fileKey = `${projectId}|${workItemId}|${workAreaId || ''}`;
+          if (dbBoqKeys.has(fileKey)) {
+            status = 'duplicate';
+            errors.push('بند المقايسة مكرر في النظام');
+          } else if (seenFileBoqKeys.has(fileKey)) {
+            status = 'duplicate';
+            errors.push('بند المقايسة مكرر داخل نفس الملف');
+          } else {
+            seenFileBoqKeys.add(fileKey);
+          }
+        }
+
+        if (errors.length > 0 && status !== 'duplicate') {
+          status = 'invalid';
+        }
+
+        const parsedData = {
+          projectId,
+          branchId,
+          workItemId,
+          unitId,
+          workAreaId,
+          quantity: isNaN(qtyNum) ? 0 : qtyNum,
+          rate: rateNum,
+        };
+
+        const rawData: any = {};
+        row.eachCell((cell, colNumber) => {
+          rawData[`col_${colNumber}`] = cell.text;
+        });
+
+        parsedRows.push({
+          rowIndex: r,
+          project: projectVal,
+          branch: branchVal,
+          area: areaVal,
+          item: itemVal,
+          quantity: isNaN(qtyNum) ? quantityVal : qtyNum,
+          rate: rateNum,
+          status,
+          errors,
+        });
+
+        rowDbRecords.push({
+          rowIndex: r,
+          rawData,
+          parsedData,
+          dbStatus: status === 'valid' ? 'valid' : 'error',
+          errors,
+        });
+      }
+
+      const validCount = parsedRows.filter((r) => r.status === 'valid').length;
+      const duplicateCount = parsedRows.filter((r) => r.status === 'duplicate').length;
+      const invalidCount = parsedRows.filter((r) => r.status === 'invalid').length;
+      const totalCount = parsedRows.length;
+
+      const summary: ImportSummary = {
+        total: totalCount,
+        valid: validCount,
+        duplicate: duplicateCount,
+        invalid: invalidCount,
+      };
+
+      // Create record in import_jobs (status = 'staged')
+      const jobRes = await client.query(
+        `INSERT INTO import_jobs (
+          company_id, job_type, file_name, status, total_rows, valid_rows, error_rows
+        ) VALUES ($1, 'boq', $2, 'staged', $3, $4, $5)
+        RETURNING id`,
+        [
+          companyId,
+          file.originalname || 'boq.xlsx',
+          totalCount,
+          validCount,
+          duplicateCount + invalidCount,
+        ],
+      );
+
+      const jobId = jobRes.rows[0].id;
+
+      // Insert staging rows & row errors
+      for (const item of rowDbRecords) {
+        const stagingRes = await client.query(
+          `INSERT INTO import_staging_rows (
+            company_id, import_job_id, row_index, raw_data, parsed_data, status
+          ) VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING id`,
+          [
+            companyId,
+            jobId,
+            item.rowIndex,
+            JSON.stringify(item.rawData),
+            JSON.stringify(item.parsedData),
+            item.dbStatus,
+          ],
+        );
+
+        const stagingId = stagingRes.rows[0].id;
+
+        for (const err of item.errors) {
+          const errCode =
+            item.dbStatus === 'error' && err.includes('مكرر')
+              ? 'DUPLICATE_BOQ_ITEM'
+              : 'INVALID_DATA';
+
+          await client.query(
+            `INSERT INTO import_row_errors (
+              company_id, staging_row_id, column_name, error_code, error_message
+            ) VALUES ($1, $2, 'boq', $3, $4)`,
+            [companyId, stagingId, errCode, err],
+          );
+        }
+      }
+
+      return {
+        jobId,
+        summary,
+        rows: parsedRows,
+      };
+    });
+  }
+
+  /**
+   * Commit staged valid rows to employees, production, or boq table
    * Section 7 Item 2 of HANDOFF.md
    */
   async commitImport(companyId: string, jobId: string) {
@@ -668,6 +972,68 @@ export class ImportsService {
               p.supervisorId,
             ],
           );
+        }
+      } else if (job.job_type === 'boq') {
+        // Group valid rows by projectId
+        const rowsByProject = new Map<string, any[]>();
+        for (const row of validRows) {
+          const p = row.parsed_data;
+          if (!rowsByProject.has(p.projectId)) {
+            rowsByProject.set(p.projectId, []);
+          }
+          rowsByProject.get(p.projectId).push(p);
+        }
+
+        for (const [projectId, pRows] of rowsByProject.entries()) {
+          // Check if BOQ exists for this project
+          let boqId: string;
+          const boqRes = await client.query(
+            `SELECT id FROM boq WHERE company_id = $1 AND project_id = $2 ORDER BY created_at ASC LIMIT 1`,
+            [companyId, projectId],
+          );
+
+          if (boqRes.rows.length > 0) {
+            boqId = boqRes.rows[0].id;
+          } else {
+            const insertBoqRes = await client.query(
+              `INSERT INTO boq (company_id, project_id, name, code, status)
+               VALUES ($1, $2, 'مقايسة المشروع', 'BOQ-01', 'active')
+               RETURNING id`,
+              [companyId, projectId],
+            );
+            boqId = insertBoqRes.rows[0].id;
+          }
+
+          for (const item of pRows) {
+            const hasAreaSplit = !!item.workAreaId;
+            const insertItemRes = await client.query(
+              `INSERT INTO boq_items (
+                company_id, boq_id, work_item_id, unit_id, total_quantity,
+                unit_rate, has_area_split
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+              RETURNING id`,
+              [
+                companyId,
+                boqId,
+                item.workItemId,
+                item.unitId,
+                item.quantity,
+                item.rate || 0,
+                hasAreaSplit,
+              ],
+            );
+
+            const boqItemId = insertItemRes.rows[0].id;
+
+            if (item.workAreaId) {
+              await client.query(
+                `INSERT INTO boq_item_areas (
+                  company_id, boq_item_id, work_area_id, quantity
+                ) VALUES ($1, $2, $3, $4)`,
+                [companyId, boqItemId, item.workAreaId, item.quantity],
+              );
+            }
+          }
         }
       }
 

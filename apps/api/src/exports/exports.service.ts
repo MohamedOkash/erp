@@ -149,5 +149,94 @@ export class ExportsService {
       return Buffer.from(buffer);
     });
   }
+
+  /**
+   * Export BOQ items to XLSX using v_boq_progress view (R4)
+   * Columns: Project, Branch, Area, Item, Unit, Original Qty, Done Qty, Remaining, Completion%, Rate
+   */
+  async exportBoqXlsx(
+    companyId: string,
+    query?: { projectId?: string; branchId?: string },
+  ): Promise<Buffer> {
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      const conditions: string[] = ['vp.company_id = $1'];
+      const params: any[] = [companyId];
+      let paramIdx = 2;
+
+      if (query?.projectId) {
+        conditions.push(`vp.project_id = $${paramIdx++}`);
+        params.push(query.projectId);
+      }
+      if (query?.branchId) {
+        conditions.push(`p.branch_id = $${paramIdx++}`);
+        params.push(query.branchId);
+      }
+
+      const sql = `
+        SELECT p.name AS project_name,
+               b.name AS branch_name,
+               COALESCE(area_agg.area_names, '') AS area_name,
+               vp.work_item_name,
+               vp.unit_symbol,
+               vp.boq_quantity,
+               vp.official_progress_quantity,
+               vp.remaining_quantity,
+               vp.progress_percentage,
+               vp.unit_rate
+        FROM v_boq_progress vp
+        JOIN projects p ON vp.project_id = p.id AND vp.company_id = p.company_id
+        JOIN branches b ON p.branch_id = b.id AND p.company_id = b.company_id
+        LEFT JOIN (
+          SELECT bia.boq_item_id, string_agg(wa.name, ', ') AS area_names
+          FROM boq_item_areas bia
+          JOIN work_areas wa ON bia.work_area_id = wa.id AND bia.company_id = wa.company_id
+          WHERE bia.company_id = $1
+          GROUP BY bia.boq_item_id
+        ) area_agg ON vp.boq_item_id = area_agg.boq_item_id
+        WHERE ${conditions.join(' AND ')}
+        ORDER BY p.name ASC, vp.work_item_name ASC
+      `;
+
+      const boqRes = await client.query(sql, params);
+
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('BOQ');
+
+      worksheet.columns = [
+        { header: 'Project', key: 'project', width: 20 },
+        { header: 'Branch', key: 'branch', width: 18 },
+        { header: 'Area', key: 'area', width: 18 },
+        { header: 'Item', key: 'item', width: 22 },
+        { header: 'Unit', key: 'unit', width: 10 },
+        { header: 'Original Qty', key: 'originalQty', width: 15 },
+        { header: 'Done Qty', key: 'doneQty', width: 15 },
+        { header: 'Remaining', key: 'remaining', width: 15 },
+        { header: 'Completion%', key: 'completionPercent', width: 15 },
+        { header: 'Rate', key: 'rate', width: 12 },
+      ];
+
+      worksheet.getRow(1).font = { bold: true };
+
+      for (const row of boqRes.rows) {
+        worksheet.addRow({
+          project: row.project_name || '',
+          branch: row.branch_name || '',
+          area: row.area_name || '',
+          item: row.work_item_name || '',
+          unit: row.unit_symbol || '',
+          originalQty: parseFloat(row.boq_quantity || '0'),
+          doneQty: parseFloat(row.official_progress_quantity || '0'),
+          remaining: parseFloat(row.remaining_quantity || '0'),
+          completionPercent: `${parseFloat(row.progress_percentage || '0').toFixed(2)}%`,
+          rate: parseFloat(row.unit_rate || '0'),
+        });
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      return Buffer.from(buffer);
+    });
+  }
 }
+
 

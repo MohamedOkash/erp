@@ -61,5 +61,29 @@ export class ExportsController {
 
     res.end(buffer);
   }
+
+  /**
+   * Export BOQ items to XLSX
+   * Route: GET /api/v1/exports/boq.xlsx
+   */
+  @Get('boq.xlsx')
+  async exportBoq(
+    @Res() res: Response,
+    @CurrentUser() user: AuthenticatedUser,
+    @Headers('x-company-id') headerCompanyId?: string,
+  ) {
+    const companyId = user?.companyId || headerCompanyId;
+    const buffer = await this.exportsService.exportBoqXlsx(companyId);
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="boq.xlsx"',
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
+  }
 }
+
 

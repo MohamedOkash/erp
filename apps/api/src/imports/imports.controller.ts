@@ -53,7 +53,24 @@ export class ImportsController {
   }
 
   /**
-   * Commit valid rows from staging to employees or production table
+   * Upload & stage project BOQ XLSX file
+   * Route: POST /api/v1/imports/boq/upload
+   */
+  @Post('boq/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadBoq(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
+  ) {
+    const companyId =
+      req.user?.companyId ||
+      req.headers['x-company-id'] ||
+      req.headers['x-tenant-id'];
+    return this.importsService.uploadBoqXlsx(companyId, file);
+  }
+
+  /**
+   * Commit valid rows from staging to employees, production, or boq table
    * Route: POST /api/v1/imports/:jobId/commit
    */
   @Post(':jobId/commit')
@@ -68,4 +85,5 @@ export class ImportsController {
     return this.importsService.commitImport(companyId, jobId);
   }
 }
+
 
