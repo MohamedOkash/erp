@@ -38,4 +38,28 @@ export class ExportsController {
 
     res.end(buffer);
   }
+
+  /**
+   * Export production records to XLSX
+   * Route: GET /api/v1/exports/production.xlsx
+   */
+  @Get('production.xlsx')
+  async exportProduction(
+    @Res() res: Response,
+    @CurrentUser() user: AuthenticatedUser,
+    @Headers('x-company-id') headerCompanyId?: string,
+  ) {
+    const companyId = user?.companyId || headerCompanyId;
+    const buffer = await this.exportsService.exportProductionXlsx(companyId);
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="production.xlsx"',
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
+  }
 }
+
