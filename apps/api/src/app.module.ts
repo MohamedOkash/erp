@@ -10,6 +10,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AttendanceModule } from './attendance/attendance.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AlertsModule } from './alerts/alerts.module';
+import { CostsModule } from './costs/costs.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -22,6 +23,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AttendanceModule,
     NotificationsModule,
     AlertsModule,
+    CostsModule,
     ImportsModule,
     ExportsModule,
   ],
