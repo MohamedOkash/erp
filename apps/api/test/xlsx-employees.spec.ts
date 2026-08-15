@@ -12,6 +12,7 @@ describe('XLSX Import/Export for Employees (Task 6)', () => {
   let app: INestApplication;
   let pglite: PGlite;
   const companyId = 'c0000000-0000-0000-0000-000000000001';
+  let authToken: string;
 
   beforeAll(async () => {
     pglite = new PGlite();
@@ -24,28 +25,26 @@ describe('XLSX Import/Export for Employees (Task 6)', () => {
     await pglite.exec(initSql);
     await pglite.exec(seedSql);
 
+    // Create session token for authentication
+    authToken = 'test-token-employees-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [authToken],
+    );
+
     const mockDbService = {
       query: async (text: string, params?: any[]) => {
-        try {
-          const res = await pglite.query(text, params || []);
-          return { rows: res.rows, rowCount: res.rows.length } as any;
-        } catch (e) {
-          console.error('MOCK QUERY ERROR:', text, params, e);
-          throw e;
-        }
+        const res = await pglite.query(text, params || []);
+        return { rows: res.rows, rowCount: res.rows.length } as any;
       },
       withTenantTransaction: async (tenantCompanyId: string, op: any) => {
         return pglite.transaction(async (tx) => {
           await tx.query("SELECT set_config('app.company_id', $1, true)", [tenantCompanyId]);
           const clientShim = {
             query: async (t: string, p?: any[]) => {
-              try {
-                const r = await tx.query(t, p || []);
-                return { rows: r.rows, rowCount: r.rows.length };
-              } catch (e) {
-                console.error('MOCK TX QUERY ERROR:', t, p, e);
-                throw e;
-              }
+              const r = await tx.query(t, p || []);
+              return { rows: r.rows, rowCount: r.rows.length };
             },
           };
           return op(clientShim);
@@ -81,7 +80,7 @@ describe('XLSX Import/Export for Employees (Task 6)', () => {
       }),
     );
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (app) {
@@ -110,7 +109,7 @@ describe('XLSX Import/Export for Employees (Task 6)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/imports/employees/upload')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .attach('file', Buffer.from(buffer), 'employees.xlsx')
       .expect(201);
 
@@ -135,7 +134,7 @@ describe('XLSX Import/Export for Employees (Task 6)', () => {
   it('test 2: should export valid XLSX file with required columns and exactly 25 employee rows from seed', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/exports/employees.xlsx')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .buffer(true)
       .parse((res, callback) => {
         const chunks: Buffer[] = [];
@@ -169,5 +168,15 @@ describe('XLSX Import/Export for Employees (Task 6)', () => {
     // Verify Data Row Count: exactly 25 employee rows from seed
     const dataRowsCount = exportedSheet.rowCount - 1;
     expect(dataRowsCount).toBe(25);
+  });
+
+  // Test 3: محاولة تصدير بـ x-company-id header بس (من غير token) → توقع 401 (الثغرة اتقفلت)
+  it('test 3: should reject export request with 401 when only x-company-id header is sent without auth token', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/exports/employees.xlsx')
+      .set('x-company-id', companyId)
+      .expect(401);
+
+    expect(response.body.code).toBe('MISSING_TOKEN');
   });
 });

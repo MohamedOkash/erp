@@ -12,6 +12,7 @@ describe('XLSX Import/Export for BOQ (Task 8)', () => {
   let app: INestApplication;
   let pglite: PGlite;
   const companyId = 'c0000000-0000-0000-0000-000000000001';
+  let authToken: string;
 
   beforeAll(async () => {
     pglite = new PGlite();
@@ -23,6 +24,14 @@ describe('XLSX Import/Export for BOQ (Task 8)', () => {
 
     await pglite.exec(initSql);
     await pglite.exec(seedSql);
+
+    // Create session token for authentication
+    authToken = 'test-token-xlsx-boq-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [authToken],
+    );
 
     const mockDbService = {
       query: async (text: string, params?: any[]) => {
@@ -71,7 +80,7 @@ describe('XLSX Import/Export for BOQ (Task 8)', () => {
       }),
     );
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (app) {
@@ -79,34 +88,27 @@ describe('XLSX Import/Export for BOQ (Task 8)', () => {
     }
   });
 
-  // Test 1: رفع ملف Excel فيه 3 صفوف (1 صالح، 1 مشروع غير موجود، 1 كمية سالبة) → توقع staging + summary دقيق + لا إنشاء في boq_items
+  // Test 1: رفع ملف Excel فيه 3 صفوف (1 صالح، 1 مشروع غير موجود، 1 كمية سالبة) → توقع staging فقط + summary دقيق + لا إضافة في boq_items
   it('test 1: should upload and stage 3 BOQ rows with exact summary and zero additions to boq_items table', async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('BOQ');
 
     // Row 1: Headers
-    worksheet.addRow([
-      'المشروع',
-      'الفرع',
-      'المنطقة',
-      'البند',
-      'الكمية',
-      'السعر',
-    ]);
+    worksheet.addRow(['المشروع', 'الفرع', 'المنطقة', 'البند', 'الكمية', 'الفئة']);
 
-    // Row 2: Valid BOQ row (New unique work area/item combination for project 1)
+    // Row 2: Valid BOQ row
     worksheet.addRow([
       'مشروع 1',
       'فرع 1',
       'منطقة 1',
-      'بند 5',
-      500,
+      'بند 1',
+      100,
       150,
     ]);
 
     // Row 3: Nonexistent project
     worksheet.addRow([
-      'مشروع غير موجود وهمي',
+      'مشروع وهمي غير موجود',
       'فرع 1',
       'منطقة 1',
       'بند 1',
@@ -128,7 +130,7 @@ describe('XLSX Import/Export for BOQ (Task 8)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/imports/boq/upload')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .attach('file', Buffer.from(buffer), 'boq.xlsx')
       .expect(201);
 
@@ -153,7 +155,7 @@ describe('XLSX Import/Export for BOQ (Task 8)', () => {
   it('test 2: should export valid XLSX file with required 10 columns, 6 BOQ rows from seed and Completion% from v_boq_progress', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/exports/boq.xlsx')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .buffer(true)
       .parse((res, callback) => {
         const chunks: Buffer[] = [];

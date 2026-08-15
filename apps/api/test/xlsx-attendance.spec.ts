@@ -12,6 +12,7 @@ describe('XLSX Import/Export for Attendance (Task 9)', () => {
   let app: INestApplication;
   let pglite: PGlite;
   const companyId = 'c0000000-0000-0000-0000-000000000001';
+  let authToken: string;
 
   beforeAll(async () => {
     pglite = new PGlite();
@@ -23,6 +24,14 @@ describe('XLSX Import/Export for Attendance (Task 9)', () => {
 
     await pglite.exec(initSql);
     await pglite.exec(seedSql);
+
+    // Create session token for authentication
+    authToken = 'test-token-xlsx-att-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [authToken],
+    );
 
     const mockDbService = {
       query: async (text: string, params?: any[]) => {
@@ -71,7 +80,7 @@ describe('XLSX Import/Export for Attendance (Task 9)', () => {
       }),
     );
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (app) {
@@ -128,7 +137,7 @@ describe('XLSX Import/Export for Attendance (Task 9)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/imports/attendance/upload')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .attach('file', Buffer.from(buffer), 'attendance.xlsx')
       .expect(201);
 
@@ -153,7 +162,7 @@ describe('XLSX Import/Export for Attendance (Task 9)', () => {
   it('test 2: should export valid XLSX file with required 8 columns and exactly 75 attendance rows from seed', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/exports/attendance.xlsx')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .buffer(true)
       .parse((res, callback) => {
         const chunks: Buffer[] = [];

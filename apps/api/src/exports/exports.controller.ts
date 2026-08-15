@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Headers,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -24,10 +23,8 @@ export class ExportsController {
   async exportEmployees(
     @Res() res: Response,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    const buffer = await this.exportsService.exportEmployeesXlsx(companyId);
+    const buffer = await this.exportsService.exportEmployeesXlsx(user.companyId);
 
     res.set({
       'Content-Type':
@@ -47,10 +44,8 @@ export class ExportsController {
   async exportProduction(
     @Res() res: Response,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    const buffer = await this.exportsService.exportProductionXlsx(companyId);
+    const buffer = await this.exportsService.exportProductionXlsx(user.companyId);
 
     res.set({
       'Content-Type':
@@ -70,10 +65,8 @@ export class ExportsController {
   async exportBoq(
     @Res() res: Response,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    const buffer = await this.exportsService.exportBoqXlsx(companyId);
+    const buffer = await this.exportsService.exportBoqXlsx(user.companyId);
 
     res.set({
       'Content-Type':
@@ -93,10 +86,8 @@ export class ExportsController {
   async exportAttendance(
     @Res() res: Response,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    const buffer = await this.exportsService.exportAttendanceXlsx(companyId);
+    const buffer = await this.exportsService.exportAttendanceXlsx(user.companyId);
 
     res.set({
       'Content-Type':
@@ -108,6 +99,3 @@ export class ExportsController {
     res.end(buffer);
   }
 }
-
-
-

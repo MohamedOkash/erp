@@ -12,6 +12,7 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
   let app: INestApplication;
   let pglite: PGlite;
   const companyId = 'c0000000-0000-0000-0000-000000000001';
+  let authToken: string;
 
   beforeAll(async () => {
     pglite = new PGlite();
@@ -23,6 +24,14 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
 
     await pglite.exec(initSql);
     await pglite.exec(seedSql);
+
+    // Create session token for authentication
+    authToken = 'test-token-xlsx-prod-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [authToken],
+    );
 
     const mockDbService = {
       query: async (text: string, params?: any[]) => {
@@ -71,7 +80,7 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
       }),
     );
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (app) {
@@ -79,7 +88,7 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
     }
   });
 
-  // Test 1: رفع ملف Excel فيه 3 صفوف (1 صالح، 1 فرع غير موجود، 1 تاريخ غير صحيح) → توقع staging + summary دقيق + لا إنشاء في production_records
+  // Test 1: رفع ملف Excel فيه 3 صفوف (1 صالح، 1 فرع غير موجود، 1 تاريخ غير صالح) → توقع staging فقط + summary دقيق + لا إضافة في جدول production_records
   it('test 1: should upload and stage 3 production rows with exact summary and zero additions to production_records table', async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Production');
@@ -91,13 +100,13 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
       'المشروع',
       'المنطقة',
       'البند',
-      'المستهدف',
+      'الهدف',
       'الفعلي',
       'النوع',
-      'كود الفريق',
+      'فريق العمل',
     ]);
 
-    // Row 2: Valid production row
+    // Row 2: Valid row
     worksheet.addRow([
       '2026-08-15',
       'فرع 1',
@@ -140,7 +149,7 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/imports/production/upload')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .attach('file', Buffer.from(buffer), 'production.xlsx')
       .expect(201);
 
@@ -165,7 +174,7 @@ describe('XLSX Import/Export for Production (Task 7)', () => {
   it('test 2: should export valid XLSX file with required 12 columns and exactly 14 production rows from seed', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/exports/production.xlsx')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .buffer(true)
       .parse((res, callback) => {
         const chunks: Buffer[] = [];

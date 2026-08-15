@@ -145,4 +145,51 @@ describe('Auth Login & Profile (Task 10)', () => {
 
     expect(response.body.code).toBe('INVALID_CREDENTIALS');
   });
+
+  // Test 4: طلب بـ token صحيح → توقع 200 + data
+  it('test 4: should allow access to protected route with valid bearer token', async () => {
+    // Generate valid session
+    const validToken = 'valid-test-token-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [validToken],
+    );
+
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${validToken}`)
+      .expect(200);
+
+    expect(response.body.user).toBeDefined();
+    expect(response.body.user.username).toBe('admin');
+    expect(response.body.companyId).toBe('c0000000-0000-0000-0000-000000000001');
+  });
+
+  // Test 5: طلب بدون token → توقع 401 MISSING_TOKEN
+  it('test 5: should reject request with 401 MISSING_TOKEN when no token is provided', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .expect(401);
+
+    expect(response.body.code).toBe('MISSING_TOKEN');
+  });
+
+  // Test 6: طلب بـ token منتهي (expires_at في الماضي) → توقع 401 INVALID_OR_EXPIRED_TOKEN
+  it('test 6: should reject request with 401 INVALID_OR_EXPIRED_TOKEN when token is expired', async () => {
+    const expiredToken = 'expired-test-token-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP - interval '1 hour')`,
+      [expiredToken],
+    );
+
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${expiredToken}`)
+      .expect(401);
+
+    expect(response.body.code).toBe('INVALID_OR_EXPIRED_TOKEN');
+  });
 });
+

@@ -11,6 +11,7 @@ describe('Business Rules Validation (Task 5)', () => {
   let app: INestApplication;
   let pglite: PGlite;
   const companyId = 'c0000000-0000-0000-0000-000000000001';
+  let authToken: string;
 
   beforeAll(async () => {
     pglite = new PGlite();
@@ -22,6 +23,14 @@ describe('Business Rules Validation (Task 5)', () => {
 
     await pglite.exec(initSql);
     await pglite.exec(seedSql);
+
+    // Create session token for authentication
+    authToken = 'test-token-bizrules-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [authToken],
+    );
 
     const mockDbService = {
       query: async (text: string, params?: any[]) => {
@@ -70,7 +79,7 @@ describe('Business Rules Validation (Task 5)', () => {
       }),
     );
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (app) {
@@ -91,7 +100,7 @@ describe('Business Rules Validation (Task 5)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/employees')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .send(duplicateEmployee)
       .expect(409);
 
@@ -105,7 +114,7 @@ describe('Business Rules Validation (Task 5)', () => {
 
     const response = await request(app.getHttpServer())
       .post(`/api/v1/production/${submittedRecordId}/approve`)
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .send({ step: 'final' })
       .expect(400);
 

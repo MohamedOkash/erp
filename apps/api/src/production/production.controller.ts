@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   Param,
   Post,
   Query,
@@ -30,10 +29,8 @@ export class ProductionController {
   async createRecord(
     @Body() dto: CreateProductionDto,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    return this.productionService.createProductionRecord(companyId, dto);
+    return this.productionService.createProductionRecord(user.companyId, dto);
   }
 
   /**
@@ -44,10 +41,8 @@ export class ProductionController {
   async listRecords(
     @Query() query: QueryProductionDto,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    return this.productionService.findProductionRecords(companyId, query);
+    return this.productionService.findProductionRecords(user.companyId, query);
   }
 
   /**
@@ -59,10 +54,8 @@ export class ProductionController {
     @Param('id') id: string,
     @Body() dto: CreateCorrectionDto,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    return this.productionService.requestCorrection(companyId, id, dto);
+    return this.productionService.requestCorrection(user.companyId, id, dto);
   }
 
   /**
@@ -74,9 +67,7 @@ export class ProductionController {
     @Param('id') id: string,
     @Body() dto: ApproveProductionDto,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ) {
-    const companyId = user?.companyId || headerCompanyId;
-    return this.productionService.approveProductionRecord(companyId, id, dto);
+    return this.productionService.approveProductionRecord(user.companyId, id, dto);
   }
 }

@@ -2,15 +2,15 @@ import {
   Controller,
   Param,
   Post,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request } from 'express';
 import { ImportsService } from './imports.service';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth.service';
 import { ImportUploadResponseDto } from './dto/upload-response.dto';
 
 @Controller('imports')
@@ -26,13 +26,9 @@ export class ImportsController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadEmployees(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<ImportUploadResponseDto> {
-    const companyId =
-      req.user?.companyId ||
-      req.headers['x-company-id'] ||
-      req.headers['x-tenant-id'];
-    return this.importsService.uploadEmployeesXlsx(companyId, file);
+    return this.importsService.uploadEmployeesXlsx(user.companyId, file);
   }
 
   /**
@@ -43,13 +39,9 @@ export class ImportsController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadProduction(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const companyId =
-      req.user?.companyId ||
-      req.headers['x-company-id'] ||
-      req.headers['x-tenant-id'];
-    return this.importsService.uploadProductionXlsx(companyId, file);
+    return this.importsService.uploadProductionXlsx(user.companyId, file);
   }
 
   /**
@@ -60,13 +52,9 @@ export class ImportsController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadBoq(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const companyId =
-      req.user?.companyId ||
-      req.headers['x-company-id'] ||
-      req.headers['x-tenant-id'];
-    return this.importsService.uploadBoqXlsx(companyId, file);
+    return this.importsService.uploadBoqXlsx(user.companyId, file);
   }
 
   /**
@@ -77,13 +65,9 @@ export class ImportsController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadAttendance(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const companyId =
-      req.user?.companyId ||
-      req.headers['x-company-id'] ||
-      req.headers['x-tenant-id'];
-    return this.importsService.uploadAttendanceXlsx(companyId, file);
+    return this.importsService.uploadAttendanceXlsx(user.companyId, file);
   }
 
   /**
@@ -93,15 +77,8 @@ export class ImportsController {
   @Post(':jobId/commit')
   async commitImport(
     @Param('jobId') jobId: string,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-
-    const companyId =
-      req.user?.companyId ||
-      req.headers['x-company-id'] ||
-      req.headers['x-tenant-id'];
-    return this.importsService.commitImport(companyId, jobId);
+    return this.importsService.commitImport(user.companyId, jobId);
   }
 }
-
-

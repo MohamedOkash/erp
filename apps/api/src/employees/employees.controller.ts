@@ -5,7 +5,6 @@ import {
   Body,
   Param,
   UseGuards,
-  Headers,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { EmployeeResponseDto } from './dto/employee.dto';
@@ -27,10 +26,8 @@ export class EmployeesController {
   async getByIdentity(
     @Param('identityNumber') identityNumber: string,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ): Promise<EmployeeResponseDto> {
-    const companyId = user?.companyId || headerCompanyId;
-    return this.employeesService.findByIdentityNumber(companyId, identityNumber);
+    return this.employeesService.findByIdentityNumber(user.companyId, identityNumber);
   }
 
   /**
@@ -41,10 +38,7 @@ export class EmployeesController {
   async createEmployee(
     @Body() dto: CreateEmployeeDto,
     @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-company-id') headerCompanyId?: string,
   ): Promise<EmployeeResponseDto> {
-    const companyId = user?.companyId || headerCompanyId;
-    return this.employeesService.createEmployee(companyId, dto);
+    return this.employeesService.createEmployee(user.companyId, dto);
   }
 }
-

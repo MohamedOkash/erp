@@ -11,6 +11,7 @@ describe('Production Endpoints & Business Rules (R5 & Corrections)', () => {
   let app: INestApplication;
   let pglite: PGlite;
   const companyId = 'c0000000-0000-0000-0000-000000000001';
+  let authToken: string;
 
   beforeAll(async () => {
     pglite = new PGlite();
@@ -22,6 +23,14 @@ describe('Production Endpoints & Business Rules (R5 & Corrections)', () => {
 
     await pglite.exec(initSql);
     await pglite.exec(seedSql);
+
+    // Create session token for authentication
+    authToken = 'test-token-prod-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [authToken],
+    );
 
     const mockDbService = {
       query: async (text: string, params?: any[]) => {
@@ -70,7 +79,7 @@ describe('Production Endpoints & Business Rules (R5 & Corrections)', () => {
       }),
     );
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (app) {
@@ -104,7 +113,7 @@ describe('Production Endpoints & Business Rules (R5 & Corrections)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/production')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .send(invalidRecord)
       .expect(400);
 
@@ -137,7 +146,7 @@ describe('Production Endpoints & Business Rules (R5 & Corrections)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/production')
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .send(validRecord)
       .expect(201);
 
@@ -159,7 +168,7 @@ describe('Production Endpoints & Business Rules (R5 & Corrections)', () => {
 
     const response = await request(app.getHttpServer())
       .post(`/api/v1/production/${submittedRecordId}/correct`)
-      .set('x-company-id', companyId)
+      .set('Authorization', `Bearer ${authToken}`)
       .send(correctionRequest)
       .expect(400);
 
