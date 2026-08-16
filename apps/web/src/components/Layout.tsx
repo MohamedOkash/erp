@@ -39,6 +39,8 @@ export const Layout: React.FC = () => {
 
   const navLinks = [
     { to: '/dashboard', label: 'لوحة التحكم', icon: <LayoutDashboard size={19} /> },
+    { to: '/control-cards', label: 'بطاقات التحكم', icon: <FileSpreadsheet size={19} /> },
+    { to: '/daily-report', label: 'التقرير اليومي', icon: <BarChart3 size={19} /> },
     { to: '/branches', label: 'الفروع', icon: <Building size={19} /> },
     { to: '/projects', label: 'المشاريع', icon: <FolderKanban size={19} /> },
     { to: '/work-items', label: 'بنود الأعمال (BOQ)', icon: <CheckSquare size={19} /> },

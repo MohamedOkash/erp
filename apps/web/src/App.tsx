@@ -9,6 +9,8 @@ import { WorkAreasPage } from './pages/work-areas/WorkAreasPage';
 import { EmployeesPage } from './pages/employees/EmployeesPage';
 import { TransfersPage } from './pages/transfers/TransfersPage';
 import { ProductionPage } from './pages/production/ProductionPage';
+import { ControlCardsPage } from './pages/control-cards/ControlCardsPage';
+import { DailyReportPage } from './pages/reports/DailyReportPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 
@@ -27,6 +29,8 @@ export const App: React.FC = () => {
         }
       >
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/control-cards" element={<ControlCardsPage />} />
+        <Route path="/daily-report" element={<DailyReportPage />} />
         <Route path="/branches" element={<BranchesPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/work-items" element={<WorkItemsPage />} />
