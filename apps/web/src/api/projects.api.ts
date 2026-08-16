@@ -15,6 +15,16 @@ export interface Project {
   isActive: boolean;
   workAreasCount?: number;
   boqItemsCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProjectQuery {
+  branchId?: string;
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export interface ProjectListResponse {
@@ -49,7 +59,7 @@ export interface UpdateProjectPayload {
 }
 
 export const projectsApi = {
-  async getProjects(query: { branchId?: string; status?: string; search?: string; page?: number; limit?: number } = {}): Promise<ProjectListResponse> {
+  async list(query: ProjectQuery = {}): Promise<ProjectListResponse> {
     const params = new URLSearchParams();
     if (query.branchId) params.append('branchId', query.branchId);
     if (query.status) params.append('status', query.status);
@@ -58,18 +68,53 @@ export const projectsApi = {
     if (query.limit) params.append('limit', String(query.limit));
 
     const qs = params.toString();
-    return apiClient.get<ProjectListResponse>(`/projects${qs ? `?${qs}` : ''}`);
+    const res = await apiClient.get<any>(`/projects${qs ? `?${qs}` : ''}`);
+
+    if (Array.isArray(res)) {
+      return {
+        data: res,
+        total: res.length,
+        page: 1,
+        limit: res.length,
+        totalPages: 1,
+      };
+    }
+    return {
+      data: res.data || [],
+      total: res.total !== undefined ? res.total : (res.data ? res.data.length : 0),
+      page: res.page || 1,
+      limit: res.limit || 15,
+      totalPages: res.totalPages || 1,
+    };
   },
 
-  async createProject(payload: CreateProjectPayload): Promise<Project> {
+  async getById(id: string): Promise<Project> {
+    return apiClient.get<Project>(`/projects/${id}`);
+  },
+
+  async create(payload: CreateProjectPayload): Promise<Project> {
     return apiClient.post<Project>('/projects', payload);
   },
 
-  async updateProject(id: string, payload: UpdateProjectPayload): Promise<Project> {
+  async update(id: string, payload: UpdateProjectPayload): Promise<Project> {
     return apiClient.patch<Project>(`/projects/${id}`, payload);
   },
 
-  async deleteProject(id: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     return apiClient.delete<void>(`/projects/${id}`);
+  },
+
+  // Aliases for compatibility
+  async getProjects(query: ProjectQuery = {}): Promise<ProjectListResponse> {
+    return this.list(query);
+  },
+  async createProject(payload: CreateProjectPayload): Promise<Project> {
+    return this.create(payload);
+  },
+  async updateProject(id: string, payload: UpdateProjectPayload): Promise<Project> {
+    return this.update(id, payload);
+  },
+  async deleteProject(id: string): Promise<void> {
+    return this.remove(id);
   },
 };

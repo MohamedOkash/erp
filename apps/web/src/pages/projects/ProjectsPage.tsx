@@ -3,18 +3,19 @@ import { projectsApi } from '../../api/projects.api';
 import type { Project, CreateProjectPayload, UpdateProjectPayload } from '../../api/projects.api';
 import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
+import { ProjectFormModal } from './ProjectFormModal';
 import {
   FolderKanban,
   Plus,
   Search,
+  Filter,
   Edit2,
   Trash2,
   CheckCircle2,
   AlertCircle,
-  X,
   Loader2,
   Clock,
-  Banknote,
+  Hash,
 } from 'lucide-react';
 
 export const ProjectsPage: React.FC = () => {
@@ -33,25 +34,17 @@ export const ProjectsPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
 
   // Modals
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form State
-  const [formData, setFormData] = useState<CreateProjectPayload>({
-    branchId: '',
-    name: '',
-    code: '',
-    status: 'in_progress',
-    startDate: '',
-    endDate: '',
-    contractValue: 0,
-    description: '',
-  });
+  // Delete State
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadBranches = async () => {
     try {
-      const res = await branchesApi.getBranches({ isActive: true });
+      const res = await branchesApi.list({ isActive: true });
       setBranches(res.data);
     } catch {
       // ignore
@@ -62,7 +55,7 @@ export const ProjectsPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await projectsApi.getProjects({
+      const res = await projectsApi.list({
         page,
         limit,
         search: search.trim() || undefined,
@@ -86,62 +79,28 @@ export const ProjectsPage: React.FC = () => {
     loadProjects();
   }, [loadProjects]);
 
-  const openCreateModal = () => {
-    setFormData({
-      branchId: branches[0]?.id || '',
-      name: '',
-      code: '',
-      status: 'in_progress',
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: '',
-      contractValue: 100000,
-      description: '',
-    });
-    setShowCreateModal(true);
+  const handleOpenCreate = () => {
+    setEditingProject(null);
+    setIsModalOpen(true);
   };
 
-  const openEditModal = (proj: Project) => {
+  const handleOpenEdit = (proj: Project) => {
     setEditingProject(proj);
-    setFormData({
-      branchId: proj.branchId,
-      name: proj.name,
-      code: proj.code || '',
-      status: proj.status,
-      startDate: proj.startDate ? proj.startDate.split('T')[0] : '',
-      endDate: proj.endDate ? proj.endDate.split('T')[0] : '',
-      contractValue: proj.contractValue || 0,
-      description: proj.description || '',
-    });
+    setIsModalOpen(true);
   };
 
-  const handleSaveProject = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (payload: CreateProjectPayload | UpdateProjectPayload) => {
     setIsSaving(true);
     setError(null);
-
     try {
       if (editingProject) {
-        const payload: UpdateProjectPayload = {
-          branchId: formData.branchId,
-          name: formData.name,
-          code: formData.code || undefined,
-          status: formData.status,
-          startDate: formData.startDate || undefined,
-          endDate: formData.endDate || undefined,
-          contractValue: Number(formData.contractValue),
-          description: formData.description || undefined,
-        };
-        await projectsApi.updateProject(editingProject.id, payload);
+        await projectsApi.update(editingProject.id, payload);
         setSuccessMsg('تم تحديث المشروع بنجاح');
-        setEditingProject(null);
       } else {
-        await projectsApi.createProject({
-          ...formData,
-          contractValue: Number(formData.contractValue),
-        });
+        await projectsApi.create(payload as CreateProjectPayload);
         setSuccessMsg('تم إنشاء المشروع بنجاح');
-        setShowCreateModal(false);
       }
+      setIsModalOpen(false);
       loadProjects();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
@@ -151,18 +110,19 @@ export const ProjectsPage: React.FC = () => {
     }
   };
 
-  const handleDeleteProject = async (id: string, name: string) => {
-    if (!window.confirm(`هل أنت متأكد من رغبتك في حذف المشروع "${name}"؟`)) {
-      return;
-    }
-
+  const handleConfirmDelete = async () => {
+    if (!deletingProject) return;
+    setIsDeleting(true);
     try {
-      await projectsApi.deleteProject(id);
-      setSuccessMsg('تم حذف المشروع بنجاح');
+      await projectsApi.remove(deletingProject.id);
+      setSuccessMsg(`تم حذف المشروع "${deletingProject.name}" بنجاح`);
+      setDeletingProject(null);
       loadProjects();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
       setError(err.message || 'فشل حذف المشروع');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -197,14 +157,14 @@ export const ProjectsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <FolderKanban size={28} color="#60a5fa" />
-            <span>إدارة المشاريع والفروع</span>
+            <span>إدارة المشاريع الميدانية</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            سجل مشاريع المقاولات الميدانية، قيم العقود، ومتابعة حالات التنفيذ وربطها بالفروع.
+            متابعة مشاريع المقاولات، قيم العقود بالريال، ومراحل الإنجاز وربطها بالفروع.
           </p>
         </div>
 
-        <button onClick={openCreateModal} className="btn btn-primary" style={{ gap: '0.5rem' }}>
+        <button onClick={handleOpenCreate} className="btn btn-primary" style={{ gap: '0.5rem' }}>
           <Plus size={18} />
           <span>إضافة مشروع جديد</span>
         </button>
@@ -279,7 +239,10 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الفرع التابع</label>
+          <label className="form-label">
+            <Filter size={14} />
+            <span>فلترة بحسب الفرع التابع</span>
+          </label>
           <select
             className="input-field"
             value={selectedBranch}
@@ -355,9 +318,12 @@ export const ProjectsPage: React.FC = () => {
                   >
                     <td style={{ padding: '1rem' }}>
                       <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{proj.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                        كود: {proj.code || 'بدون كود'}
-                      </div>
+                      {proj.code && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                          <Hash size={11} />
+                          <span>{proj.code}</span>
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
                       {proj.branchName || 'غير محدد'}
@@ -386,7 +352,7 @@ export const ProjectsPage: React.FC = () => {
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                         <button
                           type="button"
-                          onClick={() => openEditModal(proj)}
+                          onClick={() => handleOpenEdit(proj)}
                           className="btn btn-secondary"
                           style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
                           title="تعديل المشروع"
@@ -395,13 +361,13 @@ export const ProjectsPage: React.FC = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDeleteProject(proj.id, proj.name)}
+                          onClick={() => setDeletingProject(proj)}
                           className="btn btn-secondary"
                           style={{
                             padding: '0.4rem',
                             borderRadius: 'var(--radius-sm)',
                             color: '#f87171',
-                            borderColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: 'rgba(239, 68, 68, 0.25)',
                           }}
                           title="حذف المشروع"
                         >
@@ -451,8 +417,18 @@ export const ProjectsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {(showCreateModal || editingProject) && (
+      {/* Create / Edit Modal */}
+      <ProjectFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSave}
+        editingProject={editingProject}
+        branches={branches}
+        isSaving={isSaving}
+      />
+
+      {/* Delete Confirmation Modal */}
+      {deletingProject && (
         <div
           style={{
             position: 'fixed',
@@ -466,132 +442,36 @@ export const ProjectsPage: React.FC = () => {
             zIndex: 100,
           }}
         >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '560px', padding: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.3rem' }}>
-                {editingProject ? 'تعديل بيانات المشروع' : 'إنشاء مشروع جديد'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setEditingProject(null);
-                }}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={20} />
-              </button>
+          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#f87171', marginBottom: '1rem' }}>
+              <Trash2 size={24} />
+              <h3 style={{ fontSize: '1.2rem', margin: 0 }}>تأكيد حذف المشروع</h3>
             </div>
 
-            <form onSubmit={handleSaveProject}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label">اسم المشروع *</label>
-                  <input
-                    type="text"
-                    required
-                    className="input-field"
-                    placeholder="مثال: تشطيبات برج الرياض التجاري"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              هل أنت متأكد من رغبتك في حذف المشروع <strong style={{ color: '#ffffff' }}>"{deletingProject.name}"</strong>؟
+            </p>
 
-                <div className="form-group">
-                  <label className="form-label">الفرع التابع *</label>
-                  <select
-                    required
-                    className="input-field"
-                    value={formData.branchId}
-                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-                  >
-                    <option value="">اختر الفرع...</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">كود المشروع</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="مثال: PRJ-RYD-01"
-                    value={formData.code || ''}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">حالة المشروع</label>
-                  <select
-                    className="input-field"
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  >
-                    <option value="in_progress">قيد التنفيذ</option>
-                    <option value="planned">مخطط له</option>
-                    <option value="completed">مكتمل</option>
-                    <option value="on_hold">معلق</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">
-                    <Banknote size={14} />
-                    <span>قيمة العقد (SAR)</span>
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="input-field"
-                    value={formData.contractValue || 0}
-                    onChange={(e) => setFormData({ ...formData, contractValue: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">تاريخ البدء</label>
-                  <input
-                    type="date"
-                    className="input-field"
-                    value={formData.startDate || ''}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">تاريخ الانتهاء المتوقع</label>
-                  <input
-                    type="date"
-                    className="input-field"
-                    value={formData.endDate || ''}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setEditingProject(null);
-                  }}
-                  className="btn btn-secondary"
-                  disabled={isSaving}
-                >
-                  إلغاء
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>{editingProject ? 'حفظ التعديلات' : 'إنشاء المشروع'}</span>
-                </button>
-              </div>
-            </form>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setDeletingProject(null)}
+                className="btn btn-secondary"
+                disabled={isDeleting}
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="btn btn-primary"
+                style={{ background: '#dc2626' }}
+                disabled={isDeleting}
+              >
+                {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
+                <span>تأكيد الحذف</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
