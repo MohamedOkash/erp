@@ -3,14 +3,16 @@ import { boqApi } from '../../api/boq.api';
 import type { BoqItemProgress } from '../../api/boq.api';
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
+import { StatsStrip } from '../../components/StatsStrip';
+import { TableSkeleton } from '../../components/skeletons';
 import {
   FileSpreadsheet,
   TrendingUp,
   Filter,
   CheckCircle2,
   AlertCircle,
-  Loader2,
-  PieChart,
+  Layers,
+  CheckCheck,
 } from 'lucide-react';
 
 export const BoqProgressPage: React.FC = () => {
@@ -64,6 +66,7 @@ export const BoqProgressPage: React.FC = () => {
   const totalExecuted = boqItems.reduce((acc, item) => acc + (Number(item.executedQuantity) || 0), 0);
   const totalPlanned = boqItems.reduce((acc, item) => acc + (Number(item.totalQuantity) || 0), 0);
   const overallProgress = totalPlanned > 0 ? ((totalExecuted / totalPlanned) * 100).toFixed(1) : '0';
+  const completedItemsCount = boqItems.filter((item) => Number(item.progressPercentage) >= 100).length;
 
   const getProgressColor = (percentage: number) => {
     if (percentage >= 100) return '#10b981';
@@ -72,29 +75,66 @@ export const BoqProgressPage: React.FC = () => {
     return '#ef4444';
   };
 
+  const statsItems = [
+    {
+      label: 'إجمالي بنود المقايسة',
+      value: total,
+      helper: `${boqItems.length} بند معروض حالياً`,
+      icon: <Layers size={22} />,
+      color: '#60a5fa',
+    },
+    {
+      label: 'متوسط الإنجاز الكلي',
+      value: `${overallProgress}%`,
+      helper: 'محسوبة تراكمياً من الإنتاج الفعلي',
+      icon: <TrendingUp size={22} />,
+      color: '#34d399',
+    },
+    {
+      label: 'بنود مكتملة بالكامل 100%',
+      value: completedItemsCount,
+      helper: 'وصلت للكمية التعاقدية',
+      icon: <CheckCheck size={22} />,
+      color: '#10b981',
+    },
+    {
+      label: 'مصدر الاحتساب المعتمد',
+      value: 'سجلات معتمدة',
+      helper: 'final_approved حصراً',
+      icon: <CheckCircle2 size={22} />,
+      color: '#a78bfa',
+    },
+  ];
+
+  const startRecord = boqItems.length === 0 ? 0 : (page - 1) * limit + 1;
+  const endRecord = Math.min(page * limit, total);
+
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      {/* Top Header & Actions Bar */}
       <div
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <FileSpreadsheet size={28} color="#60a5fa" />
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <FileSpreadsheet size={26} color="#60a5fa" />
             <span>المقايسة وتقدم التنفيذ (BOQ Progress)</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            متابعة نسب الإنجاز التراكمية الحية لبنود المقايسة المحسوبة تلقائيًا من سجلات الإنتاج المعتمدة نهائيًا.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            متابعة نسب الإنجاز التراكمية الحية لبنود المقايسة المحسوبة تلقائيًا من سجلات الإنتاج المعتمدة نهائيًا
           </p>
         </div>
       </div>
+
+      {/* Stats Summary Strip */}
+      <StatsStrip items={statsItems} isLoading={isLoading && boqItems.length === 0} />
 
       {error && (
         <div
@@ -114,42 +154,6 @@ export const BoqProgressPage: React.FC = () => {
           <span>{error}</span>
         </div>
       )}
-
-      {/* KPI Stats Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1rem',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <div className="glass-card" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>إجمالي بنود المقايسة</span>
-            <PieChart size={18} color="#60a5fa" />
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{total} <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>بند</span></div>
-        </div>
-
-        <div className="glass-card" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>متوسط الإنجاز الكلي</span>
-            <TrendingUp size={18} color="#34d399" />
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#34d399' }}>{overallProgress}%</div>
-        </div>
-
-        <div className="glass-card" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>مصدر الاحتساب</span>
-            <CheckCircle2 size={18} color="#60a5fa" />
-          </div>
-          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#60a5fa' }}>
-            سجلات final_approved فقط
-          </div>
-        </div>
-      </div>
 
       {/* Filters Bar */}
       <div
@@ -186,142 +190,144 @@ export const BoqProgressPage: React.FC = () => {
       </div>
 
       {/* BOQ Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-            <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>رقم البند / التوصيف</th>
-                <th style={{ padding: '1rem' }}>المشروع</th>
-                <th style={{ padding: '1rem' }}>الوحدة</th>
-                <th style={{ padding: '1rem' }}>الكمية التعاقدية</th>
-                <th style={{ padding: '1rem' }}>الكمية المنفذة</th>
-                <th style={{ padding: '1rem' }}>الكمية المتبقية</th>
-                <th style={{ padding: '1rem', minWidth: '180px' }}>نسبة الإنجاز</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري احتساب تقدم المقايسة...</p>
-                  </td>
+      {isLoading && boqItems.length === 0 ? (
+        <TableSkeleton rows={6} columns={7} />
+      ) : (
+        <div
+          className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+              <thead>
+                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <th style={{ padding: '1rem' }}>رقم البند / التوصيف</th>
+                  <th style={{ padding: '1rem' }}>المشروع</th>
+                  <th style={{ padding: '1rem' }}>الوحدة</th>
+                  <th style={{ padding: '1rem' }}>الكمية التعاقدية</th>
+                  <th style={{ padding: '1rem' }}>الكمية المنفذة</th>
+                  <th style={{ padding: '1rem' }}>الكمية المتبقية</th>
+                  <th style={{ padding: '1rem', minWidth: '180px' }}>نسبة الإنجاز</th>
                 </tr>
-              ) : boqItems.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا توجد بنود مقايسة مسجلة لهذا الاختيار
-                  </td>
-                </tr>
-              ) : (
-                boqItems.map((item) => {
-                  const pct = Number(item.progressPercentage) || 0;
-                  const color = getProgressColor(pct);
+              </thead>
+              <tbody>
+                {boqItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      لا توجد بنود مقايسة مسجلة لهذا الاختيار
+                    </td>
+                  </tr>
+                ) : (
+                  boqItems.map((item) => {
+                    const pct = Number(item.progressPercentage) || 0;
+                    const color = getProgressColor(pct);
 
-                  return (
-                    <tr
-                      key={item.id}
-                      style={{
-                        borderBottom: '1px solid var(--border-subtle)',
-                        transition: 'background var(--transition-fast)',
-                      }}
-                    >
-                      <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff' }}>
-                          {item.itemNumber ? `${item.itemNumber} - ` : ''}
-                          {item.workItemName || item.description || 'بند مقايسة'}
-                        </div>
-                        {item.description && item.workItemName && (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
-                            {item.description}
+                    return (
+                      <tr
+                        key={item.id}
+                        style={{
+                          borderBottom: '1px solid var(--border-subtle)',
+                          transition: 'background var(--transition-fast)',
+                        }}
+                      >
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ fontWeight: 700, color: '#ffffff' }}>
+                            {item.itemNumber ? `${item.itemNumber} - ` : ''}
+                            {item.workItemName || item.description || 'بند مقايسة'}
                           </div>
-                        )}
-                      </td>
-                      <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                        <div>{item.projectName || '—'}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{item.branchName}</div>
-                      </td>
-                      <td style={{ padding: '1rem' }}>
-                        <span className="badge badge-secondary">{item.unitSymbol || item.unitName || 'وحدة'}</span>
-                      </td>
-                      <td style={{ padding: '1rem', fontWeight: 600 }}>
-                        {Number(item.totalQuantity).toLocaleString()}
-                      </td>
-                      <td style={{ padding: '1rem', fontWeight: 700, color: '#34d399' }}>
-                        {Number(item.executedQuantity).toLocaleString()}
-                      </td>
-                      <td style={{ padding: '1rem', color: Number(item.remainingQuantity) > 0 ? '#fbbf24' : 'var(--text-dim)' }}>
-                        {Number(item.remainingQuantity).toLocaleString()}
-                      </td>
-                      <td style={{ padding: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div
-                            style={{
-                              flex: 1,
-                              height: '8px',
-                              background: 'rgba(148, 163, 184, 0.15)',
-                              borderRadius: '9999px',
-                              overflow: 'hidden',
-                            }}
-                          >
+                          {item.description && item.workItemName && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
+                              {item.description}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
+                          <div>{item.projectName || '—'}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{item.branchName}</div>
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <span className="badge badge-secondary">{item.unitSymbol || item.unitName || 'وحدة'}</span>
+                        </td>
+                        <td style={{ padding: '1rem', fontWeight: 600 }}>
+                          {Number(item.totalQuantity).toLocaleString()}
+                        </td>
+                        <td style={{ padding: '1rem', fontWeight: 700, color: '#34d399' }}>
+                          {Number(item.executedQuantity).toLocaleString()}
+                        </td>
+                        <td style={{ padding: '1rem', color: Number(item.remainingQuantity) > 0 ? '#fbbf24' : 'var(--text-dim)' }}>
+                          {Number(item.remainingQuantity).toLocaleString()}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <div
                               style={{
-                                width: `${Math.min(pct, 100)}%`,
-                                height: '100%',
-                                background: color,
+                                flex: 1,
+                                height: '8px',
+                                background: 'rgba(148, 163, 184, 0.15)',
                                 borderRadius: '9999px',
-                                transition: 'width 0.5s ease',
+                                overflow: 'hidden',
                               }}
-                            />
+                            >
+                              <div
+                                style={{
+                                  width: `${Math.min(pct, 100)}%`,
+                                  height: '100%',
+                                  background: color,
+                                  borderRadius: '9999px',
+                                  transition: 'width 0.5s ease',
+                                }}
+                              />
+                            </div>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 700, minWidth: '42px', color }}>
+                              {pct.toFixed(1)}%
+                            </span>
                           </div>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, minWidth: '42px', color }}>
-                            {pct.toFixed(1)}%
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>إجمالي البنود: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
+          {/* Pagination */}
+          <div
+            style={{
+              padding: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>
+              عرض {startRecord}–{endRecord} من إجمالي {total} بند مقايسة
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                السابق
+              </button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page * limit >= total}
+                onClick={() => setPage(page + 1)}
+              >
+                التالي
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

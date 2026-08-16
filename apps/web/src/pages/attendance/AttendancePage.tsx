@@ -8,6 +8,8 @@ import type { Branch } from '../../api/branches.api';
 import { employeesApi } from '../../api/employees.api';
 import type { Employee } from '../../api/employees.api';
 import { Modal } from '../../components/Modal';
+import { StatsStrip } from '../../components/StatsStrip';
+import { TableSkeleton } from '../../components/skeletons';
 import {
   CalendarCheck,
   Plus,
@@ -16,6 +18,9 @@ import {
   AlertCircle,
   Loader2,
   UserCheck,
+  UserX,
+  Clock,
+  Zap,
 } from 'lucide-react';
 
 export const AttendancePage: React.FC = () => {
@@ -134,26 +139,68 @@ export const AttendancePage: React.FC = () => {
     }
   };
 
+  // Compute summary stats
+  const presentCount = attendance.filter((a) => !a.statusName || a.statusName.includes('حاضر')).length;
+  const absentCount = attendance.filter((a) => a.statusName && a.statusName.includes('غائب')).length;
+  const lateCount = attendance.filter(
+    (a) => (a.statusName && a.statusName.includes('متأخر')) || (a.checkInTime && a.checkInTime > '08:30'),
+  ).length;
+  const totalOvertime = attendance.reduce((acc, a) => acc + (Number(a.overtimeHours) || 0), 0);
+
+  const statsItems = [
+    {
+      label: 'الحاضرون اليوم',
+      value: presentCount,
+      helper: `${attendance.length} مسجلين بالجلسة`,
+      icon: <UserCheck size={22} />,
+      color: '#34d399',
+    },
+    {
+      label: 'الغياب والتغيب',
+      value: absentCount,
+      helper: 'بدون إذن مسبق',
+      icon: <UserX size={22} />,
+      color: '#f87171',
+    },
+    {
+      label: 'تأخيرات الحضور',
+      value: lateCount,
+      helper: 'بعد الساعة 08:30 ص',
+      icon: <Clock size={22} />,
+      color: '#f59e0b',
+    },
+    {
+      label: 'إجمالي الساعات الإضافية',
+      value: `${totalOvertime} ساعة`,
+      helper: 'تُحسب في مخصصات الرواتب',
+      icon: <Zap size={22} />,
+      color: '#60a5fa',
+    },
+  ];
+
+  const startRecord = attendance.length === 0 ? 0 : (page - 1) * limit + 1;
+  const endRecord = Math.min(page * limit, total);
+
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      {/* Top Header & Actions Bar */}
       <div
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <CalendarCheck size={28} color="#60a5fa" />
-            <span>الحضور والانصراف وساعات الإضافي</span>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <CalendarCheck size={26} color="#60a5fa" />
+            <span>الحضور والانصراف الميداني</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            تسجيل حضور العمالة بالمواقع، أوقات الحضور والانصراف، وساعات العمل الإضافية لحساب الأجور.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            تسجيل حضور العمالة بالمواقع، أوقات الحضور والانصراف، وساعات العمل الإضافية لحساب الأجور
           </p>
         </div>
 
@@ -162,6 +209,9 @@ export const AttendancePage: React.FC = () => {
           <span>تسجيل حضور يومي</span>
         </button>
       </div>
+
+      {/* Stats Summary Strip */}
+      <StatsStrip items={statsItems} isLoading={isLoading && attendance.length === 0} />
 
       {/* Alerts */}
       {successMsg && (
@@ -283,118 +333,120 @@ export const AttendancePage: React.FC = () => {
       </div>
 
       {/* Attendance Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-            <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>التاريخ</th>
-                <th style={{ padding: '1rem' }}>الموظف / العامل</th>
-                <th style={{ padding: '1rem' }}>المشروع والفرع</th>
-                <th style={{ padding: '1rem' }}>حالة الحضور</th>
-                <th style={{ padding: '1rem' }}>وقت الحضور</th>
-                <th style={{ padding: '1rem' }}>وقت الانصراف</th>
-                <th style={{ padding: '1rem' }}>ساعات الإضافي</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل سجلات الحضور...</p>
-                  </td>
+      {isLoading && attendance.length === 0 ? (
+        <TableSkeleton rows={6} columns={7} />
+      ) : (
+        <div
+          className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+              <thead>
+                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <th style={{ padding: '1rem' }}>التاريخ</th>
+                  <th style={{ padding: '1rem' }}>الموظف / العامل</th>
+                  <th style={{ padding: '1rem' }}>المشروع والفرع</th>
+                  <th style={{ padding: '1rem' }}>حالة الحضور</th>
+                  <th style={{ padding: '1rem' }}>وقت الحضور</th>
+                  <th style={{ padding: '1rem' }}>وقت الانصراف</th>
+                  <th style={{ padding: '1rem' }}>ساعات الإضافي</th>
                 </tr>
-              ) : attendance.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا توجد سجلات حضور مسجلة
-                  </td>
-                </tr>
-              ) : (
-                attendance.map((att) => (
-                  <tr
-                    key={att.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background var(--transition-fast)',
-                    }}
-                  >
-                    <td style={{ padding: '1rem', whiteSpace: 'nowrap', fontWeight: 600 }}>
-                      {att.date}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff' }}>{att.employeeName || 'موظف'}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                        هوية: {att.nationalId || '—'}
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                      <div>{att.projectName || '—'}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{att.branchName}</div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span className="badge badge-success" style={{ gap: '0.3rem' }}>
-                        <UserCheck size={12} />
-                        <span>{att.statusName || 'حاضر'}</span>
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
-                      {att.checkInTime || '—'}
-                    </td>
-                    <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
-                      {att.checkOutTime || '—'}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      {Number(att.overtimeHours) > 0 ? (
-                        <span className="badge badge-accent">
-                          +{att.overtimeHours} ساعة
-                        </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-dim)' }}>0</span>
-                      )}
+              </thead>
+              <tbody>
+                {attendance.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      لا توجد سجلات حضور مسجلة
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  attendance.map((att) => (
+                    <tr
+                      key={att.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                    >
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                        {att.date}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{att.employeeName || 'موظف'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                          هوية: {att.nationalId || '—'}
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
+                        <div>{att.projectName || '—'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{att.branchName}</div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span className="badge badge-success" style={{ gap: '0.3rem' }}>
+                          <UserCheck size={12} />
+                          <span>{att.statusName || 'حاضر'}</span>
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
+                        {att.checkInTime || '—'}
+                      </td>
+                      <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
+                        {att.checkOutTime || '—'}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {Number(att.overtimeHours) > 0 ? (
+                          <span className="badge badge-accent">
+                            +{att.overtimeHours} ساعة
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-dim)' }}>0</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>إجمالي السجلات: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
+          {/* Pagination */}
+          <div
+            style={{
+              padding: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>
+              عرض {startRecord}–{endRecord} من إجمالي {total} سجل حضور
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                السابق
+              </button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page * limit >= total}
+                onClick={() => setPage(page + 1)}
+              >
+                التالي
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Modal */}
       <Modal

@@ -6,6 +6,8 @@ import type { Project } from '../../api/projects.api';
 import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
 import { Modal } from '../../components/Modal';
+import { StatsStrip } from '../../components/StatsStrip';
+import { TableSkeleton } from '../../components/skeletons';
 import {
   DollarSign,
   Plus,
@@ -14,8 +16,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  PieChart,
   Calendar,
+  Layers,
+  HardHat,
+  Truck,
+  User,
 } from 'lucide-react';
 
 export const CostsPage: React.FC = () => {
@@ -181,30 +186,72 @@ export const CostsPage: React.FC = () => {
     );
   };
 
+  // Compute summary stats
+  const totalCostsAmount = Number(summary?.totalAmount || 0);
+  const materialAmount = Number(summary?.byCategory?.find((c) => c.category === 'material')?.totalAmount || 0);
+  const laborAmount = Number(summary?.byCategory?.find((c) => c.category === 'labor')?.totalAmount || 0);
+  const equipmentSubAmount =
+    Number(summary?.byCategory?.find((c) => c.category === 'equipment')?.totalAmount || 0) +
+    Number(summary?.byCategory?.find((c) => c.category === 'subcontractor')?.totalAmount || 0);
+
+  const statsItems = [
+    {
+      label: 'إجمالي التكاليف المسجلة',
+      value: `${totalCostsAmount.toLocaleString()} SAR`,
+      helper: `${total} قيد محاسبي`,
+      icon: <DollarSign size={22} />,
+      color: '#34d399',
+    },
+    {
+      label: 'تكاليف المواد والخامات',
+      value: `${materialAmount.toLocaleString()} SAR`,
+      helper: totalCostsAmount > 0 ? `${Math.round((materialAmount / totalCostsAmount) * 100)}% من الإجمالي` : '0%',
+      icon: <Layers size={22} />,
+      color: '#60a5fa',
+    },
+    {
+      label: 'أجور العمالة المحتسبة',
+      value: `${laborAmount.toLocaleString()} SAR`,
+      helper: 'مستخرجة من الحضور الميداني',
+      icon: <HardHat size={22} />,
+      color: '#f59e0b',
+    },
+    {
+      label: 'المعدات ومقاولو الباطن',
+      value: `${equipmentSubAmount.toLocaleString()} SAR`,
+      helper: 'آليات ومقاولي تنفيذ',
+      icon: <Truck size={22} />,
+      color: '#ec4899',
+    },
+  ];
+
+  const startRecord = costs.length === 0 ? 0 : (page - 1) * limit + 1;
+  const endRecord = Math.min(page * limit, total);
+
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      {/* Top Header & Actions Bar */}
       <div
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <DollarSign size={28} color="#60a5fa" />
-            <span>سجل التكاليف والمصروفات</span>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <DollarSign size={26} color="#60a5fa" />
+            <span>التكاليف والمصروفات الميدانية</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            إدارة قيود تكاليف المواد، المعدات، ومقاولي الباطن، والاحتساب التلقائي لأجور العمالة من واقع الحضور.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            إدارة قيود تكاليف المواد، المعدات، ومقاولي الباطن، والاحتساب التلقائي لأجور العمالة من واقع الحضور
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
             onClick={() => setShowAutoLaborModal(true)}
             className="btn btn-secondary"
@@ -220,6 +267,9 @@ export const CostsPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Stats Summary Strip */}
+      <StatsStrip items={statsItems} isLoading={isLoading && costs.length === 0} />
 
       {/* Alerts */}
       {successMsg && (
@@ -259,45 +309,6 @@ export const CostsPage: React.FC = () => {
           <span>{error}</span>
         </div>
       )}
-
-      {/* Summary KPI Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1rem',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <div className="glass-card" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>إجمالي التكاليف المسجلة</span>
-            <DollarSign size={18} color="#34d399" />
-          </div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#34d399' }}>
-            {Number(summary?.totalAmount || 0).toLocaleString()}{' '}
-            <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>SAR</span>
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>توزيع الفئات</span>
-            <PieChart size={18} color="#60a5fa" />
-          </div>
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-            {summary?.byCategory && summary.byCategory.length > 0 ? (
-              summary.byCategory.slice(0, 3).map((c) => (
-                <span key={c.category} className="badge badge-secondary" style={{ fontSize: '0.75rem' }}>
-                  {c.category}: {Number(c.totalAmount || 0).toLocaleString()} SAR
-                </span>
-              ))
-            ) : (
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>لا توجد مصاريف بعد</span>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Filters Bar */}
       <div
@@ -373,104 +384,113 @@ export const CostsPage: React.FC = () => {
       </div>
 
       {/* Costs Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-            <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>التاريخ</th>
-                <th style={{ padding: '1rem' }}>الوصف والبيان</th>
-                <th style={{ padding: '1rem' }}>الفئة</th>
-                <th style={{ padding: '1rem' }}>المشروع والفرع</th>
-                <th style={{ padding: '1rem' }}>المبلغ (SAR)</th>
-                <th style={{ padding: '1rem' }}>الكمية × السعر</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل قيود التكاليف...</p>
-                  </td>
+      {isLoading && costs.length === 0 ? (
+        <TableSkeleton rows={6} columns={7} />
+      ) : (
+        <div
+          className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+              <thead>
+                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <th style={{ padding: '1rem' }}>التاريخ</th>
+                  <th style={{ padding: '1rem' }}>الوصف والبيان</th>
+                  <th style={{ padding: '1rem' }}>الفئة</th>
+                  <th style={{ padding: '1rem' }}>المشروع والفرع</th>
+                  <th style={{ padding: '1rem' }}>المبلغ (SAR)</th>
+                  <th style={{ padding: '1rem' }}>الكمية × السعر</th>
+                  <th style={{ padding: '1rem' }}>المسجِّل / المصدر</th>
                 </tr>
-              ) : costs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا توجد قيود تكاليف مسجلة
-                  </td>
-                </tr>
-              ) : (
-                costs.map((c) => (
-                  <tr
-                    key={c.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background var(--transition-fast)',
-                    }}
-                  >
-                    <td style={{ padding: '1rem', whiteSpace: 'nowrap', fontWeight: 600 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <Calendar size={14} color="#60a5fa" />
-                        <span>{c.costDate ? c.costDate.split('T')[0] : '—'}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff' }}>{c.description}</div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>{getCategoryBadge(c.category)}</td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                      <div>{c.projectName || 'عام'}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{c.branchName}</div>
-                    </td>
-                    <td style={{ padding: '1rem', fontWeight: 700, color: '#34d399' }}>
-                      {Number(c.amount).toLocaleString()}{' '}
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR</span>
-                    </td>
-                    <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      {c.quantity && c.unitCost ? `${c.quantity} × ${c.unitCost}` : '—'}
+              </thead>
+              <tbody>
+                {costs.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      لا توجد قيود تكاليف مسجلة
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  costs.map((c) => (
+                    <tr
+                      key={c.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                    >
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Calendar size={14} color="#60a5fa" />
+                          <span>{c.costDate ? c.costDate.split('T')[0] : '—'}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{c.description}</div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>{getCategoryBadge(c.category)}</td>
+                      <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
+                        <div>{c.projectName || 'عام'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{c.branchName}</div>
+                      </td>
+                      <td style={{ padding: '1rem', fontWeight: 700, color: '#34d399' }}>
+                        {Number(c.amount).toLocaleString()}{' '}
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR</span>
+                      </td>
+                      <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {c.quantity && c.unitCost ? `${c.quantity} × ${c.unitCost}` : '—'}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span className="badge badge-secondary" style={{ gap: '0.25rem', fontSize: '0.72rem' }}>
+                          <User size={11} />
+                          <span>قيد نظامي</span>
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>إجمالي القيود: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
+          {/* Pagination */}
+          <div
+            style={{
+              padding: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>
+              عرض {startRecord}–{endRecord} من إجمالي {total} قيد تكلفة
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                السابق
+              </button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page * limit >= total}
+                onClick={() => setPage(page + 1)}
+              >
+                التالي
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Create Cost Modal */}
       <Modal

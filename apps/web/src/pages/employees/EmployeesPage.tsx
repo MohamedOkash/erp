@@ -6,6 +6,8 @@ import type { Branch } from '../../api/branches.api';
 import { EmployeeFormModal } from './EmployeeFormModal';
 import { XlsxImportModal } from './XlsxImportModal';
 import { Modal } from '../../components/Modal';
+import { StatsStrip } from '../../components/StatsStrip';
+import { TableSkeleton } from '../../components/skeletons';
 import {
   Users,
   Plus,
@@ -19,10 +21,12 @@ import {
   Loader2,
   CreditCard,
   Building,
-  Calendar,
   Briefcase,
   Layers,
   X,
+  DollarSign,
+  ShieldCheck,
+  HardHat,
 } from 'lucide-react';
 
 export const EmployeesPage: React.FC = () => {
@@ -190,56 +194,134 @@ export const EmployeesPage: React.FC = () => {
     }
   };
 
+  // Compute summary stats
+  const activeCount = employees.filter((e) => e.isActive).length;
+  const supervisorsCount = employees.filter((e) => e.role === 'supervisor' || e.roleType === 'supervisor').length;
+  const workersCount = employees.filter((e) => e.role === 'worker' || e.roleType === 'worker').length;
+  const avgWage =
+    employees.length > 0
+      ? Math.round(employees.reduce((acc, e) => acc + (Number(e.dailyWage) || 0), 0) / employees.length)
+      : 0;
+
+  const statsItems = [
+    {
+      label: 'إجمالي الموظفين',
+      value: total,
+      helper: `${employees.length} مسجلين حالياً`,
+      icon: <Users size={22} />,
+      color: '#60a5fa',
+    },
+    {
+      label: 'الموظفون النشطون',
+      value: activeCount,
+      helper: `${total - activeCount} معطل أو مؤرشف`,
+      icon: <ShieldCheck size={22} />,
+      color: '#34d399',
+    },
+    {
+      label: 'المشرفون والكوادر',
+      value: supervisorsCount,
+      helper: `${workersCount} عمال تشغيل`,
+      icon: <HardHat size={22} />,
+      color: '#f59e0b',
+    },
+    {
+      label: 'متوسط الأجر اليومي',
+      value: `${avgWage} SAR`,
+      helper: 'لكافة التخصصات والمواقع',
+      icon: <DollarSign size={22} />,
+      color: '#a78bfa',
+    },
+  ];
+
+  const getExpiryBadge = (dateStr?: string | null) => {
+    if (!dateStr) return <span style={{ color: 'var(--text-dim)' }}>—</span>;
+    const expiry = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) {
+      return (
+        <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', fontSize: '0.72rem' }}>
+          منتهية ({Math.abs(diffDays)} يوم مضت)
+        </span>
+      );
+    }
+    if (diffDays <= 90) {
+      return (
+        <span className="badge badge-primary" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', fontSize: '0.72rem' }}>
+          تنتهي خلال {diffDays} يوم
+        </span>
+      );
+    }
+    return (
+      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+        {dateStr.split('T')[0]}
+      </span>
+    );
+  };
+
+  const startRecord = employees.length === 0 ? 0 : (page - 1) * limit + 1;
+  const endRecord = Math.min(page * limit, total);
+
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      {/* Top Header & Actions Bar */}
       <div
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Users size={28} color="#60a5fa" />
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Users size={26} color="#60a5fa" />
             <span>إدارة الموظفين والعمالة</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            سجل القوى العاملة، متابعة الهويات والإقامات، واستيراد وتصدير بيانات الكادر عبر Excel.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            سجلات العمال والمشرفين، الأجور اليومية، وثائق الهوية والتعيينات الميدانية
           </p>
         </div>
 
-        {/* 3 Action Buttons */}
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
+            type="button"
             onClick={handleExportXlsx}
+            disabled={isExporting || employees.length === 0}
             className="btn btn-secondary"
-            disabled={isExporting}
             style={{ gap: '0.4rem' }}
           >
             {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            <span>تصدير Excel</span>
+            <span>تصدير إكسيل</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setIsImportModalOpen(true)}
             className="btn btn-secondary"
-            style={{ gap: '0.4rem', borderColor: 'rgba(16, 185, 129, 0.4)', color: '#34d399' }}
+            style={{ gap: '0.4rem' }}
           >
             <UploadCloud size={16} />
-            <span>استيراد من Excel</span>
+            <span>استيراد إكسيل</span>
           </button>
 
-          <button onClick={handleOpenCreate} className="btn btn-primary" style={{ gap: '0.4rem' }}>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="btn btn-primary"
+            style={{ gap: '0.4rem' }}
+          >
             <Plus size={16} />
-            <span>إضافة موظف</span>
+            <span>إضافة موظف / عامل</span>
           </button>
         </div>
       </div>
+
+      {/* Stats Summary Strip */}
+      <StatsStrip items={statsItems} isLoading={isLoading && employees.length === 0} />
 
       {/* Alerts */}
       {successMsg && (
@@ -417,163 +499,163 @@ export const EmployeesPage: React.FC = () => {
       </div>
 
       {/* Employees Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-            <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>الاسم / الكود</th>
-                <th style={{ padding: '1rem' }}>الوثيقة / رقم الهوية</th>
-                <th style={{ padding: '1rem' }}>الفرع الأساسي</th>
-                <th style={{ padding: '1rem' }}>الدور</th>
-                <th style={{ padding: '1rem' }}>الأجر اليومي</th>
-                <th style={{ padding: '1rem' }}>الحالة</th>
-                <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل الموظفين...</p>
-                  </td>
+      {isLoading && employees.length === 0 ? (
+        <TableSkeleton rows={6} columns={8} />
+      ) : (
+        <div
+          className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+              <thead>
+                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <th style={{ padding: '1rem' }}>الاسم / الكود</th>
+                  <th style={{ padding: '1rem' }}>الوثيقة / رقم الهوية</th>
+                  <th style={{ padding: '1rem' }}>صلاحية الإقامة / الهوية</th>
+                  <th style={{ padding: '1rem' }}>الفرع الأساسي</th>
+                  <th style={{ padding: '1rem' }}>الدور</th>
+                  <th style={{ padding: '1rem' }}>الأجر اليومي</th>
+                  <th style={{ padding: '1rem' }}>الحالة</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
                 </tr>
-              ) : employees.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا يوجد موظفون مطابقون لمعايير البحث
-                  </td>
-                </tr>
-              ) : (
-                employees.map((emp) => (
-                  <tr
-                    key={emp.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background var(--transition-fast)',
-                    }}
-                  >
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1rem' }}>{emp.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                        {emp.code || 'بدون كود'} {emp.phone ? `• ${emp.phone}` : ''}
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                        <div>{getIdentityBadge(emp)}</div>
-                        <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: '#cbd5e1' }}>
-                          {emp.identityNumber || (emp as any).nationalId || '—'}
-                        </span>
-                        {emp.identityExpiryDate && (
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                            <Calendar size={11} />
-                            <span>ينتهي: {emp.identityExpiryDate.split('T')[0]}</span>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                      {emp.branchName || 'غير محدد'}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span className="badge badge-secondary" style={{ textTransform: 'capitalize' }}>
-                        {emp.roleType || emp.role}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', fontWeight: 600 }}>
-                      {emp.dailyWage}{' '}
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR/يوم</span>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      {emp.isActive ? (
-                        <span className="badge badge-success">نشط</span>
-                      ) : (
-                        <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>
-                          معطل
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        {emp.assignments && emp.assignments.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => setViewingAssignmentsEmp(emp)}
-                            className="btn btn-secondary"
-                            style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title="عرض التعيينات"
-                          >
-                            <Layers size={14} />
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(emp)}
-                          className="btn btn-secondary"
-                          style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                          title="تعديل الموظف"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeactivatingEmployee(emp)}
-                          className="btn btn-secondary"
-                          style={{
-                            padding: '0.4rem',
-                            borderRadius: 'var(--radius-sm)',
-                            color: '#f87171',
-                            borderColor: 'rgba(239, 68, 68, 0.25)',
-                          }}
-                          title="تعطيل / حذف"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {employees.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      لا يوجد موظفون مطابقون لمعايير البحث
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  employees.map((emp) => (
+                    <tr
+                      key={emp.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                    >
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1rem' }}>{emp.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                          {emp.code || 'بدون كود'} {emp.phone ? `• ${emp.phone}` : ''}
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                          <div>{getIdentityBadge(emp)}</div>
+                          <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                            {emp.identityNumber || (emp as any).nationalId || '—'}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {getExpiryBadge(emp.identityExpiryDate)}
+                      </td>
+                      <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
+                        {emp.branchName || 'غير محدد'}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span className="badge badge-secondary" style={{ textTransform: 'capitalize' }}>
+                          {emp.roleType || emp.role}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', fontWeight: 600 }}>
+                        {emp.dailyWage}{' '}
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR/يوم</span>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {emp.isActive ? (
+                          <span className="badge badge-success">نشط</span>
+                        ) : (
+                          <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>
+                            معطل
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          {emp.assignments && emp.assignments.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setViewingAssignmentsEmp(emp)}
+                              className="btn btn-secondary"
+                              style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
+                              title="عرض التعيينات"
+                            >
+                              <Layers size={14} />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(emp)}
+                            className="btn btn-secondary"
+                            style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
+                            title="تعديل الموظف"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeactivatingEmployee(emp)}
+                            className="btn btn-secondary"
+                            style={{
+                              padding: '0.4rem',
+                              borderRadius: 'var(--radius-sm)',
+                              color: '#f87171',
+                              borderColor: 'rgba(239, 68, 68, 0.25)',
+                            }}
+                            title="تعطيل / حذف"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>إجمالي الموظفين: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
+          {/* Pagination */}
+          <div
+            style={{
+              padding: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>
+              عرض {startRecord}–{endRecord} من إجمالي {total} موظف/عامل
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                السابق
+              </button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page * limit >= total}
+                onClick={() => setPage(page + 1)}
+              >
+                التالي
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Employee Form Modal */}
       <EmployeeFormModal

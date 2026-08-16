@@ -5,6 +5,8 @@ import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
 import { ProjectFormModal } from './ProjectFormModal';
 import { Modal } from '../../components/Modal';
+import { StatsStrip } from '../../components/StatsStrip';
+import { TableSkeleton } from '../../components/skeletons';
 import {
   FolderKanban,
   Plus,
@@ -17,6 +19,9 @@ import {
   Loader2,
   Clock,
   Hash,
+  Activity,
+  CheckCheck,
+  DollarSign,
 } from 'lucide-react';
 
 export const ProjectsPage: React.FC = () => {
@@ -142,26 +147,65 @@ export const ProjectsPage: React.FC = () => {
     }
   };
 
+  // Compute summary stats
+  const inProgressCount = projects.filter((p) => p.status === 'in_progress').length;
+  const completedCount = projects.filter((p) => p.status === 'completed').length;
+  const totalContractVal = projects.reduce((acc, p) => acc + (Number(p.contractValue) || 0), 0);
+
+  const statsItems = [
+    {
+      label: 'إجمالي المشاريع',
+      value: total,
+      helper: `${projects.length} معروضة بالجلسة`,
+      icon: <FolderKanban size={22} />,
+      color: '#60a5fa',
+    },
+    {
+      label: 'مشاريع قيد التنفيذ',
+      value: inProgressCount,
+      helper: 'مواقع إنتاجية نشطة',
+      icon: <Activity size={22} />,
+      color: '#34d399',
+    },
+    {
+      label: 'مشاريع مكتملة ومسلّمة',
+      value: completedCount,
+      helper: `${projects.filter((p) => p.status === 'on_hold').length} متوقف أو معلق`,
+      icon: <CheckCheck size={22} />,
+      color: '#10b981',
+    },
+    {
+      label: 'إجمالي قيمة العقود',
+      value: `${totalContractVal.toLocaleString()} SAR`,
+      helper: 'لكافة المشاريع المسجلة',
+      icon: <DollarSign size={22} />,
+      color: '#f59e0b',
+    },
+  ];
+
+  const startRecord = projects.length === 0 ? 0 : (page - 1) * limit + 1;
+  const endRecord = Math.min(page * limit, total);
+
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      {/* Top Header & Actions Bar */}
       <div
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <FolderKanban size={28} color="#60a5fa" />
-            <span>إدارة المشاريع الميدانية</span>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <FolderKanban size={26} color="#60a5fa" />
+            <span>إدارة المشاريع الإنشائية</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            متابعة مشاريع المقاولات، قيم العقود بالريال، ومراحل الإنجاز وربطها بالفروع.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            متابعة مشاريع المقاولات، قيم العقود، الجداول الزمنية والربط مع الفروع
           </p>
         </div>
 
@@ -170,6 +214,9 @@ export const ProjectsPage: React.FC = () => {
           <span>إضافة مشروع جديد</span>
         </button>
       </div>
+
+      {/* Stats Summary Strip */}
+      <StatsStrip items={statsItems} isLoading={isLoading && projects.length === 0} />
 
       {/* Alerts */}
       {successMsg && (
@@ -281,142 +328,144 @@ export const ProjectsPage: React.FC = () => {
       </div>
 
       {/* Projects Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-            <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>المشروع / الكود</th>
-                <th style={{ padding: '1rem' }}>الفرع التابع</th>
-                <th style={{ padding: '1rem' }}>الحالة</th>
-                <th style={{ padding: '1rem' }}>قيمة العقد (SAR)</th>
-                <th style={{ padding: '1rem' }}>تاريخ البدء والانتهاء</th>
-                <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل المشاريع...</p>
-                  </td>
+      {isLoading && projects.length === 0 ? (
+        <TableSkeleton rows={6} columns={6} />
+      ) : (
+        <div
+          className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+              <thead>
+                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <th style={{ padding: '1rem' }}>المشروع / الكود</th>
+                  <th style={{ padding: '1rem' }}>الفرع التابع</th>
+                  <th style={{ padding: '1rem' }}>الحالة</th>
+                  <th style={{ padding: '1rem' }}>قيمة العقد (SAR)</th>
+                  <th style={{ padding: '1rem' }}>تاريخ البدء والانتهاء</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
                 </tr>
-              ) : projects.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا توجد مشاريع مسجلة مطابقة للبحث
-                  </td>
-                </tr>
-              ) : (
-                projects.map((proj) => (
-                  <tr
-                    key={proj.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background var(--transition-fast)',
-                    }}
-                  >
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{proj.name}</div>
-                      {proj.code && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                          <Hash size={11} />
-                          <span>{proj.code}</span>
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                      {proj.branchName || 'غير محدد'}
-                    </td>
-                    <td style={{ padding: '1rem' }}>{getStatusBadge(proj.status)}</td>
-                    <td style={{ padding: '1rem', fontWeight: 600 }}>
-                      {proj.contractValue ? (
-                        <span>
-                          {Number(proj.contractValue).toLocaleString()}{' '}
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR</span>
-                        </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-dim)' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <Clock size={13} />
-                        <span>
-                          {proj.startDate ? proj.startDate.split('T')[0] : '—'} إلى{' '}
-                          {proj.endDate ? proj.endDate.split('T')[0] : 'مفتوح'}
-                        </span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(proj)}
-                          className="btn btn-secondary"
-                          style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                          title="تعديل المشروع"
-                        >
-                          <Edit2 size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeletingProject(proj)}
-                          className="btn btn-secondary"
-                          style={{
-                            padding: '0.4rem',
-                            borderRadius: 'var(--radius-sm)',
-                            color: '#f87171',
-                            borderColor: 'rgba(239, 68, 68, 0.25)',
-                          }}
-                          title="حذف المشروع"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {projects.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      لا توجد مشاريع مسجلة مطابقة للبحث
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  projects.map((proj) => (
+                    <tr
+                      key={proj.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                    >
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{proj.name}</div>
+                        {proj.code && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            <Hash size={11} />
+                            <span>{proj.code}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
+                        {proj.branchName || 'غير محدد'}
+                      </td>
+                      <td style={{ padding: '1rem' }}>{getStatusBadge(proj.status)}</td>
+                      <td style={{ padding: '1rem', fontWeight: 600 }}>
+                        {proj.contractValue ? (
+                          <span>
+                            {Number(proj.contractValue).toLocaleString()}{' '}
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR</span>
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-dim)' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Clock size={13} />
+                          <span>
+                            {proj.startDate ? proj.startDate.split('T')[0] : '—'} إلى{' '}
+                            {proj.endDate ? proj.endDate.split('T')[0] : 'مفتوح'}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(proj)}
+                            className="btn btn-secondary"
+                            style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
+                            title="تعديل المشروع"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingProject(proj)}
+                            className="btn btn-secondary"
+                            style={{
+                              padding: '0.4rem',
+                              borderRadius: 'var(--radius-sm)',
+                              color: '#f87171',
+                              borderColor: 'rgba(239, 68, 68, 0.25)',
+                            }}
+                            title="حذف المشروع"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>إجمالي المشاريع: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
+          {/* Pagination */}
+          <div
+            style={{
+              padding: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>
+              عرض {startRecord}–{endRecord} من إجمالي {total} مشروع
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                السابق
+              </button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page * limit >= total}
+                onClick={() => setPage(page + 1)}
+              >
+                التالي
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Create / Edit Modal */}
       <ProjectFormModal

@@ -3,6 +3,8 @@ import { branchesApi } from '../../api/branches.api';
 import type { Branch, CreateBranchPayload, UpdateBranchPayload } from '../../api/branches.api';
 import { BranchFormModal } from './BranchFormModal';
 import { Modal } from '../../components/Modal';
+import { StatsStrip } from '../../components/StatsStrip';
+import { TableSkeleton } from '../../components/skeletons';
 import {
   Building,
   Plus,
@@ -14,6 +16,8 @@ import {
   Loader2,
   MapPin,
   Hash,
+  Check,
+  XCircle,
 } from 'lucide-react';
 
 export const BranchesPage: React.FC = () => {
@@ -107,26 +111,57 @@ export const BranchesPage: React.FC = () => {
     }
   };
 
+  // Compute summary stats
+  const activeCount = branches.filter((b) => b.isActive).length;
+  const inactiveCount = total - activeCount;
+
+  const statsItems = [
+    {
+      label: 'إجمالي الفروع الإدارية',
+      value: total,
+      helper: `${branches.length} معروضين حالياً`,
+      icon: <Building size={22} />,
+      color: '#60a5fa',
+    },
+    {
+      label: 'الفروع النشطة والتشغيلية',
+      value: activeCount,
+      helper: 'تستقبل مشاريع وتكاليف',
+      icon: <Check size={22} />,
+      color: '#34d399',
+    },
+    {
+      label: 'الفروع المعطلة أو المؤرشفة',
+      value: inactiveCount,
+      helper: 'مغلقة إدارياً',
+      icon: <XCircle size={22} />,
+      color: '#f87171',
+    },
+  ];
+
+  const startRecord = branches.length === 0 ? 0 : (page - 1) * limit + 1;
+  const endRecord = Math.min(page * limit, total);
+
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      {/* Top Header & Actions Bar */}
       <div
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Building size={28} color="#60a5fa" />
-            <span>إدارة الفروع والمكاتب</span>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Building size={26} color="#60a5fa" />
+            <span>إدارة الفروع والمواقع الإدارية</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            سجل الفروع الجغرافية والمكاتب الإقليمية التابعة للشركة وربطها بالمشاريع والعمالة.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            هيكلية الفروع الإقليمية للشركة، ربط المشاريع والكوادر بكل فرع
           </p>
         </div>
 
@@ -136,7 +171,10 @@ export const BranchesPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Success / Error Toast Alerts */}
+      {/* Stats Summary Strip */}
+      <StatsStrip items={statsItems} isLoading={isLoading && branches.length === 0} />
+
+      {/* Alerts */}
       {successMsg && (
         <div
           style={{
@@ -222,136 +260,138 @@ export const BranchesPage: React.FC = () => {
       </div>
 
       {/* Branches Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-            <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>اسم الفرع</th>
-                <th style={{ padding: '1rem' }}>كود الفرع</th>
-                <th style={{ padding: '1rem' }}>الموقع / العنوان</th>
-                <th style={{ padding: '1rem' }}>الحالة</th>
-                <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل الفروع...</p>
-                  </td>
+      {isLoading && branches.length === 0 ? (
+        <TableSkeleton rows={6} columns={5} />
+      ) : (
+        <div
+          className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+              <thead>
+                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <th style={{ padding: '1rem' }}>اسم الفرع</th>
+                  <th style={{ padding: '1rem' }}>كود الفرع</th>
+                  <th style={{ padding: '1rem' }}>الموقع / العنوان</th>
+                  <th style={{ padding: '1rem' }}>الحالة</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
                 </tr>
-              ) : branches.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا توجد فروع مسجلة مطابقة للبحث
-                  </td>
-                </tr>
-              ) : (
-                branches.map((b) => (
-                  <tr
-                    key={b.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background var(--transition-fast)',
-                    }}
-                  >
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{b.name}</div>
-                      {b.phone && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>هاتف: {b.phone}</div>
-                      )}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span className="badge badge-secondary" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                        <Hash size={12} />
-                        <span>{b.code || '—'}</span>
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <MapPin size={14} color="#60a5fa" />
-                        <span>{b.location || b.address || 'غير محدد'}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      {b.isActive ? (
-                        <span className="badge badge-success">نشط</span>
-                      ) : (
-                        <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>
-                          معطل
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(b)}
-                          className="btn btn-secondary"
-                          style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                          title="تعديل الفرع"
-                        >
-                          <Edit2 size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeletingBranch(b)}
-                          className="btn btn-secondary"
-                          style={{
-                            padding: '0.4rem',
-                            borderRadius: 'var(--radius-sm)',
-                            color: '#f87171',
-                            borderColor: 'rgba(239, 68, 68, 0.25)',
-                          }}
-                          title="حذف الفرع"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {branches.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      لا توجد فروع مسجلة مطابقة للبحث
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  branches.map((b) => (
+                    <tr
+                      key={b.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                    >
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{b.name}</div>
+                        {b.phone && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>هاتف: {b.phone}</div>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span className="badge badge-secondary" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                          <Hash size={12} />
+                          <span>{b.code || '—'}</span>
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <MapPin size={14} color="#60a5fa" />
+                          <span>{b.location || b.address || 'غير محدد'}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {b.isActive ? (
+                          <span className="badge badge-success">نشط</span>
+                        ) : (
+                          <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>
+                            معطل
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(b)}
+                            className="btn btn-secondary"
+                            style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
+                            title="تعديل الفرع"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingBranch(b)}
+                            className="btn btn-secondary"
+                            style={{
+                              padding: '0.4rem',
+                              borderRadius: 'var(--radius-sm)',
+                              color: '#f87171',
+                              borderColor: 'rgba(239, 68, 68, 0.25)',
+                            }}
+                            title="حذف الفرع"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>إجمالي الفروع: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
+          {/* Pagination */}
+          <div
+            style={{
+              padding: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>
+              عرض {startRecord}–{endRecord} من إجمالي {total} فرع
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                السابق
+              </button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page * limit >= total}
+                onClick={() => setPage(page + 1)}
+              >
+                التالي
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Create / Edit Modal */}
       <BranchFormModal
