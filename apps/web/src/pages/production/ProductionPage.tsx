@@ -13,6 +13,8 @@ import { employeesApi } from '../../api/employees.api';
 import type { Employee } from '../../api/employees.api';
 import { ProductionFormModal } from './ProductionFormModal';
 import { ProductionDetailView } from './ProductionDetailView';
+import { CorrectionFormModal } from './CorrectionFormModal';
+import { XlsxProductionImportModal } from './XlsxProductionImportModal';
 import {
   Layers,
   Plus,
@@ -24,6 +26,8 @@ import {
   Calendar,
   Eye,
   Users,
+  Download,
+  UploadCloud,
 } from 'lucide-react';
 
 export const ProductionPage: React.FC = () => {
@@ -39,6 +43,7 @@ export const ProductionPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -52,7 +57,9 @@ export const ProductionPage: React.FC = () => {
 
   // Modals
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [viewingRecord, setViewingRecord] = useState<ProductionRecord | null>(null);
+  const [correctingRecord, setCorrectingRecord] = useState<ProductionRecord | null>(null);
 
   const loadDependencies = async () => {
     try {
@@ -114,6 +121,20 @@ export const ProductionPage: React.FC = () => {
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
+
+  const handleExportXlsx = async () => {
+    setIsExporting(true);
+    setError(null);
+    try {
+      await productionApi.exportXlsx();
+      setSuccessMsg('تم تصدير ملف إنتاجية الإكسيل بنجاح');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setError(err.message || 'فشل تصدير ملف الإنتاجية');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Filter projects by branch in the page filter
   const branchProjects = projects.filter((p) => !selectedBranch || p.branchId === selectedBranch);
@@ -191,10 +212,32 @@ export const ProductionPage: React.FC = () => {
           </p>
         </div>
 
-        <button onClick={() => setIsFormModalOpen(true)} className="btn btn-primary" style={{ gap: '0.5rem' }}>
-          <Plus size={18} />
-          <span>إدخال إنتاج جديد</span>
-        </button>
+        {/* 3 Action Buttons */}
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleExportXlsx}
+            className="btn btn-secondary"
+            disabled={isExporting}
+            style={{ gap: '0.4rem' }}
+          >
+            {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            <span>تصدير Excel</span>
+          </button>
+
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="btn btn-secondary"
+            style={{ gap: '0.4rem', borderColor: 'rgba(16, 185, 129, 0.4)', color: '#34d399' }}
+          >
+            <UploadCloud size={16} />
+            <span>استيراد من Excel</span>
+          </button>
+
+          <button onClick={() => setIsFormModalOpen(true)} className="btn btn-primary" style={{ gap: '0.4rem' }}>
+            <Plus size={16} />
+            <span>إدخال إنتاج جديد</span>
+          </button>
+        </div>
       </div>
 
       {/* Alerts */}
@@ -507,6 +550,32 @@ export const ProductionPage: React.FC = () => {
         record={viewingRecord}
         onRecordUpdated={() => {
           loadRecords();
+        }}
+        onRequestCorrection={(rec) => {
+          setCorrectingRecord(rec);
+        }}
+      />
+
+      {/* Correction Form Modal */}
+      <CorrectionFormModal
+        isOpen={!!correctingRecord}
+        onClose={() => setCorrectingRecord(null)}
+        onSuccess={() => {
+          setSuccessMsg('تم تقديم طلب التصحيح بنجاح!');
+          loadRecords();
+          setTimeout(() => setSuccessMsg(null), 4000);
+        }}
+        record={correctingRecord}
+      />
+
+      {/* XLSX Production Import Modal */}
+      <XlsxProductionImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          setSuccessMsg('تم استيراد واعتماد سجلات الإنتاج بنجاح!');
+          loadRecords();
+          setTimeout(() => setSuccessMsg(null), 4000);
         }}
       />
     </div>
