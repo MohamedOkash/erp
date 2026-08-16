@@ -15,6 +15,7 @@ import { BoqProgressPage } from './pages/boq/BoqProgressPage';
 import { AttendancePage } from './pages/attendance/AttendancePage';
 import { CostsPage } from './pages/costs/CostsPage';
 import { AlertsPage } from './pages/alerts/AlertsPage';
+import { IncentivesPage } from './pages/incentives/IncentivesPage';
 import { UnderConstructionPage } from './pages/common/UnderConstructionPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
@@ -47,9 +48,7 @@ export const App: React.FC = () => {
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/costs" element={<CostsPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
-
-        {/* Roadmap Modules with Under Construction Placeholder */}
-        <Route path="/incentives" element={<UnderConstructionPage />} />
+        <Route path="/incentives" element={<IncentivesPage />} />
         <Route path="/documents" element={<UnderConstructionPage />} />
         <Route path="/reports" element={<UnderConstructionPage />} />
         <Route path="/settings" element={<UnderConstructionPage />} />
