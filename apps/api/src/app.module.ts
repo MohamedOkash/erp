@@ -8,6 +8,7 @@ import { ImportsModule } from './imports/imports.module';
 import { ExportsModule } from './exports/exports.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AttendanceModule } from './attendance/attendance.module';
+import { AttendancePoliciesModule } from './attendance-policies/attendance-policies.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { CostsModule } from './costs/costs.module';
@@ -46,6 +47,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     EmployeesModule,
     ProductionModule,
     AttendanceModule,
+    AttendancePoliciesModule,
     NotificationsModule,
     AlertsModule,
     CostsModule,

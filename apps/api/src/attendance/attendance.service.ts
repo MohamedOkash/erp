@@ -101,14 +101,14 @@ export class AttendanceService {
       const insertRes = await client.query(
         `INSERT INTO attendance (
            company_id, employee_id, project_id, branch_id, date, status_id,
-           check_in_time, check_out_time, overtime_hours, recorded_by, notes
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+           check_in_time, check_out_time, overtime_hours, recorded_by, notes, source
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
          RETURNING id, company_id, employee_id, project_id, branch_id,
                    to_char(date, 'YYYY-MM-DD') AS date,
                    status_id,
                    to_char(check_in_time, 'HH24:MI') AS check_in_time,
                    to_char(check_out_time, 'HH24:MI') AS check_out_time,
-                   overtime_hours, recorded_by, notes, created_at, updated_at`,
+                   overtime_hours, source, recorded_by, notes, created_at, updated_at`,
         [
           companyId,
           dto.employeeId,
@@ -121,6 +121,7 @@ export class AttendanceService {
           dto.overtimeHours || 0,
           userId || null,
           dto.notes || null,
+          dto.source || 'manual',
         ],
       );
 
@@ -182,7 +183,7 @@ export class AttendanceService {
                a.status_id,
                to_char(a.check_in_time, 'HH24:MI') AS check_in_time,
                to_char(a.check_out_time, 'HH24:MI') AS check_out_time,
-               a.overtime_hours, a.recorded_by, a.notes, a.created_at, a.updated_at,
+               a.overtime_hours, a.source, a.recorded_by, a.notes, a.created_at, a.updated_at,
                e.name AS employee_name, e.identity_number AS national_id,
                b.name AS branch_name,
                p.name AS project_name,
@@ -220,7 +221,7 @@ export class AttendanceService {
                a.status_id,
                to_char(a.check_in_time, 'HH24:MI') AS check_in_time,
                to_char(a.check_out_time, 'HH24:MI') AS check_out_time,
-               a.overtime_hours, a.recorded_by, a.notes, a.created_at, a.updated_at,
+               a.overtime_hours, a.source, a.recorded_by, a.notes, a.created_at, a.updated_at,
                e.name AS employee_name, e.identity_number AS national_id,
                b.name AS branch_name,
                p.name AS project_name,

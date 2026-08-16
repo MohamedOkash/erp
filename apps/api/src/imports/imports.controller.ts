@@ -1,6 +1,8 @@
 import {
+  Body,
   Controller,
   Param,
+  Patch,
   Post,
   UploadedFile,
   UseGuards,
@@ -68,6 +70,32 @@ export class ImportsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.importsService.uploadAttendanceXlsx(user.companyId, file);
+  }
+
+  /**
+   * Upload & stage biometric device attendance file
+   * Route: POST /api/v1/imports/attendance-device/upload
+   */
+  @Post('attendance-device/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAttendanceDevice(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.importsService.uploadAttendanceDeviceXlsx(user.companyId, file);
+  }
+
+  /**
+   * Update a single staging row parsed_data / status before commit
+   * Route: PATCH /api/v1/imports/staging/:rowId
+   */
+  @Patch('staging/:rowId')
+  async updateStagingRow(
+    @Param('rowId') rowId: string,
+    @Body() dto: any,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.importsService.updateStagingRow(user.companyId, rowId, dto);
   }
 
   /**

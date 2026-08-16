@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import * as ExcelJS from 'exceljs';
 import { DatabaseService } from '../database/database.service';
+import { AttendancePoliciesService } from '../attendance-policies/attendance-policies.service';
 import {
   ImportSummary,
   ImportUploadResponseDto,
@@ -13,7 +14,10 @@ import {
 
 @Injectable()
 export class ImportsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly attendancePoliciesService: AttendancePoliciesService,
+  ) {}
 
   /**
    * Upload & stage employees XLSX file without directly writing to employees table
@@ -1036,13 +1040,28 @@ export class ImportsService {
           }
         }
       } else if (job.job_type === 'attendance') {
+        // Fetch all statuses map for fallback status code resolution
+        const stRes = await client.query(
+          `SELECT id, code FROM attendance_statuses WHERE company_id = $1 OR company_id IS NULL`,
+          [companyId],
+        );
+        const statusMap = new Map<string, string>();
+        for (const s of stRes.rows) {
+          statusMap.set(s.code, s.id);
+        }
+
         for (const row of validRows) {
           const p = row.parsed_data;
+          let statusId = p.statusId;
+          if (!statusId && p.status) {
+            statusId = statusMap.get(p.status) || statusMap.get('present');
+          }
+
           await client.query(
             `INSERT INTO attendance (
               company_id, employee_id, project_id, branch_id, date, status_id,
-              check_in_time, check_out_time, overtime_hours
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+              check_in_time, check_out_time, overtime_hours, source, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             ON CONFLICT (company_id, employee_id, date) DO UPDATE SET
               status_id = EXCLUDED.status_id,
               project_id = EXCLUDED.project_id,
@@ -1050,6 +1069,8 @@ export class ImportsService {
               check_in_time = EXCLUDED.check_in_time,
               check_out_time = EXCLUDED.check_out_time,
               overtime_hours = EXCLUDED.overtime_hours,
+              source = EXCLUDED.source,
+              notes = EXCLUDED.notes,
               updated_at = CURRENT_TIMESTAMP`,
             [
               companyId,
@@ -1057,10 +1078,12 @@ export class ImportsService {
               p.projectId,
               p.branchId,
               p.date,
-              p.statusId,
+              statusId,
               p.checkIn || null,
               p.checkOut || null,
               p.overtime || 0,
+              p.source || 'device',
+              p.notes || null,
             ],
           );
         }
@@ -1495,6 +1518,656 @@ export class ImportsService {
       return {
         jobId,
         summary,
+        rows: parsedRows,
+      };
+    });
+  }
+
+  /**
+   * Update a single staging row parsed_data / status before commit
+   * Route: PATCH /api/v1/imports/staging/:rowId
+   */
+  async updateStagingRow(companyId: string, rowId: string, dto: any) {
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      const rowRes = await client.query(
+        `SELECT id, import_job_id, parsed_data, status FROM import_staging_rows WHERE id = $1 AND company_id = $2`,
+        [rowId, companyId],
+      );
+      if (rowRes.rows.length === 0) {
+        throw new NotFoundException(`Staging row with ID '${rowId}' not found`);
+      }
+
+      const currentRow = rowRes.rows[0];
+      const parsedData = { ...currentRow.parsed_data, ...(dto.parsedData || {}) };
+
+      // If status changed by user
+      if (dto.parsedData?.status) {
+        const stRes = await client.query(
+          `SELECT id, name FROM attendance_statuses WHERE code = $1 AND (company_id = $2 OR company_id IS NULL)`,
+          [dto.parsedData.status, companyId],
+        );
+        if (stRes.rows.length > 0) {
+          parsedData.statusId = stRes.rows[0].id;
+          parsedData.statusName = stRes.rows[0].name;
+          parsedData.status = dto.parsedData.status;
+        }
+      }
+
+      let newStatus = dto.status || currentRow.status;
+      if (dto.parsedData && !dto.status && (newStatus === 'error' || newStatus === 'invalid')) {
+        newStatus = 'valid';
+      }
+
+      if (newStatus === 'valid') {
+        await client.query(
+          `DELETE FROM import_row_errors WHERE staging_row_id = $1 AND company_id = $2`,
+          [rowId, companyId],
+        );
+      }
+
+      const updateRes = await client.query(
+        `UPDATE import_staging_rows
+         SET parsed_data = $1, status = $2
+         WHERE id = $3 AND company_id = $4
+         RETURNING id, import_job_id, row_index, raw_data, parsed_data, status, created_at`,
+        [JSON.stringify(parsedData), newStatus, rowId, companyId],
+      );
+
+      // Recalculate job summary counts
+      const countsRes = await client.query(
+        `SELECT
+           COUNT(*) FILTER (WHERE status = 'valid')::int AS valid_count,
+           COUNT(*) FILTER (WHERE status = 'error')::int AS error_count,
+           COUNT(*)::int AS total_count
+         FROM import_staging_rows
+         WHERE import_job_id = $1 AND company_id = $2`,
+        [currentRow.import_job_id, companyId],
+      );
+
+      const { valid_count, error_count, total_count } = countsRes.rows[0];
+      await client.query(
+        `UPDATE import_jobs
+         SET valid_rows = $1, error_rows = $2, total_rows = $3, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $4 AND company_id = $5`,
+        [valid_count, error_count, total_count, currentRow.import_job_id, companyId],
+      );
+
+      return updateRes.rows[0];
+    });
+  }
+
+  /**
+   * Upload & stage biometric device attendance file
+   * Supports Format A (row per day) and Format B (row per punch)
+   * Deducts statuses and overtime using dynamic attendance policies (ZERO constants)
+   */
+  async uploadAttendanceDeviceXlsx(
+    companyId: string,
+    file: Express.Multer.File,
+  ) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('No file provided or file buffer is empty');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as any);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Worksheet not found in Excel file');
+    }
+
+    // Auto-detect columns from Row 1
+    const headerRow = worksheet.getRow(1);
+    const colMap: { [key: string]: number } = {};
+
+    headerRow.eachCell((cell, colNumber) => {
+      const rawText = cell.text ? cell.text.trim().toLowerCase() : '';
+      if (!rawText) return;
+      const h = rawText.replace(/[\s_\-]+/g, '');
+
+      // Device code
+      if (
+        [
+          'enrollno', 'enroll', 'empno', 'employeeno', 'badgeno', 'badge', 'رقمالموظف',
+          'الكود', 'كودالبصمة', 'كودبصمة', 'الرقم_الوظيفي', 'الرقم_الوظيفي', 'الرقم_الوظيفي',
+          'userid', 'user_id', 'pin', 'acno', 'acno.', 'كود', 'code', 'devicecode', 'deviceno',
+          'رقم_الموظف', 'رقم_البصمة', 'رقم_الجهاز', 'كود_الموظف'
+        ].includes(h) ||
+        rawText.includes('enroll') ||
+        rawText.includes('كود') ||
+        rawText.includes('بصمة')
+      ) {
+        if (!colMap['deviceCode']) colMap['deviceCode'] = colNumber;
+      }
+      // Name
+      else if (
+        ['name', 'الاسم', 'اسم', 'اسمالموظف', 'اسمعامل', 'fullname', 'employeename', 'workername'].includes(h) ||
+        rawText.includes('الاسم') || rawText.includes('اسم')
+      ) {
+        if (!colMap['name']) colMap['name'] = colNumber;
+      }
+      // National ID
+      else if (
+        ['identity', 'قومي', 'هوية', 'الرقم_القومي', 'رقمقومي', 'nationalid', 'idnumber', 'رقم_الهوية'].includes(h) ||
+        rawText.includes('هوية') || rawText.includes('قومي')
+      ) {
+        if (!colMap['nationalId']) colMap['nationalId'] = colNumber;
+      }
+      // Date
+      else if (
+        ['date', 'day', 'التاريخ', 'تاريخ', 'اليوم', 'punchdate', 'attendancedate', 'تاريخ_البصمة'].includes(h) ||
+        rawText.includes('تاريخ') || rawText.includes('date')
+      ) {
+        if (!colMap['date']) colMap['date'] = colNumber;
+      }
+      // Check-in
+      else if (
+        [
+          'checkin', 'clockin', 'in', 'punchin', 'الدخول', 'الحضور', 'وقتالدخول', 'وقتالحضور', 'دخول', 'حضور'
+        ].includes(h) ||
+        rawText.includes('دخول') || rawText.includes('حضور') || rawText.includes('checkin') || rawText.includes('clockin') || rawText === 'in'
+      ) {
+        if (!colMap['checkIn']) colMap['checkIn'] = colNumber;
+      }
+      // Check-out
+      else if (
+        [
+          'checkout', 'clockout', 'out', 'punchout', 'الخروج', 'الانصراف', 'وقتالخروج', 'وقتالانصراف', 'خروج', 'انصراف'
+        ].includes(h) ||
+        rawText.includes('خروج') || rawText.includes('انصراف') || rawText.includes('checkout') || rawText.includes('clockout') || rawText === 'out'
+      ) {
+        if (!colMap['checkOut']) colMap['checkOut'] = colNumber;
+      }
+      // Single Time
+      else if (
+        ['time', 'الوقت', 'وقت', 'punchtime', 'وقت_البصمة'].includes(h) ||
+        rawText === 'time' || rawText === 'الوقت'
+      ) {
+        if (!colMap['time']) colMap['time'] = colNumber;
+      }
+      // Direction
+      else if (
+        ['direction', 'inout', 'النوع', 'اتجاه', 'حالة_البصمة', 'punchtype', 'state', 'نوع_الحركة'].includes(h)
+      ) {
+        if (!colMap['direction']) colMap['direction'] = colNumber;
+      }
+    });
+
+    const isPunchListFormat = !!colMap['time'] && (!colMap['checkIn'] || !colMap['checkOut']);
+
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      // 1. Fetch DB employees for matching
+      const employeesRes = await client.query(
+        `SELECT e.id, e.name, e.identity_number, e.device_code, e.primary_branch_id,
+                (SELECT ea.project_id FROM employee_assignments ea
+                 WHERE ea.employee_id = e.id AND ea.company_id = e.company_id AND ea.is_active = true
+                 ORDER BY ea.created_at DESC LIMIT 1) AS active_project_id,
+                (SELECT ea.branch_id FROM employee_assignments ea
+                 WHERE ea.employee_id = e.id AND ea.company_id = e.company_id AND ea.is_active = true
+                 ORDER BY ea.created_at DESC LIMIT 1) AS active_branch_id
+         FROM employees e
+         WHERE e.company_id = $1`,
+        [companyId],
+      );
+
+      const deviceCodeMap = new Map<string, any>();
+      const nationalIdMap = new Map<string, any>();
+      const nameMap = new Map<string, any>();
+
+      for (const emp of employeesRes.rows) {
+        if (emp.device_code) {
+          deviceCodeMap.set(String(emp.device_code).trim().toLowerCase(), emp);
+        }
+        if (emp.identity_number) {
+          nationalIdMap.set(String(emp.identity_number).trim().toLowerCase(), emp);
+        }
+        if (emp.name) {
+          nameMap.set(String(emp.name).trim().toLowerCase(), emp);
+        }
+      }
+
+      // 2. Fetch default branch & project
+      const defBranchRes = await client.query(
+        `SELECT id FROM branches WHERE company_id = $1 ORDER BY created_at ASC LIMIT 1`,
+        [companyId],
+      );
+      const defaultBranchId = defBranchRes.rows[0]?.id || null;
+
+      const defProjRes = await client.query(
+        `SELECT id FROM projects WHERE company_id = $1 ORDER BY created_at ASC LIMIT 1`,
+        [companyId],
+      );
+      const defaultProjectId = defProjRes.rows[0]?.id || null;
+
+      // 3. Fetch attendance statuses
+      const statusRes = await client.query(
+        `SELECT id, code, name FROM attendance_statuses WHERE company_id = $1 OR company_id IS NULL`,
+        [companyId],
+      );
+      const statusMap = new Map<string, { id: string; name: string }>();
+      for (const st of statusRes.rows) {
+        statusMap.set(st.code, { id: st.id, name: st.name });
+      }
+
+      const presentStatus = statusMap.get('present') || { id: '00000000-0000-0000-0002-000000000001', name: 'حاضر' };
+      const lateStatus = statusMap.get('late') || { id: '00000000-0000-0000-0002-000000000002', name: 'متأخر' };
+      const absentStatus = statusMap.get('absent') || { id: '00000000-0000-0000-0002-000000000003', name: 'غائب' };
+
+      // 4. Fetch existing attendance keys for duplicate detection
+      const existingAttRes = await client.query(
+        `SELECT to_char(date, 'YYYY-MM-DD') AS date, employee_id FROM attendance WHERE company_id = $1`,
+        [companyId],
+      );
+      const dbAttendanceKeys = new Set<string>();
+      for (const a of existingAttRes.rows) {
+        dbAttendanceKeys.add(`${a.date}|${a.employee_id}`);
+      }
+
+      const seenFileAttendanceKeys = new Set<string>();
+      const parsedRows: any[] = [];
+      const rowDbRecords: any[] = [];
+
+      const parseTimeVal = (cellVal: any): string | null => {
+        if (cellVal === null || cellVal === undefined || cellVal === '') return null;
+        if (cellVal instanceof Date) {
+          const h = String(cellVal.getUTCHours() || cellVal.getHours()).padStart(2, '0');
+          const m = String(cellVal.getUTCMinutes() || cellVal.getMinutes()).padStart(2, '0');
+          return `${h}:${m}`;
+        }
+        if (typeof cellVal === 'number') {
+          // Fraction of 24h
+          const totalMins = Math.round(cellVal * 24 * 60);
+          const h = String(Math.floor(totalMins / 60) % 24).padStart(2, '0');
+          const m = String(totalMins % 60).padStart(2, '0');
+          return `${h}:${m}`;
+        }
+        const str = String(cellVal).trim();
+        const match = str.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+        if (match) {
+          return `${match[1].padStart(2, '0')}:${match[2]}`;
+        }
+        return null;
+      };
+
+      const parseDateVal = (cellVal: any): string | null => {
+        if (!cellVal) return null;
+        if (cellVal instanceof Date) {
+          return cellVal.toISOString().split('T')[0];
+        }
+        if (typeof cellVal === 'number') {
+          const date = new Date(Math.round((cellVal - 25569) * 86400 * 1000));
+          return date.toISOString().split('T')[0];
+        }
+        const str = String(cellVal).trim();
+        const ymd = str.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+        if (ymd) {
+          return `${ymd[1]}-${ymd[2].padStart(2, '0')}-${ymd[3].padStart(2, '0')}`;
+        }
+        const dmy = str.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+        if (dmy) {
+          return `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+        }
+        try {
+          const d = new Date(str);
+          if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+        } catch {}
+        return null;
+      };
+
+      const parseTimeToMinutes = (timeStr: string | null): number | null => {
+        if (!timeStr) return null;
+        const m = timeStr.match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return null;
+        return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+      };
+
+      let primaryPolicyUsed: any = null;
+
+      // Extract raw items
+      interface RawPunchItem {
+        rowIndex: number;
+        deviceCodeVal: string | null;
+        nameVal: string | null;
+        nationalIdVal: string | null;
+        dateVal: string | null;
+        checkInVal: string | null;
+        checkOutVal: string | null;
+        timeVal: string | null;
+        rawData: any;
+      }
+
+      const rawItems: RawPunchItem[] = [];
+      const rowCount = worksheet.rowCount;
+
+      for (let r = 2; r <= rowCount; r++) {
+        const row = worksheet.getRow(r);
+        const deviceCodeVal = colMap['deviceCode'] ? row.getCell(colMap['deviceCode']).text?.trim() : null;
+        const nameVal = colMap['name'] ? row.getCell(colMap['name']).text?.trim() : null;
+        const nationalIdVal = colMap['nationalId'] ? row.getCell(colMap['nationalId']).text?.trim() : null;
+        const dateRaw = colMap['date'] ? row.getCell(colMap['date']).value : null;
+        const dateVal = parseDateVal(dateRaw) || (colMap['date'] ? row.getCell(colMap['date']).text?.trim() : null);
+
+        const checkInRaw = colMap['checkIn'] ? row.getCell(colMap['checkIn']).value : null;
+        const checkInVal = parseTimeVal(checkInRaw) || (colMap['checkIn'] ? row.getCell(colMap['checkIn']).text?.trim() : null);
+
+        const checkOutRaw = colMap['checkOut'] ? row.getCell(colMap['checkOut']).value : null;
+        const checkOutVal = parseTimeVal(checkOutRaw) || (colMap['checkOut'] ? row.getCell(colMap['checkOut']).text?.trim() : null);
+
+        const timeRaw = colMap['time'] ? row.getCell(colMap['time']).value : null;
+        const timeVal = parseTimeVal(timeRaw) || (colMap['time'] ? row.getCell(colMap['time']).text?.trim() : null);
+
+        if (!deviceCodeVal && !nameVal && !nationalIdVal && !dateVal && !checkInVal && !timeVal) {
+          continue;
+        }
+
+        const rawData: any = {};
+        row.eachCell((cell, colNumber) => {
+          rawData[`col_${colNumber}`] = cell.text;
+        });
+
+        rawItems.push({
+          rowIndex: r,
+          deviceCodeVal,
+          nameVal,
+          nationalIdVal,
+          dateVal,
+          checkInVal,
+          checkOutVal,
+          timeVal,
+          rawData,
+        });
+      }
+
+      // Group punches if Format B (Punch list)
+      interface GroupedAttendanceRecord {
+        rowIndex: number;
+        deviceCodeVal: string | null;
+        nameVal: string | null;
+        nationalIdVal: string | null;
+        dateVal: string;
+        checkIn: string | null;
+        checkOut: string | null;
+        rawData: any;
+      }
+
+      const groupedRecords: GroupedAttendanceRecord[] = [];
+
+      if (isPunchListFormat) {
+        const groups = new Map<string, { punches: string[]; item: RawPunchItem }>();
+        for (const item of rawItems) {
+          const empKey = (item.deviceCodeVal || item.nationalIdVal || item.nameVal || 'UNKNOWN').toLowerCase();
+          const dKey = item.dateVal || 'NO_DATE';
+          const groupKey = `${empKey}|${dKey}`;
+
+          if (!groups.has(groupKey)) {
+            groups.set(groupKey, { punches: [], item });
+          }
+          if (item.timeVal) {
+            groups.get(groupKey)!.punches.push(item.timeVal);
+          }
+        }
+
+        for (const [, grp] of groups.entries()) {
+          grp.punches.sort((a, b) => {
+            const minA = parseTimeToMinutes(a) || 0;
+            const minB = parseTimeToMinutes(b) || 0;
+            return minA - minB;
+          });
+
+          const checkIn = grp.punches[0] || null;
+          const checkOut = grp.punches.length > 1 ? grp.punches[grp.punches.length - 1] : null;
+
+          groupedRecords.push({
+            rowIndex: grp.item.rowIndex,
+            deviceCodeVal: grp.item.deviceCodeVal,
+            nameVal: grp.item.nameVal,
+            nationalIdVal: grp.item.nationalIdVal,
+            dateVal: grp.item.dateVal || new Date().toISOString().split('T')[0],
+            checkIn,
+            checkOut,
+            rawData: grp.item.rawData,
+          });
+        }
+      } else {
+        // Format A
+        for (const item of rawItems) {
+          groupedRecords.push({
+            rowIndex: item.rowIndex,
+            deviceCodeVal: item.deviceCodeVal,
+            nameVal: item.nameVal,
+            nationalIdVal: item.nationalIdVal,
+            dateVal: item.dateVal || new Date().toISOString().split('T')[0],
+            checkIn: item.checkInVal,
+            checkOut: item.checkOutVal,
+            rawData: item.rawData,
+          });
+        }
+      }
+
+      // Process grouped records
+      for (const rec of groupedRecords) {
+        const errors: string[] = [];
+        let rowStatus: 'valid' | 'duplicate' | 'invalid' = 'valid';
+
+        // 1. Employee Matching
+        let matchedEmployee: any = null;
+        if (rec.deviceCodeVal) {
+          matchedEmployee = deviceCodeMap.get(rec.deviceCodeVal.toLowerCase());
+        }
+        if (!matchedEmployee && rec.nationalIdVal) {
+          matchedEmployee = nationalIdMap.get(rec.nationalIdVal.toLowerCase());
+        }
+        if (!matchedEmployee && rec.nameVal) {
+          matchedEmployee = nameMap.get(rec.nameVal.toLowerCase());
+        }
+
+        if (!matchedEmployee) {
+          const idenf = rec.deviceCodeVal || rec.nationalIdVal || rec.nameVal || 'غير محدد';
+          errors.push(`EMPLOYEE_NOT_FOUND: لم يتم العثور على الموظف (${idenf})`);
+          rowStatus = 'invalid';
+        }
+
+        // 2. Date
+        const dateStr = parseDateVal(rec.dateVal) || rec.dateVal;
+        if (!dateStr || isNaN(Date.parse(dateStr))) {
+          errors.push('تاريخ غير صالح');
+          rowStatus = 'invalid';
+        }
+
+        const projectId = matchedEmployee?.active_project_id || defaultProjectId;
+        const branchId = matchedEmployee?.active_branch_id || matchedEmployee?.primary_branch_id || defaultBranchId;
+
+        // 3. Dynamic Policy deduction (ZERO constants!)
+        const policy = await this.attendancePoliciesService.getEffectivePolicy(
+          companyId,
+          projectId,
+          dateStr || new Date().toISOString().split('T')[0],
+          client,
+        );
+
+        if (!primaryPolicyUsed) {
+          primaryPolicyUsed = policy;
+        }
+
+        const shiftStartMins = parseTimeToMinutes(policy.shift_start_time) || 480;
+        const graceMins = Number(policy.grace_minutes || 15);
+        const checkInMins = parseTimeToMinutes(rec.checkIn);
+        const checkOutMins = parseTimeToMinutes(rec.checkOut);
+
+        let finalStatusObj = presentStatus;
+        let finalStatusCode = 'present';
+        let overtime = 0;
+        let notes: string | null = null;
+
+        if (checkInMins !== null) {
+          if (checkInMins > shiftStartMins + graceMins) {
+            finalStatusObj = lateStatus;
+            finalStatusCode = 'late';
+          } else {
+            finalStatusObj = presentStatus;
+            finalStatusCode = 'present';
+          }
+
+          if (checkOutMins !== null) {
+            if (checkOutMins <= checkInMins) {
+              errors.push('وقت الخروج يجب أن يكون بعد وقت الدخول');
+              rowStatus = 'invalid';
+            } else {
+              const breakMins = Number(policy.break_minutes || 0);
+              const thresholdHours = Number(policy.overtime_threshold_hours || 8);
+              const workedMinutes = Math.max(0, checkOutMins - checkInMins - breakMins);
+              const workedHours = workedMinutes / 60;
+              overtime = Math.max(0, Number((workedHours - thresholdHours).toFixed(2)));
+            }
+          } else {
+            notes = 'بدون انصراف';
+          }
+        } else {
+          finalStatusObj = absentStatus;
+          finalStatusCode = 'absent';
+        }
+
+        // 4. Duplicate Check
+        if (matchedEmployee && dateStr && errors.length === 0) {
+          const fileKey = `${dateStr}|${matchedEmployee.id}`;
+          if (dbAttendanceKeys.has(fileKey)) {
+            rowStatus = 'duplicate';
+            errors.push('سجل الحضور مكرر لنفس الموظف في هذا اليوم');
+          } else if (seenFileAttendanceKeys.has(fileKey)) {
+            rowStatus = 'duplicate';
+            errors.push('سجل الحضور مكرر داخل نفس الملف');
+          } else {
+            seenFileAttendanceKeys.add(fileKey);
+          }
+        }
+
+        const parsedData = {
+          date: dateStr,
+          employeeId: matchedEmployee?.id || null,
+          employeeName: matchedEmployee?.name || rec.nameVal || '—',
+          nationalId: matchedEmployee?.identity_number || rec.nationalIdVal || null,
+          deviceCode: matchedEmployee?.device_code || rec.deviceCodeVal || null,
+          projectId,
+          branchId,
+          statusId: finalStatusObj.id,
+          statusName: finalStatusObj.name,
+          status: finalStatusCode,
+          checkIn: rec.checkIn,
+          checkOut: rec.checkOut,
+          overtime,
+          source: 'device',
+          notes,
+          policyId: policy.id,
+        };
+
+        parsedRows.push({
+          rowIndex: rec.rowIndex,
+          date: dateStr,
+          employee: matchedEmployee?.name || rec.nameVal || rec.deviceCodeVal || 'غير معروف',
+          deviceCode: rec.deviceCodeVal,
+          nationalId: rec.nationalIdVal,
+          status: finalStatusObj.name,
+          statusCode: finalStatusCode,
+          checkIn: rec.checkIn,
+          checkOut: rec.checkOut,
+          overtime,
+          source: 'device',
+          notes,
+          rowStatus,
+          errors,
+        });
+
+        rowDbRecords.push({
+          rowIndex: rec.rowIndex,
+          rawData: rec.rawData,
+          parsedData,
+          dbStatus: rowStatus === 'valid' ? 'valid' : 'error',
+          errors,
+        });
+      }
+
+      const validCount = parsedRows.filter((r) => r.rowStatus === 'valid').length;
+      const duplicateCount = parsedRows.filter((r) => r.rowStatus === 'duplicate').length;
+      const invalidCount = parsedRows.filter((r) => r.rowStatus === 'invalid').length;
+      const totalCount = parsedRows.length;
+
+      const summary: ImportSummary = {
+        total: totalCount,
+        valid: validCount,
+        duplicate: duplicateCount,
+        invalid: invalidCount,
+      };
+
+      // Insert into import_jobs
+      const jobRes = await client.query(
+        `INSERT INTO import_jobs (
+          company_id, job_type, file_name, status, total_rows, valid_rows, error_rows
+        ) VALUES ($1, 'attendance', $2, 'staged', $3, $4, $5)
+        RETURNING id`,
+        [
+          companyId,
+          file.originalname || 'attendance_biometric.xlsx',
+          totalCount,
+          validCount,
+          duplicateCount + invalidCount,
+        ],
+      );
+
+      const jobId = jobRes.rows[0].id;
+
+      // Insert staging rows
+      for (const item of rowDbRecords) {
+        const stagingRes = await client.query(
+          `INSERT INTO import_staging_rows (
+            company_id, import_job_id, row_index, raw_data, parsed_data, status
+          ) VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING id`,
+          [
+            companyId,
+            jobId,
+            item.rowIndex,
+            JSON.stringify(item.rawData),
+            JSON.stringify(item.parsedData),
+            item.dbStatus,
+          ],
+        );
+
+        const stagingId = stagingRes.rows[0].id;
+        for (const err of item.errors) {
+          const errCode =
+            item.dbStatus === 'error' && err.includes('مكرر')
+              ? 'DUPLICATE_ATTENDANCE_RECORD'
+              : err.includes('EMPLOYEE_NOT_FOUND')
+              ? 'EMPLOYEE_NOT_FOUND'
+              : 'INVALID_DATA';
+
+          await client.query(
+            `INSERT INTO import_row_errors (
+              company_id, staging_row_id, column_name, error_code, error_message
+            ) VALUES ($1, $2, 'attendance', $3, $4)`,
+            [companyId, stagingId, errCode, err],
+          );
+        }
+      }
+
+      return {
+        jobId,
+        summary,
+        detectedColumns: colMap,
+        policyUsed: primaryPolicyUsed
+          ? {
+              id: primaryPolicyUsed.id,
+              shiftStartTime: primaryPolicyUsed.shift_start_time,
+              shiftEndTime: primaryPolicyUsed.shift_end_time,
+              graceMinutes: primaryPolicyUsed.grace_minutes,
+              breakMinutes: primaryPolicyUsed.break_minutes,
+              overtimeThresholdHours: primaryPolicyUsed.overtime_threshold_hours,
+              overtimeMultiplier: primaryPolicyUsed.overtime_multiplier,
+              effectiveFrom: primaryPolicyUsed.effective_from,
+              projectName: primaryPolicyUsed.project_name || 'السياسة العامة للمنشأة',
+            }
+          : null,
         rows: parsedRows,
       };
     });

@@ -1172,3 +1172,91 @@
   - $\text{weighted\_done} = \sum (\text{actual\_quantity} \times \text{wis.percentage})$
   - $\text{progress\_percentage} = (\text{weighted\_done} / \text{boq\_items.total\_quantity}) \times 100$
   - يحسب فقط السجلات المعتمدة نهائياً (`status = 'final_approved'`).
+
+---
+
+## 15. موديول استيراد بصمة أجهزة الحضور وسياسات الدوام (Biometric Attendance & Dynamic Policies Module)
+
+### 1) استيراد ملف بصمة الحضور (Biometric Attendance Import)
+- **المسار:** `POST /api/v1/imports/attendance-device/upload`
+- **الوصف:** رفع وتحليل ملف إكسيل بصمات الحضور (يدعم الصيغة أ: صف لكل يوم بالدخول والخروج، والصيغة ب: سجل حركات بصمة Punch List مع تجميع أول بصمة كدخول وآخر بصمة كانصراف). يتم استنتاج الحالة (حاضر / متأخر) وساعات الإضافي ديناميكياً بناءً على سياسة الحضور الفعالة وبدون أي ثوابت برمجية.
+- **نوع المحتوى:** `multipart/form-data` (حقل `file`).
+- **المطابقة التلقائية للموظف:**
+  1. كود جهاز البصمة (`device_code`)
+  2. الرقم القومي (`identity_number` / `national_id`)
+  3. اسم الموظف (`name`)
+- **الـ Response الناجح (201 Created):**
+  ```json
+  {
+    "jobId": "uuid",
+    "summary": { "total": 25, "valid": 23, "duplicate": 1, "invalid": 1 },
+    "detectedColumns": { "deviceCode": 1, "date": 2, "checkIn": 3, "checkOut": 4 },
+    "policyUsed": {
+      "id": "uuid",
+      "shiftStartTime": "08:00",
+      "shiftEndTime": "17:00",
+      "graceMinutes": 15,
+      "breakMinutes": 60,
+      "overtimeThresholdHours": 8,
+      "overtimeMultiplier": 1.5,
+      "effectiveFrom": "2026-01-01",
+      "projectName": "السياسة العامة للمنشأة"
+    },
+    "rows": [
+      {
+        "rowIndex": 2,
+        "date": "2026-08-16",
+        "employee": "أحمد محمود",
+        "deviceCode": "DEV-101",
+        "nationalId": "28501010100111",
+        "status": "حاضر",
+        "statusCode": "present",
+        "checkIn": "08:10",
+        "checkOut": "17:00",
+        "overtime": 0,
+        "source": "device",
+        "notes": null,
+        "rowStatus": "valid",
+        "errors": []
+      }
+    ]
+  }
+  ```
+
+### 2) تعديل صف قبل الاعتماد (Update Staging Row)
+- **المسار:** `PATCH /api/v1/imports/staging/:rowId`
+- **الوصف:** تعديل وتصحيح بيانات صف في مرحلة الـ Staging (مثل تغيير الحالة من متأخر إلى حاضر مع إضافة ملاحظة إذن رسمي) قبل تنفيذ الاعتماد النهائي.
+- **الـ Body:**
+  ```json
+  {
+    "parsedData": {
+      "status": "present",
+      "notes": "إذن رسمي معتمد من الإدارة"
+    },
+    "status": "valid"
+  }
+  ```
+
+### 3) إدارة سياسات الحضور والدوام (Attendance Policies CRUD)
+- الصلاحية المطلوبة: `project_manager` وما فوق (`company_admin`, `super_admin`, `branch_manager`).
+
+- **استعراض السياسات:** `GET /api/v1/attendance-policies?projectId=uuid&isActive=true`
+- **استعلام السياسة الفعالة لتاريخ محدد:** `GET /api/v1/attendance-policies/effective?projectId=uuid&date=2026-08-16`
+- **إضافة سياسة جديدة:** `POST /api/v1/attendance-policies`
+  - **Body:**
+    ```json
+    {
+      "projectId": "uuid (optional - null for company general)",
+      "shiftStartTime": "08:00",
+      "shiftEndTime": "17:00",
+      "graceMinutes": 15,
+      "breakMinutes": 60,
+      "overtimeThresholdHours": 8,
+      "overtimeMultiplier": 1.5,
+      "effectiveFrom": "2026-01-01",
+      "isActive": true
+    }
+    ```
+- **تحديث سياسة:** `PUT /api/v1/attendance-policies/:id`
+- **إلغاء تنشيط سياسة:** `DELETE /api/v1/attendance-policies/:id`
+
