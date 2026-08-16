@@ -5,9 +5,12 @@ export interface WorkItem {
   companyId: string;
   name: string;
   code?: string | null;
+  category?: string | null;
   unitId?: string | null;
   unitName?: string | null;
   unitSymbol?: string | null;
+  defaultUnitRate?: number | null;
+  default_unit_rate?: number | null;
   defaultDailyTarget?: number | null;
   isActive: boolean;
   createdAt?: string;
@@ -16,6 +19,8 @@ export interface WorkItem {
 
 export interface WorkItemQuery {
   search?: string;
+  category?: string;
+  branchId?: string;
   isActive?: boolean;
   page?: number;
   limit?: number;

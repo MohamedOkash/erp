@@ -3,6 +3,10 @@ import { workItemsApi } from '../../api/work-items.api';
 import type { WorkItem, CreateWorkItemPayload } from '../../api/work-items.api';
 import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
+import type { WorkCategory } from '../../api/work-categories.api';
+import { workCategoriesApi } from '../../api/work-categories.api';
+import { StagesManagementModal } from './StagesManagementModal';
+import { PricesManagementModal } from './PricesManagementModal';
 import {
   CheckSquare,
   Plus,
@@ -15,11 +19,15 @@ import {
   Loader2,
   Hash,
   X,
+  Layers,
+  DollarSign,
+  FolderTree,
 } from 'lucide-react';
 
 export const WorkItemsPage: React.FC = () => {
   const [items, setItems] = useState<WorkItem[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [categories, setCategories] = useState<WorkCategory[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
@@ -30,13 +38,18 @@ export const WorkItemsPage: React.FC = () => {
   // Filters
   const [search, setSearch] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
-  // Modal
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WorkItem | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form
+  // Stages & Prices Modal
+  const [stagesItem, setStagesItem] = useState<WorkItem | null>(null);
+  const [pricesItem, setPricesItem] = useState<WorkItem | null>(null);
+
+  // Form State
   const [formName, setFormName] = useState('');
   const [formCode, setFormCode] = useState('');
   const [formCategory, setFormCategory] = useState('');
@@ -46,14 +59,18 @@ export const WorkItemsPage: React.FC = () => {
   const [formBranchId, setFormBranchId] = useState('');
   const [formIsActive, setFormIsActive] = useState(true);
 
-  // Delete
+  // Delete State
   const [deletingItem, setDeletingItem] = useState<WorkItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const loadBranches = async () => {
+  const loadInitialData = async () => {
     try {
-      const res = await branchesApi.list({ isActive: true });
-      setBranches(res.data);
+      const [branchesRes, categoriesRes] = await Promise.all([
+        branchesApi.list({ isActive: true }),
+        workCategoriesApi.list(),
+      ]);
+      setBranches(branchesRes.data);
+      setCategories(categoriesRes);
     } catch {
       // ignore
     }
@@ -67,6 +84,8 @@ export const WorkItemsPage: React.FC = () => {
         page,
         limit,
         search: search.trim() || undefined,
+        category: selectedCategory || undefined,
+        branchId: selectedBranch || undefined,
       });
       setItems(res.data);
       setTotal(res.total);
@@ -75,10 +94,10 @@ export const WorkItemsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, search, selectedBranch]);
+  }, [page, limit, search, selectedBranch, selectedCategory]);
 
   useEffect(() => {
-    loadBranches();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -89,7 +108,7 @@ export const WorkItemsPage: React.FC = () => {
     setEditingItem(null);
     setFormName('');
     setFormCode('');
-    setFormCategory('');
+    setFormCategory(selectedCategory || '');
     setFormDescription('');
     setFormDefaultUnitRate(0);
     setFormDefaultDailyTarget(100);
@@ -162,16 +181,16 @@ export const WorkItemsPage: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '1380px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <CheckSquare size={28} color="#60a5fa" />
-            <span>بنود الأعمال والوحدات</span>
+            <span>كتالوج بنود التشطيبات والمقايسة الهرمية (BOQ)</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            تعريف بنود الأعمال التعاقدية (بياض، محارة، سيراميك...) مع المعدلات اليومية المستهدفة.
+            إدارة كافة بنود التشطيبات، تقسيم المراحل والأوزان النسبية، والأسعار ومعدلات الإنتاجية.
           </p>
         </div>
         <button onClick={openCreate} className="btn btn-primary" style={{ gap: '0.5rem' }}>
@@ -189,6 +208,29 @@ export const WorkItemsPage: React.FC = () => {
       {error && (
         <div style={{ padding: '0.75rem 1rem', background: 'var(--status-danger-bg)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
           <AlertCircle size={18} /> <span>{error}</span>
+        </div>
+      )}
+
+      {/* Departments / Categories Bar */}
+      {categories.length > 0 && (
+        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
+          <button
+            onClick={() => { setSelectedCategory(''); setPage(1); }}
+            className={`btn ${selectedCategory === '' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+          >
+            <FolderTree size={14} /> <span>كافة الأقسام ({categories.length})</span>
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => { setSelectedCategory(cat.name); setPage(1); }}
+              className={`btn ${selectedCategory === cat.name ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+            >
+              <span>{cat.name}</span>
+            </button>
+          ))}
         </div>
       )}
 
@@ -215,24 +257,25 @@ export const WorkItemsPage: React.FC = () => {
               <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <th style={{ padding: '1rem' }}>اسم البند</th>
                 <th style={{ padding: '1rem' }}>الكود</th>
-                <th style={{ padding: '1rem' }}>الفئة</th>
+                <th style={{ padding: '1rem' }}>الفئة / القسم</th>
                 <th style={{ padding: '1rem' }}>المستهدف اليومي</th>
-                <th style={{ padding: '1rem' }}>سعر الوحدة</th>
+                <th style={{ padding: '1rem' }}>سعر العقد</th>
                 <th style={{ padding: '1rem' }}>الحالة</th>
+                <th style={{ padding: '1rem', textAlign: 'center' }}>المراحل والأسعار</th>
                 <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '3rem' }}>
                     <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
                     <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل بنود الأعمال...</p>
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>لا توجد بنود أعمال مسجلة</td>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>لا توجد بنود أعمال مسجلة</td>
                 </tr>
               ) : (
                 items.map((item) => (
@@ -245,11 +288,33 @@ export const WorkItemsPage: React.FC = () => {
                     </td>
                     <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{(item as any).category || '—'}</td>
                     <td style={{ padding: '1rem', fontWeight: 600 }}>{item.defaultDailyTarget || '—'}</td>
-                    <td style={{ padding: '1rem' }}>
-                      {(item as any).defaultUnitRate ? `${Number((item as any).defaultUnitRate).toLocaleString()} SAR` : '—'}
+                    <td style={{ padding: '1rem', color: '#34d399', fontWeight: 700 }}>
+                      {(item as any).defaultUnitRate ? `${Number((item as any).defaultUnitRate).toLocaleString()} ريال` : '—'}
                     </td>
                     <td style={{ padding: '1rem' }}>
                       {item.isActive ? <span className="badge badge-success">نشط</span> : <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>معطل</span>}
+                    </td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => setStagesItem(item)}
+                          className="btn btn-secondary"
+                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#818cf8', borderColor: 'rgba(129, 140, 248, 0.3)' }}
+                          title="إدارة مراحل البند والأوزان النسبية"
+                        >
+                          <Layers size={14} /> <span>المراحل</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPricesItem(item)}
+                          className="btn btn-secondary"
+                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#34d399', borderColor: 'rgba(52, 211, 153, 0.3)' }}
+                          title="إدارة الأسعار والتكلفة"
+                        >
+                          <DollarSign size={14} /> <span>الأسعار</span>
+                        </button>
+                      </div>
                     </td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
@@ -295,15 +360,20 @@ export const WorkItemsPage: React.FC = () => {
                   <input type="text" className="input-field" placeholder="WI-001" value={formCode} onChange={(e) => setFormCode(e.target.value)} />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">الفئة</label>
-                  <input type="text" className="input-field" placeholder="تشطيبات، هيكل..." value={formCategory} onChange={(e) => setFormCategory(e.target.value)} />
+                  <label className="form-label">الفئة / القسم</label>
+                  <select className="input-field" value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
+                    <option value="">اختر القسم...</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label">المستهدف اليومي</label>
                   <input type="number" min="0" className="input-field" value={formDefaultDailyTarget} onChange={(e) => setFormDefaultDailyTarget(Number(e.target.value))} />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">سعر الوحدة (SAR)</label>
+                  <label className="form-label">سعر الوحدة (ريال)</label>
                   <input type="number" min="0" step="0.01" className="input-field" value={formDefaultUnitRate} onChange={(e) => setFormDefaultUnitRate(Number(e.target.value))} />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
@@ -355,6 +425,20 @@ export const WorkItemsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Stages Modal */}
+      <StagesManagementModal
+        isOpen={!!stagesItem}
+        onClose={() => setStagesItem(null)}
+        workItem={stagesItem}
+      />
+
+      {/* Prices Modal */}
+      <PricesManagementModal
+        isOpen={!!pricesItem}
+        onClose={() => setPricesItem(null)}
+        workItem={pricesItem}
+      />
     </div>
   );
 };

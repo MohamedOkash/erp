@@ -8,6 +8,9 @@ export interface ProductionWorkerItem {
   workerType: 'individual' | 'team';
   individualQuantity?: number;
   hoursWorked?: number;
+  overtimeHours?: number;
+  bonusPercentage?: number;
+  skillLevel?: 'skilled' | 'unskilled' | string;
   isEstimated?: boolean;
 }
 
@@ -21,6 +24,8 @@ export interface ProductionRecord {
   workItemId: string;
   workItemName?: string;
   workItemCode?: string;
+  workItemStageId?: string | null;
+  stageName?: string | null;
   workAreaId?: string | null;
   workAreaName?: string | null;
   date: string;
@@ -62,6 +67,7 @@ export interface CreateProductionPayload {
   branchId: string;
   projectId: string;
   workItemId: string;
+  workItemStageId?: string;
   workAreaId?: string | null;
   supervisorId: string;
   targetQuantity?: number;

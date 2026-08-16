@@ -6,6 +6,8 @@ import type { Project } from '../../api/projects.api';
 import type { WorkItem } from '../../api/work-items.api';
 import type { WorkArea } from '../../api/work-areas.api';
 import type { Employee } from '../../api/employees.api';
+import type { WorkItemStage } from '../../api/work-categories.api';
+import { workItemStagesApi } from '../../api/work-categories.api';
 import {
   X,
   Loader2,
@@ -49,6 +51,8 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
   const [branchId, setBranchId] = useState<string>('');
   const [projectId, setProjectId] = useState<string>('');
   const [workItemId, setWorkItemId] = useState<string>('');
+  const [workItemStageId, setWorkItemStageId] = useState<string>('');
+  const [stages, setStages] = useState<WorkItemStage[]>([]);
   const [workAreaId, setWorkAreaId] = useState<string>('');
   const [supervisorId, setSupervisorId] = useState<string>('');
   const [targetQuantity, setTargetQuantity] = useState<number>(100);
@@ -66,7 +70,8 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
       setDate(new Date().toISOString().split('T')[0]);
       const defaultBranch = branches[0]?.id || '';
       setBranchId(defaultBranch);
-      setWorkItemId(workItems[0]?.id || '');
+      const defaultItem = workItems[0]?.id || '';
+      setWorkItemId(defaultItem);
       setSupervisorId(supervisors[0]?.id || '');
       setTargetQuantity(100);
       setActualQuantity(100);
@@ -78,11 +83,50 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
       const firstWorker = workers[0]?.id || '';
       setWorkerRows(
         firstWorker
-          ? [{ employeeId: firstWorker, workerType: 'individual', individualQuantity: 100, hoursWorked: 8 }]
+          ? [{
+              employeeId: firstWorker,
+              workerType: 'individual',
+              individualQuantity: 100,
+              hoursWorked: 8,
+              overtimeHours: 0,
+              bonusPercentage: 0,
+              skillLevel: 'skilled',
+            }]
           : [],
       );
     }
   }, [isOpen, branches, workItems, supervisors, workers]);
+
+  // Load stages when workItemId changes
+  useEffect(() => {
+    if (workItemId) {
+      workItemStagesApi
+        .listByItem(workItemId)
+        .then((res) => {
+          setStages(res);
+          if (res.length > 0) {
+            setWorkItemStageId(res[0].id);
+            if (res[0].standard_productivity) {
+              setTargetQuantity(Number(res[0].standard_productivity));
+            }
+          } else {
+            setWorkItemStageId('');
+          }
+        })
+        .catch(() => setStages([]));
+    } else {
+      setStages([]);
+      setWorkItemStageId('');
+    }
+  }, [workItemId]);
+
+  const handleStageChange = (stageId: string) => {
+    setWorkItemStageId(stageId);
+    const found = stages.find((s) => s.id === stageId);
+    if (found && found.standard_productivity) {
+      setTargetQuantity(Number(found.standard_productivity));
+    }
+  };
 
   // Update filtered projects when branch changes
   const filteredProjects = projects.filter((p) => !branchId || p.branchId === branchId);
@@ -106,7 +150,15 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
     if (workers.length === 0) return;
     setWorkerRows([
       ...workerRows,
-      { employeeId: workers[0].id, workerType: 'individual', individualQuantity: 0, hoursWorked: 8 },
+      {
+        employeeId: workers[0].id,
+        workerType: 'individual',
+        individualQuantity: 0,
+        hoursWorked: 8,
+        overtimeHours: 0,
+        bonusPercentage: 0,
+        skillLevel: 'skilled',
+      },
     ]);
   };
 
@@ -147,6 +199,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
         branchId,
         projectId,
         workItemId,
+        workItemStageId: workItemStageId || undefined,
         workAreaId: workAreaId || null,
         supervisorId,
         targetQuantity: Number(targetQuantity) || 0,
@@ -160,6 +213,9 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 workerType: 'individual',
                 individualQuantity: Number(w.individualQuantity) || 0,
                 hoursWorked: Number(w.hoursWorked) || 8,
+                overtimeHours: Number(w.overtimeHours) || 0,
+                bonusPercentage: Number(w.bonusPercentage) || 0,
+                skillLevel: w.skillLevel || 'skilled',
               }))
             : workers.slice(0, 1).map((w) => ({
                 employeeId: w.id,
@@ -198,7 +254,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
         className="glass-card animate-fade-in"
         style={{
           width: '100%',
-          maxWidth: '720px',
+          maxWidth: '850px',
           padding: '2rem',
           maxHeight: '90vh',
           overflowY: 'auto',
@@ -214,7 +270,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Layers size={22} color="#60a5fa" />
-            <h3 style={{ fontSize: '1.25rem' }}>إدخال تقرير إنتاجية يومي جديد</h3>
+            <h3 style={{ fontSize: '1.25rem' }}>إدخال تقرير إنتاجية يومي مرحلي جديد</h3>
           </div>
 
           <button
@@ -321,6 +377,28 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
               </select>
             </div>
 
+            {/* Stages Selector */}
+            {stages.length > 0 && (
+              <div className="form-group animate-fade-in" style={{ gridColumn: 'span 2', margin: 0 }}>
+                <label className="form-label">
+                  <Layers size={14} color="#818cf8" />
+                  <span style={{ color: '#818cf8', fontWeight: 700 }}>مرحلة البند المنفذة * (المعدل القياسي التلقائي)</span>
+                </label>
+                <select
+                  className="input-field"
+                  style={{ borderColor: 'rgba(129, 140, 248, 0.4)', background: 'rgba(15, 23, 42, 0.9)' }}
+                  value={workItemStageId}
+                  onChange={(e) => handleStageChange(e.target.value)}
+                >
+                  {stages.map((stg) => (
+                    <option key={stg.id} value={stg.id}>
+                      {stg.name} — (وزن: {Math.round(Number(stg.percentage) * 100)}% | إنتاجية قياسية: {stg.standard_productivity})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Network size={14} />
@@ -426,7 +504,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             )}
           </div>
 
-          {/* Workers Distribution Section (R5) */}
+          {/* Workers Distribution Section (R5 + Overtime + Bonus + Skill) */}
           {productionType === 'individual' && (
             <div
               className="animate-fade-in"
@@ -447,10 +525,10 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 <div>
                   <h4 style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <Users size={16} color="#60a5fa" />
-                    <span>توزيع إنجاز العمال المشاركين (Rule R5)</span>
+                    <span>توزيع إنجاز العمال المشاركين (Rule R5 + إضافي وحوافز)</span>
                   </h4>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                    مجموع كميات العمال الموزعة ({workerRows.reduce((a, b) => a + (Number(b.individualQuantity) || 0), 0)}) يجب أن يطابق تمامًا الكمية الفعلية ({actualQuantity})
+                    مجموع كميات العمال ({workerRows.reduce((a, b) => a + (Number(b.individualQuantity) || 0), 0)}) يجب أن يطابق تمامًا الكمية الفعلية ({actualQuantity})
                   </span>
                 </div>
 
@@ -471,8 +549,8 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                     key={idx}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '2fr 1fr 1fr auto',
-                      gap: '0.5rem',
+                      gridTemplateColumns: '2fr 1fr 0.9fr 0.9fr 0.9fr 1fr auto',
+                      gap: '0.4rem',
                       alignItems: 'center',
                       background: 'rgba(15, 23, 42, 0.6)',
                       padding: '0.5rem 0.75rem',
@@ -480,52 +558,107 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                       border: '1px solid var(--border-subtle)',
                     }}
                   >
-                    <select
-                      className="input-field"
-                      value={row.employeeId}
-                      onChange={(e) => updateWorker(idx, 'employeeId', e.target.value)}
-                    >
-                      {workers.map((emp) => (
-                        <option key={emp.id} value={emp.id}>
-                          {emp.name} ({emp.code || 'عامل'})
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <select
+                        className="input-field"
+                        style={{ fontSize: '0.8rem' }}
+                        value={row.employeeId}
+                        onChange={(e) => updateWorker(idx, 'employeeId', e.target.value)}
+                      >
+                        {workers.map((emp) => (
+                          <option key={emp.id} value={emp.id}>
+                            {emp.name} ({emp.code || 'عامل'})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      placeholder="الكمية الفردية"
-                      className="input-field"
-                      value={row.individualQuantity}
-                      onChange={(e) => updateWorker(idx, 'individualQuantity', Number(e.target.value))}
-                    />
+                    <div>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        placeholder="الكمية"
+                        className="input-field"
+                        style={{ fontSize: '0.8rem' }}
+                        value={row.individualQuantity}
+                        onChange={(e) => updateWorker(idx, 'individualQuantity', Number(e.target.value))}
+                        title="الكمية الفردية"
+                      />
+                    </div>
 
-                    <input
-                      type="number"
-                      min="1"
-                      max="24"
-                      placeholder="ساعات العمل"
-                      className="input-field"
-                      value={row.hoursWorked}
-                      onChange={(e) => updateWorker(idx, 'hoursWorked', Number(e.target.value))}
-                    />
+                    <div>
+                      <input
+                        type="number"
+                        min="1"
+                        max="24"
+                        placeholder="ساعات أساسية"
+                        className="input-field"
+                        style={{ fontSize: '0.8rem' }}
+                        value={row.hoursWorked}
+                        onChange={(e) => updateWorker(idx, 'hoursWorked', Number(e.target.value))}
+                        title="ساعات العمل الأساسية (8)"
+                      />
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => removeWorkerRow(idx)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#f87171',
-                        cursor: 'pointer',
-                        padding: '0.3rem',
-                      }}
-                      title="حذف العامل"
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                    <div>
+                      <input
+                        type="number"
+                        min="0"
+                        max="16"
+                        step="0.5"
+                        placeholder="إضافي (ساعة)"
+                        className="input-field"
+                        style={{ fontSize: '0.8rem', borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                        value={row.overtimeHours || 0}
+                        onChange={(e) => updateWorker(idx, 'overtimeHours', Number(e.target.value))}
+                        title="ساعات العمل الإضافية (Overtime)"
+                      />
+                    </div>
+
+                    <div>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="حافز %"
+                        className="input-field"
+                        style={{ fontSize: '0.8rem', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                        value={row.bonusPercentage || 0}
+                        onChange={(e) => updateWorker(idx, 'bonusPercentage', Number(e.target.value))}
+                        title="نسبة الحافز أو المكافأة %"
+                      />
+                    </div>
+
+                    <div>
+                      <select
+                        className="input-field"
+                        style={{ fontSize: '0.8rem' }}
+                        value={row.skillLevel || 'skilled'}
+                        onChange={(e) => updateWorker(idx, 'skillLevel', e.target.value)}
+                        title="المستوى المهني"
+                      >
+                        <option value="skilled">فني (صنايعي)</option>
+                        <option value="unskilled">مساعد (عامل)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => removeWorkerRow(idx)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#f87171',
+                          cursor: 'pointer',
+                          padding: '0.3rem',
+                        }}
+                        title="حذف العامل"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
