@@ -12,6 +12,7 @@ import type { WorkArea } from '../../api/work-areas.api';
 import { employeesApi } from '../../api/employees.api';
 import type { Employee } from '../../api/employees.api';
 import { ProductionFormModal } from './ProductionFormModal';
+import { ProductionDetailView } from './ProductionDetailView';
 import {
   Layers,
   Plus,
@@ -21,6 +22,7 @@ import {
   AlertCircle,
   Loader2,
   Calendar,
+  Eye,
   Users,
 } from 'lucide-react';
 
@@ -50,6 +52,7 @@ export const ProductionPage: React.FC = () => {
 
   // Modals
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [viewingRecord, setViewingRecord] = useState<ProductionRecord | null>(null);
 
   const loadDependencies = async () => {
     try {
@@ -91,12 +94,18 @@ export const ProductionPage: React.FC = () => {
       });
       setRecords(res.data);
       setTotal(res.total);
+
+      // If a record is currently open in detail view, update its reference
+      if (viewingRecord) {
+        const updated = res.data.find((r) => r.id === viewingRecord.id);
+        if (updated) setViewingRecord(updated);
+      }
     } catch (err: any) {
       setError(err.message || 'فشل تحميل سجلات الإنتاج اليومي');
     } finally {
       setIsLoading(false);
     }
-  }, [fromDate, toDate, selectedBranch, selectedProject, selectedStatus, search]);
+  }, [fromDate, toDate, selectedBranch, selectedProject, selectedStatus, search, viewingRecord]);
 
   useEffect(() => {
     loadDependencies();
@@ -359,19 +368,20 @@ export const ProductionPage: React.FC = () => {
                 <th style={{ padding: '1rem' }}>نسبة الإنجاز</th>
                 <th style={{ padding: '1rem' }}>المشرف</th>
                 <th style={{ padding: '1rem' }}>الحالة</th>
+                <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '3rem' }}>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: '3rem' }}>
                     <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
                     <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل سجلات الإنتاج...</p>
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
                     لا توجد سجلات إنتاجية مطابقة لمعايير البحث
                   </td>
                 </tr>
@@ -417,6 +427,18 @@ export const ProductionPage: React.FC = () => {
                       {rec.supervisorName || '—'}
                     </td>
                     <td style={{ padding: '1rem' }}>{getStatusBadge(rec.status)}</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => setViewingRecord(rec)}
+                        className="btn btn-secondary"
+                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', gap: '0.35rem' }}
+                        title="عرض التفاصيل ومسار الاعتماد"
+                      >
+                        <Eye size={14} color="#60a5fa" />
+                        <span>عرض</span>
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -476,6 +498,16 @@ export const ProductionPage: React.FC = () => {
         workAreas={workAreas}
         supervisors={supervisors}
         workers={workers}
+      />
+
+      {/* Production Detail View Modal */}
+      <ProductionDetailView
+        isOpen={!!viewingRecord}
+        onClose={() => setViewingRecord(null)}
+        record={viewingRecord}
+        onRecordUpdated={() => {
+          loadRecords();
+        }}
       />
     </div>
   );
