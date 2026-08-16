@@ -7,6 +7,7 @@ import type { WorkCategory } from '../../api/work-categories.api';
 import { workCategoriesApi } from '../../api/work-categories.api';
 import { StagesManagementModal } from './StagesManagementModal';
 import { PricesManagementModal } from './PricesManagementModal';
+import { Modal } from '../../components/Modal';
 import {
   CheckSquare,
   Plus,
@@ -18,7 +19,6 @@ import {
   AlertCircle,
   Loader2,
   Hash,
-  X,
   Layers,
   DollarSign,
   FolderTree,
@@ -339,92 +339,89 @@ export const WorkItemsPage: React.FC = () => {
       </div>
 
       {/* Create/Edit Modal */}
-      {isModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', zIndex: 100 }}>
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '560px', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckSquare size={22} color="#60a5fa" />
-                {editingItem ? 'تعديل بند العمل' : 'إضافة بند عمل جديد'}
-              </h3>
-              <button type="button" onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSave}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
-                  <label className="form-label">اسم البند *</label>
-                  <input type="text" required className="input-field" placeholder="مثال: بياض محارة داخلي" value={formName} onChange={(e) => setFormName(e.target.value)} />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">كود البند</label>
-                  <input type="text" className="input-field" placeholder="WI-001" value={formCode} onChange={(e) => setFormCode(e.target.value)} />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">الفئة / القسم</label>
-                  <select className="input-field" value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
-                    <option value="">اختر القسم...</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">المستهدف اليومي</label>
-                  <input type="number" min="0" className="input-field" value={formDefaultDailyTarget} onChange={(e) => setFormDefaultDailyTarget(Number(e.target.value))} />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">سعر الوحدة (ريال)</label>
-                  <input type="number" min="0" step="0.01" className="input-field" value={formDefaultUnitRate} onChange={(e) => setFormDefaultUnitRate(Number(e.target.value))} />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">الفرع (اختياري)</label>
-                  <select className="input-field" value={formBranchId} onChange={(e) => setFormBranchId(e.target.value)}>
-                    <option value="">بدون تحديد فرع</option>
-                    {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
-                </div>
-                <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
-                  <label className="form-label">وصف البند</label>
-                  <textarea rows={2} className="input-field" style={{ resize: 'vertical' }} placeholder="تفاصيل..." value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
-                </div>
-                <div style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setFormIsActive(!formIsActive)}>
-                  <input type="checkbox" checked={formIsActive} onChange={(e) => setFormIsActive(e.target.checked)} style={{ width: '16px', height: '16px' }} />
-                  <label style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>بند نشط ومتاح للاستخدام</label>
-                </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.75rem' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary" disabled={isSaving}>إلغاء</button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>{editingItem ? 'حفظ التعديلات' : 'إنشاء البند'}</span>
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingItem ? 'تعديل بند العمل' : 'إضافة بند عمل جديد'}
+        icon={<CheckSquare size={22} color="#60a5fa" />}
+        maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary" disabled={isSaving}>إلغاء</button>
+            <button type="submit" form="work-item-form" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{editingItem ? 'حفظ التعديلات' : 'إنشاء البند'}</span>
+            </button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form id="work-item-form" onSubmit={handleSave}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
+              <label className="form-label">اسم البند *</label>
+              <input type="text" required className="input-field" placeholder="مثال: بياض محارة داخلي" value={formName} onChange={(e) => setFormName(e.target.value)} />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">كود البند</label>
+              <input type="text" className="input-field" placeholder="WI-001" value={formCode} onChange={(e) => setFormCode(e.target.value)} />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">الفئة / القسم</label>
+              <select className="input-field" value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
+                <option value="">اختر القسم...</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">المستهدف اليومي</label>
+              <input type="number" min="0" className="input-field" value={formDefaultDailyTarget} onChange={(e) => setFormDefaultDailyTarget(Number(e.target.value))} />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">سعر الوحدة (ريال)</label>
+              <input type="number" min="0" step="0.01" className="input-field" value={formDefaultUnitRate} onChange={(e) => setFormDefaultUnitRate(Number(e.target.value))} />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">الفرع (اختياري)</label>
+              <select className="input-field" value={formBranchId} onChange={(e) => setFormBranchId(e.target.value)}>
+                <option value="">بدون تحديد فرع</option>
+                {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+            <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
+              <label className="form-label">وصف البند</label>
+              <textarea rows={2} className="input-field" style={{ resize: 'vertical' }} placeholder="تفاصيل..." value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
+            </div>
+            <div style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setFormIsActive(!formIsActive)}>
+              <input type="checkbox" checked={formIsActive} onChange={(e) => setFormIsActive(e.target.checked)} style={{ width: '16px', height: '16px' }} />
+              <label style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>بند نشط ومتاح للاستخدام</label>
+            </div>
+          </div>
+        </form>
+      </Modal>
 
       {/* Delete Confirmation */}
-      {deletingItem && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', zIndex: 100 }}>
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#f87171', marginBottom: '1rem' }}>
-              <Trash2 size={24} />
-              <h3 style={{ fontSize: '1.2rem', margin: 0 }}>تأكيد حذف بند العمل</h3>
-            </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              هل أنت متأكد من حذف البند <strong style={{ color: '#ffffff' }}>"{deletingItem.name}"</strong>؟
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button type="button" onClick={() => setDeletingItem(null)} className="btn btn-secondary" disabled={isDeleting}>إلغاء</button>
-              <button type="button" onClick={handleConfirmDelete} className="btn btn-primary" style={{ background: '#dc2626' }} disabled={isDeleting}>
-                {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-                <span>تأكيد الحذف</span>
-              </button>
-            </div>
+      <Modal
+        isOpen={!!deletingItem}
+        onClose={() => setDeletingItem(null)}
+        title="تأكيد حذف بند العمل"
+        icon={<Trash2 size={22} color="#f87171" />}
+        maxWidth="sm"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button type="button" onClick={() => setDeletingItem(null)} className="btn btn-secondary" disabled={isDeleting}>إلغاء</button>
+            <button type="button" onClick={handleConfirmDelete} className="btn btn-primary" style={{ background: '#dc2626' }} disabled={isDeleting}>
+              {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>تأكيد الحذف</span>
+            </button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+          هل أنت متأكد من حذف البند <strong style={{ color: '#ffffff' }}>"{deletingItem?.name}"</strong>؟
+        </p>
+      </Modal>
 
       {/* Stages Modal */}
       <StagesManagementModal

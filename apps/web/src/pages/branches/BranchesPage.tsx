@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { branchesApi } from '../../api/branches.api';
 import type { Branch, CreateBranchPayload, UpdateBranchPayload } from '../../api/branches.api';
 import { BranchFormModal } from './BranchFormModal';
+import { Modal } from '../../components/Modal';
 import {
   Building,
   Plus,
@@ -362,53 +363,39 @@ export const BranchesPage: React.FC = () => {
       />
 
       {/* Delete Confirmation Modal */}
-      {deletingBranch && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#f87171', marginBottom: '1rem' }}>
-              <Trash2 size={24} />
-              <h3 style={{ fontSize: '1.2rem', margin: 0 }}>تأكيد حذف الفرع</h3>
-            </div>
-
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              هل أنت متأكد من رغبتك في حذف الفرع <strong style={{ color: '#ffffff' }}>"{deletingBranch.name}"</strong>؟ هذا الإجراء لا يمكن التراجع عنه.
-            </p>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setDeletingBranch(null)}
-                className="btn btn-secondary"
-                disabled={isDeleting}
-              >
-                إلغاء
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="btn btn-primary"
-                style={{ background: '#dc2626' }}
-                disabled={isDeleting}
-              >
-                {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-                <span>تأكيد الحذف</span>
-              </button>
-            </div>
+      <Modal
+        isOpen={!!deletingBranch}
+        onClose={() => setDeletingBranch(null)}
+        title="تأكيد حذف الفرع"
+        icon={<Trash2 size={22} color="#f87171" />}
+        maxWidth="sm"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setDeletingBranch(null)}
+              className="btn btn-secondary"
+              disabled={isDeleting}
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              className="btn btn-primary"
+              style={{ background: '#dc2626' }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>تأكيد الحذف</span>
+            </button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+          هل أنت متأكد من رغبتك في حذف الفرع <strong style={{ color: '#ffffff' }}>"{deletingBranch?.name}"</strong>؟ هذا الإجراء لا يمكن التراجع عنه.
+        </p>
+      </Modal>
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { WorkItemStage } from '../../api/work-categories.api';
 import { workItemStagesApi } from '../../api/work-categories.api';
+import { Modal } from '../../components/Modal';
+import { Layers } from 'lucide-react';
 
 interface StagesManagementModalProps {
   isOpen: boolean;
@@ -87,27 +89,25 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto" dir="rtl">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Modal Header */}
-        <div className="px-6 py-4 bg-slate-800/80 border-b border-slate-700/80 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="p-2 bg-indigo-500/20 text-indigo-400 rounded-lg text-sm">مراحل البند</span>
-              {workItem.name}
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">كود البند: {workItem.code || '—'}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-700/50 transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="p-6 space-y-6 overflow-y-auto flex-1">
-          {error && (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`مراحل البند: ${workItem.name}`}
+      subtitle={`كود البند: ${workItem.code || '—'}`}
+      icon={<Layers size={22} />}
+      maxWidth="2xl"
+      footer={
+        <button
+          onClick={onClose}
+          className="btn btn-secondary"
+          style={{ padding: '0.45rem 1.5rem', fontSize: '0.85rem' }}
+        >
+          إغلاق
+        </button>
+      }
+    >
+      <div className="space-y-6">
+        {error && (
             <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs">
               {error}
             </div>
@@ -243,17 +243,6 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
             )}
           </div>
         </div>
-
-        {/* Modal Footer */}
-        <div className="px-6 py-4 bg-slate-800/80 border-t border-slate-700/80 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-all"
-          >
-            إغلاق
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

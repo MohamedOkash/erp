@@ -5,6 +5,7 @@ import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
 import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
+import { Modal } from '../../components/Modal';
 import {
   DollarSign,
   Plus,
@@ -12,7 +13,6 @@ import {
   Filter,
   CheckCircle2,
   AlertCircle,
-  X,
   Loader2,
   PieChart,
   Calendar,
@@ -473,241 +473,203 @@ export const CostsPage: React.FC = () => {
       </div>
 
       {/* Create Cost Modal */}
-      {showCreateModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '540px', padding: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.3rem' }}>إضافة قيد تكلفة جديد</h3>
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={20} />
-              </button>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="إضافة قيد تكلفة جديد"
+        icon={<DollarSign size={22} color="#34d399" />}
+        maxWidth="lg"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
+              إلغاء
+            </button>
+            <button type="submit" form="create-cost-form" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>حفظ القيد</span>
+            </button>
+          </div>
+        }
+      >
+        <form id="create-cost-form" onSubmit={handleSaveCost}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <label className="form-label">البيان / الوصف *</label>
+              <input
+                type="text"
+                required
+                placeholder="مثال: شراء إسمنت ومواد عزل للموقع"
+                className="input-field"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
             </div>
 
-            <form onSubmit={handleSaveCost}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label">البيان / الوصف *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="مثال: شراء إسمنت ومواد عزل للموقع"
-                    className="input-field"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="form-label">الفئة *</label>
+              <select
+                required
+                className="input-field"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              >
+                <option value="material">🧱 مواد وخامات</option>
+                <option value="labor">👷 أجور عمالة</option>
+                <option value="equipment">🚜 معدات وآليات</option>
+                <option value="subcontractor">🤝 مقاول باطن</option>
+                <option value="overhead">🏢 مصاريف إدارية</option>
+                <option value="other">📌 أخرى</option>
+              </select>
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">الفئة *</label>
-                  <select
-                    required
-                    className="input-field"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  >
-                    <option value="material">🧱 مواد وخامات</option>
-                    <option value="labor">👷 أجور عمالة</option>
-                    <option value="equipment">🚜 معدات وآليات</option>
-                    <option value="subcontractor">🤝 مقاول باطن</option>
-                    <option value="overhead">🏢 مصاريف إدارية</option>
-                    <option value="other">📌 أخرى</option>
-                  </select>
-                </div>
+            <div className="form-group">
+              <label className="form-label">التاريخ *</label>
+              <input
+                type="date"
+                required
+                className="input-field"
+                value={formData.costDate}
+                onChange={(e) => setFormData({ ...formData, costDate: e.target.value })}
+              />
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">التاريخ *</label>
-                  <input
-                    type="date"
-                    required
-                    className="input-field"
-                    value={formData.costDate}
-                    onChange={(e) => setFormData({ ...formData, costDate: e.target.value })}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="form-label">المشروع</label>
+              <select
+                className="input-field"
+                value={formData.projectId || ''}
+                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+              >
+                <option value="">بدون تخصيص مشروع</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">المشروع</label>
-                  <select
-                    className="input-field"
-                    value={formData.projectId || ''}
-                    onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                  >
-                    <option value="">بدون تخصيص مشروع</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="form-group">
+              <label className="form-label">الفرع</label>
+              <select
+                className="input-field"
+                value={formData.branchId || ''}
+                onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
+              >
+                <option value="">بدون تخصيص فرع</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">الفرع</label>
-                  <select
-                    className="input-field"
-                    value={formData.branchId || ''}
-                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-                  >
-                    <option value="">بدون تخصيص فرع</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="form-group">
+              <label className="form-label">الكمية</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className="input-field"
+                value={formData.quantity || ''}
+                onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+              />
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">الكمية</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="input-field"
-                    value={formData.quantity || ''}
-                    onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="form-label">سعر الوحدة (SAR)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className="input-field"
+                value={formData.unitCost || ''}
+                onChange={(e) => setFormData({ ...formData, unitCost: Number(e.target.value) })}
+              />
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">سعر الوحدة (SAR)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="input-field"
-                    value={formData.unitCost || ''}
-                    onChange={(e) => setFormData({ ...formData, unitCost: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label">المبلغ الإجمالي (SAR) *</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="0.01"
-                    className="input-field"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
-                  إلغاء
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>حفظ القيد</span>
-                </button>
-              </div>
-            </form>
+            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <label className="form-label">المبلغ الإجمالي (SAR) *</label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                className="input-field"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
       {/* Labor Auto-Calculate Modal */}
-      {showAutoLaborModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '480px', padding: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem' }}>احتساب أجور العمالة التلقائي</h3>
-              <button
-                type="button"
-                onClick={() => setShowAutoLaborModal(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={20} />
-              </button>
+      <Modal
+        isOpen={showAutoLaborModal}
+        onClose={() => setShowAutoLaborModal(false)}
+        title="احتساب أجور العمالة التلقائي"
+        icon={<Calculator size={22} color="#60a5fa" />}
+        maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button type="button" onClick={() => setShowAutoLaborModal(false)} className="btn btn-secondary">
+              إلغاء
+            </button>
+            <button type="submit" form="auto-labor-form" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>تشغيل الاحتساب</span>
+            </button>
+          </div>
+        }
+      >
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem', marginTop: 0 }}>
+          يقوم النظام بحساب تكلفة الأجور تلقائيًا من سجلات الحضور وساعات العمل والإضافي لكل موظف وفق المعادلة المعتمدة.
+        </p>
+
+        <form id="auto-labor-form" onSubmit={handleLaborAutoCalculate}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">من تاريخ *</label>
+              <input
+                type="date"
+                required
+                className="input-field"
+                value={calcFromDate}
+                onChange={(e) => setCalcFromDate(e.target.value)}
+              />
             </div>
 
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-              يقوم النظام بحساب تكلفة الأجور تلقائيًا من سجلات الحضور وساعات العمل والإضافي لكل موظف وفق المعادلة المعتمدة.
-            </p>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">إلى تاريخ *</label>
+              <input
+                type="date"
+                required
+                className="input-field"
+                value={calcToDate}
+                onChange={(e) => setCalcToDate(e.target.value)}
+              />
+            </div>
 
-            <form onSubmit={handleLaborAutoCalculate}>
-              <div className="form-group">
-                <label className="form-label">من تاريخ *</label>
-                <input
-                  type="date"
-                  required
-                  className="input-field"
-                  value={calcFromDate}
-                  onChange={(e) => setCalcFromDate(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">إلى تاريخ *</label>
-                <input
-                  type="date"
-                  required
-                  className="input-field"
-                  value={calcToDate}
-                  onChange={(e) => setCalcToDate(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">المشروع (اختياري)</label>
-                <select
-                  className="input-field"
-                  value={calcProjectId}
-                  onChange={(e) => setCalcProjectId(e.target.value)}
-                >
-                  <option value="">كافة المشاريع</option>
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" onClick={() => setShowAutoLaborModal(false)} className="btn btn-secondary">
-                  إلغاء
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>تشغيل الاحتساب</span>
-                </button>
-              </div>
-            </form>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">المشروع (اختياري)</label>
+              <select
+                className="input-field"
+                value={calcProjectId}
+                onChange={(e) => setCalcProjectId(e.target.value)}
+              >
+                <option value="">كافة المشاريع</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 };

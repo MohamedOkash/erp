@@ -7,13 +7,13 @@ import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
 import { employeesApi } from '../../api/employees.api';
 import type { Employee } from '../../api/employees.api';
+import { Modal } from '../../components/Modal';
 import {
   CalendarCheck,
   Plus,
   Filter,
   CheckCircle2,
   AlertCircle,
-  X,
   Loader2,
   UserCheck,
 } from 'lucide-react';
@@ -397,142 +397,135 @@ export const AttendancePage: React.FC = () => {
       </div>
 
       {/* Modal */}
-      {showCreateModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '540px', padding: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.3rem' }}>تسجيل حضور موظف</h3>
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="تسجيل حضور موظف"
+        icon={<CalendarCheck size={22} color="#60a5fa" />}
+        maxWidth="lg"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
+              إلغاء
+            </button>
+            <button type="submit" form="attendance-form" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>تسجيل الحضور</span>
+            </button>
+          </div>
+        }
+      >
+        <form id="attendance-form" onSubmit={handleSaveAttendance}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <label className="form-label">الموظف / العامل *</label>
+              <select
+                required
+                className="input-field"
+                value={formData.employeeId}
+                onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
               >
-                <X size={20} />
-              </button>
+                <option value="">اختر الموظف...</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.identityNumber})
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <form onSubmit={handleSaveAttendance}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label">الموظف / العامل *</label>
-                  <select
-                    required
-                    className="input-field"
-                    value={formData.employeeId}
-                    onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                  >
-                    <option value="">اختر الموظف...</option>
-                    {employees.map((emp) => (
-                      <option key={emp.id} value={emp.id}>
-                        {emp.name} ({emp.identityNumber})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="form-group">
+              <label className="form-label">المشروع</label>
+              <select
+                className="input-field"
+                value={formData.projectId || ''}
+                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+              >
+                <option value="">بدون تحديد مشروع</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">المشروع *</label>
-                  <select
-                    required
-                    className="input-field"
-                    value={formData.projectId}
-                    onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                  >
-                    <option value="">اختر المشروع...</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="form-group">
+              <label className="form-label">الفرع</label>
+              <select
+                className="input-field"
+                value={formData.branchId || ''}
+                onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
+              >
+                <option value="">بدون تحديد فرع</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">الفرع *</label>
-                  <select
-                    required
-                    className="input-field"
-                    value={formData.branchId}
-                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-                  >
-                    <option value="">اختر الفرع...</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="form-group">
+              <label className="form-label">التاريخ *</label>
+              <input
+                type="date"
+                required
+                className="input-field"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">التاريخ *</label>
-                  <input
-                    type="date"
-                    required
-                    className="input-field"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="form-label">حالة الحضور *</label>
+              <select
+                required
+                className="input-field"
+                value={formData.statusId}
+                onChange={(e) => setFormData({ ...formData, statusId: e.target.value })}
+              >
+                <option value="00000000-0000-0000-0004-000000000001">حاضر (Present)</option>
+                <option value="00000000-0000-0000-0004-000000000002">غائب (Absent)</option>
+                <option value="00000000-0000-0000-0004-000000000003">متأخر (Late)</option>
+                <option value="00000000-0000-0000-0004-000000000004">إجازة بعذر (Excused)</option>
+              </select>
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">ساعات الإضافي</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    className="input-field"
-                    value={formData.overtimeHours}
-                    onChange={(e) => setFormData({ ...formData, overtimeHours: Number(e.target.value) })}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="form-label">ساعات الإضافي</label>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                className="input-field"
+                value={formData.overtimeHours}
+                onChange={(e) => setFormData({ ...formData, overtimeHours: Number(e.target.value) })}
+              />
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">وقت الحضور</label>
-                  <input
-                    type="time"
-                    className="input-field"
-                    value={formData.checkInTime || ''}
-                    onChange={(e) => setFormData({ ...formData, checkInTime: e.target.value })}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="form-label">وقت الحضور</label>
+              <input
+                type="time"
+                className="input-field"
+                value={formData.checkInTime || ''}
+                onChange={(e) => setFormData({ ...formData, checkInTime: e.target.value })}
+              />
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">وقت الانصراف</label>
-                  <input
-                    type="time"
-                    className="input-field"
-                    value={formData.checkOutTime || ''}
-                    onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
-                  إلغاء
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>تسجيل الحضور</span>
-                </button>
-              </div>
-            </form>
+            <div className="form-group">
+              <label className="form-label">وقت الانصراف</label>
+              <input
+                type="time"
+                className="input-field"
+                value={formData.checkOutTime || ''}
+                onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 };

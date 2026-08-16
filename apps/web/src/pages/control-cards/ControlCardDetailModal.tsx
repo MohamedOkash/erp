@@ -3,8 +3,8 @@ import { controlCardsApi } from '../../api/control-cards.api';
 import type { ControlCardDetail } from '../../api/control-cards.api';
 import { StagesManagementModal } from '../work-items/StagesManagementModal';
 import { PricesManagementModal } from '../work-items/PricesManagementModal';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   Loader2,
   FileSpreadsheet,
   Layers,
@@ -60,103 +60,40 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.8)',
-        backdropFilter: 'blur(10px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 100,
-      }}
-      dir="rtl"
-    >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '960px',
-          maxHeight: '92vh',
-          overflowY: 'auto',
-          padding: '2rem',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid var(--border-subtle)',
-            paddingBottom: '1.25rem',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-              <div
-                style={{
-                  padding: '0.5rem',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(30, 64, 175, 0.5) 100%)',
-                  border: '1px solid rgba(59, 130, 246, 0.4)',
-                  color: '#60a5fa',
-                }}
-              >
-                <FileSpreadsheet size={24} />
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                  {card?.item.name || 'بطاقة التحكم الحية'}
-                </h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.25rem', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-                  <span>الكود: <strong style={{ color: '#93c5fd' }}>{card?.item.code || '—'}</strong></span>
-                  <span>الوحدة القياسية: <strong style={{ color: '#6ee7b7' }}>{card?.item.unit || 'م²'}</strong></span>
-                  <span className="badge badge-success" style={{ fontSize: '0.7rem' }}>بطاقة حية متصلة بالإنتاج</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={card?.item.name || 'بطاقة التحكم الحية'}
+        subtitle={`الكود: ${card?.item.code || '—'} | الوحدة: ${card?.item.unit || 'م²'}`}
+        icon={<FileSpreadsheet size={22} color="#60a5fa" />}
+        maxWidth="3xl"
+        headerActions={
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <button
               type="button"
               onClick={() => setStagesModalOpen(true)}
               className="btn btn-secondary"
-              style={{ padding: '0.45rem 0.8rem', fontSize: '0.8rem', color: '#818cf8', borderColor: 'rgba(129, 140, 248, 0.3)' }}
+              style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', color: '#818cf8', borderColor: 'rgba(129, 140, 248, 0.3)' }}
             >
-              <Edit2 size={14} /> <span>تعديل المراحل</span>
+              <Edit2 size={13} /> <span>تعديل المراحل</span>
             </button>
             <button
               type="button"
               onClick={() => setPricesModalOpen(true)}
               className="btn btn-secondary"
-              style={{ padding: '0.45rem 0.8rem', fontSize: '0.8rem', color: '#34d399', borderColor: 'rgba(52, 211, 153, 0.3)' }}
+              style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', color: '#34d399', borderColor: 'rgba(52, 211, 153, 0.3)' }}
             >
-              <DollarSign size={14} /> <span>تعديل الأسعار</span>
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                borderRadius: 'var(--radius-sm)',
-              }}
-            >
-              <X size={22} />
+              <DollarSign size={13} /> <span>تعديل الأسعار</span>
             </button>
           </div>
-        </div>
-
+        }
+        footer={
+          <button type="button" onClick={onClose} className="btn btn-secondary" style={{ padding: '0.45rem 1.5rem', fontSize: '0.85rem' }}>
+            إغلاق البطاقة
+          </button>
+        }
+      >
         {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem' }}>
             <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
@@ -399,22 +336,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
             </div>
           </div>
         ) : null}
-
-        {/* Footer */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            borderTop: '1px solid var(--border-subtle)',
-            paddingTop: '1.25rem',
-            marginTop: '1.5rem',
-          }}
-        >
-          <button type="button" onClick={onClose} className="btn btn-secondary" style={{ padding: '0.5rem 1.5rem' }}>
-            إغلاق البطاقة
-          </button>
-        </div>
-      </div>
+      </Modal>
 
       {/* Edit Stages Modal */}
       <StagesManagementModal
@@ -435,6 +357,6 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
         }}
         workItem={card?.item ? { id: card.item.id, name: card.item.name, code: card.item.code, default_unit_rate: card.contract.price } : null}
       />
-    </div>
+    </>
   );
 };

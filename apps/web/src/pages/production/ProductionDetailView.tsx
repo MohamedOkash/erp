@@ -3,8 +3,8 @@ import type { ProductionRecord } from '../../api/production.api';
 import { productionApi } from '../../api/production.api';
 import { useAuth } from '../../contexts/AuthContext';
 import { ApprovalTimeline } from './ApprovalTimeline';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   Loader2,
   Layers,
   Building,
@@ -66,58 +66,114 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 100,
-      }}
-    >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '900px',
-          padding: '2rem',
-          maxHeight: '92vh',
-          overflowY: 'auto',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-            borderBottom: '1px solid var(--border-subtle)',
-            paddingBottom: '1rem',
-          }}
-        >
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="تفاصيل تقرير الإنتاجية اليومي"
+      subtitle={`المعرف: ${record.id}`}
+      icon={<Layers size={22} />}
+      maxWidth="3xl"
+      footer={
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Layers size={24} color="#60a5fa" />
-              <h3 style={{ fontSize: '1.3rem' }}>تفاصيل تقرير الإنتاجية اليومي</h3>
-            </div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-              المعرف: {record.id}
-            </span>
+            {record.status === 'final_approved' && onRequestCorrection && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onRequestCorrection(record);
+                }}
+                className="btn btn-secondary"
+                style={{ gap: '0.4rem', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fbbf24' }}
+              >
+                <RotateCcw size={15} />
+                <span>طلب تصحيح (Correction Request)</span>
+              </button>
+            )}
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            <X size={22} />
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button type="button" onClick={onClose} className="btn btn-secondary">
+              إغلاق
+            </button>
+
+            {/* Step 1: Submit */}
+            {record.status === 'draft' && (
+              <button
+                type="button"
+                onClick={() => handleApprove('submit')}
+                className="btn btn-primary"
+                disabled={isApproving}
+                style={{ gap: '0.4rem' }}
+              >
+                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                <span>تقديم السجل للاعتماد (Submit)</span>
+              </button>
+            )}
+
+            {/* Step 2: Supervisor Approve */}
+            {record.status === 'submitted' && (
+              <button
+                type="button"
+                onClick={() => handleApprove('supervisor')}
+                className="btn btn-primary"
+                disabled={!canSupervisorApprove || isApproving}
+                style={{
+                  gap: '0.4rem',
+                  background: canSupervisorApprove ? '#d97706' : undefined,
+                  opacity: canSupervisorApprove ? 1 : 0.5,
+                  cursor: canSupervisorApprove ? 'pointer' : 'not-allowed',
+                }}
+                title={!canSupervisorApprove ? 'يتطلب دور مشرف معتمد (Supervisor)' : ''}
+              >
+                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <HardHat size={16} />}
+                <span>اعتماد المشرف (Supervisor Approve)</span>
+              </button>
+            )}
+
+            {/* Step 3: Engineer Approve */}
+            {record.status === 'supervisor_approved' && (
+              <button
+                type="button"
+                onClick={() => handleApprove('engineer')}
+                className="btn btn-primary"
+                disabled={!canEngineerApprove || isApproving}
+                style={{
+                  gap: '0.4rem',
+                  background: canEngineerApprove ? '#0284c7' : undefined,
+                  opacity: canEngineerApprove ? 1 : 0.5,
+                  cursor: canEngineerApprove ? 'pointer' : 'not-allowed',
+                }}
+                title={!canEngineerApprove ? 'يتطلب دور مهندس معتمد (Engineer)' : ''}
+              >
+                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <Compass size={16} />}
+                <span>اعتماد المهندس (Engineer Approve)</span>
+              </button>
+            )}
+
+            {/* Step 4: Final Approve */}
+            {record.status === 'engineer_approved' && (
+              <button
+                type="button"
+                onClick={() => handleApprove('final')}
+                className="btn btn-primary"
+                disabled={!canFinalApprove || isApproving}
+                style={{
+                  gap: '0.4rem',
+                  background: canFinalApprove ? '#059669' : undefined,
+                  opacity: canFinalApprove ? 1 : 0.5,
+                  cursor: canFinalApprove ? 'pointer' : 'not-allowed',
+                }}
+                title={!canFinalApprove ? 'يتطلب صلاحية مدير النظام (Admin)' : ''}
+              >
+                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                <span>الاعتماد النهائي والإغلاق (Final Approve)</span>
+              </button>
+            )}
+          </div>
         </div>
+      }
+    >
 
         {/* Alerts */}
         {successMsg && (
@@ -302,119 +358,6 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
         <div style={{ marginBottom: '1.5rem' }}>
           <ApprovalTimeline record={record} />
         </div>
-
-        {/* Role-Based Action Bar */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            paddingTop: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-          }}
-        >
-          {/* Left Action: Correction Request if final_approved */}
-          <div>
-            {record.status === 'final_approved' && onRequestCorrection && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onRequestCorrection(record);
-                }}
-                className="btn btn-secondary"
-                style={{ gap: '0.4rem', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fbbf24' }}
-              >
-                <RotateCcw size={15} />
-                <span>طلب تصحيح (Correction Request)</span>
-              </button>
-            )}
-          </div>
-
-          {/* Right Action: Step by step approvals */}
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-secondary">
-              إغلاق
-            </button>
-
-            {/* Step 1: Submit */}
-            {record.status === 'draft' && (
-              <button
-                type="button"
-                onClick={() => handleApprove('submit')}
-                className="btn btn-primary"
-                disabled={isApproving}
-                style={{ gap: '0.4rem' }}
-              >
-                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                <span>تقديم السجل للاعتماد (Submit)</span>
-              </button>
-            )}
-
-            {/* Step 2: Supervisor Approve */}
-            {record.status === 'submitted' && (
-              <button
-                type="button"
-                onClick={() => handleApprove('supervisor')}
-                className="btn btn-primary"
-                disabled={!canSupervisorApprove || isApproving}
-                style={{
-                  gap: '0.4rem',
-                  background: canSupervisorApprove ? '#d97706' : undefined,
-                  opacity: canSupervisorApprove ? 1 : 0.5,
-                  cursor: canSupervisorApprove ? 'pointer' : 'not-allowed',
-                }}
-                title={!canSupervisorApprove ? 'يتطلب دور مشرف معتمد (Supervisor)' : ''}
-              >
-                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <HardHat size={16} />}
-                <span>اعتماد المشرف (Supervisor Approve)</span>
-              </button>
-            )}
-
-            {/* Step 3: Engineer Approve */}
-            {record.status === 'supervisor_approved' && (
-              <button
-                type="button"
-                onClick={() => handleApprove('engineer')}
-                className="btn btn-primary"
-                disabled={!canEngineerApprove || isApproving}
-                style={{
-                  gap: '0.4rem',
-                  background: canEngineerApprove ? '#0284c7' : undefined,
-                  opacity: canEngineerApprove ? 1 : 0.5,
-                  cursor: canEngineerApprove ? 'pointer' : 'not-allowed',
-                }}
-                title={!canEngineerApprove ? 'يتطلب دور مهندس معتمد (Engineer)' : ''}
-              >
-                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <Compass size={16} />}
-                <span>اعتماد المهندس (Engineer Approve)</span>
-              </button>
-            )}
-
-            {/* Step 4: Final Approve */}
-            {record.status === 'engineer_approved' && (
-              <button
-                type="button"
-                onClick={() => handleApprove('final')}
-                className="btn btn-primary"
-                disabled={!canFinalApprove || isApproving}
-                style={{
-                  gap: '0.4rem',
-                  background: canFinalApprove ? '#059669' : undefined,
-                  opacity: canFinalApprove ? 1 : 0.5,
-                  cursor: canFinalApprove ? 'pointer' : 'not-allowed',
-                }}
-                title={!canFinalApprove ? 'يتطلب صلاحية مدير النظام (Admin)' : ''}
-              >
-                {isApproving ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-                <span>الاعتماد النهائي والإغلاق (Final Approve)</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

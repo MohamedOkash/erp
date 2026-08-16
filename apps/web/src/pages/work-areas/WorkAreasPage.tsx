@@ -3,6 +3,7 @@ import { workAreasApi } from '../../api/work-areas.api';
 import type { WorkArea, CreateWorkAreaPayload, UpdateWorkAreaPayload } from '../../api/work-areas.api';
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
+import { Modal } from '../../components/Modal';
 import {
   Network,
   Plus,
@@ -16,7 +17,6 @@ import {
   ChevronRight,
   ChevronDown,
   Layers,
-  X,
   Hash,
 } from 'lucide-react';
 
@@ -468,168 +468,126 @@ export const WorkAreasPage: React.FC = () => {
       </div>
 
       {/* Create / Edit Modal */}
-      {isModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '520px', padding: '2rem' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '1.5rem',
-              }}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={
+          editingArea
+            ? 'تعديل منطقة العمل'
+            : modalParentId
+            ? 'إضافة منطقة فرعية تابعة'
+            : 'إضافة منطقة رئيسية'
+        }
+        icon={<Network size={22} color="#60a5fa" />}
+        maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="btn btn-secondary"
+              disabled={isSaving}
             >
-              <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Network size={20} color="#60a5fa" />
-                {editingArea
-                  ? 'تعديل منطقة العمل'
-                  : modalParentId
-                  ? 'إضافة منطقة فرعية تابعة'
-                  : 'إضافة منطقة رئيسية'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+              إلغاء
+            </button>
+            <button type="submit" form="work-area-form" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{editingArea ? 'حفظ التعديلات' : 'إنشاء المنطقة'}</span>
+            </button>
+          </div>
+        }
+      >
+        <form id="work-area-form" onSubmit={handleSave}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">المنطقة الأب (Parent Area)</label>
+              <select
+                className="input-field"
+                value={modalParentId || ''}
+                onChange={(e) => setModalParentId(e.target.value || null)}
               >
-                <X size={20} />
-              </button>
+                <option value="">(منطقة رئيسية - الجذر Root)</option>
+                {areas
+                  .filter((a) => !editingArea || a.id !== editingArea.id)
+                  .map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {'— '.repeat(a.level || 0)} {a.name} ({a.code || 'بدون كود'})
+                    </option>
+                  ))}
+              </select>
             </div>
 
-            <form onSubmit={handleSave}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">المنطقة الأب (Parent Area)</label>
-                  <select
-                    className="input-field"
-                    value={modalParentId || ''}
-                    onChange={(e) => setModalParentId(e.target.value || null)}
-                  >
-                    <option value="">(منطقة رئيسية - الجذر Root)</option>
-                    {areas
-                      .filter((a) => !editingArea || a.id !== editingArea.id)
-                      .map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {'— '.repeat(a.level || 0)} {a.name} ({a.code || 'بدون كود'})
-                        </option>
-                      ))}
-                  </select>
-                </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">اسم منطقة العمل *</label>
+              <input
+                type="text"
+                required
+                className="input-field"
+                placeholder="مثال: الدور الأرضي / الجناح الشرقي..."
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+              />
+            </div>
 
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">اسم المنطقة / المكان *</label>
-                  <input
-                    type="text"
-                    required
-                    className="input-field"
-                    placeholder="مثال: البرج الجنوبي / الدور الثالث / شقة 302"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                  />
-                </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">كود المنطقة</label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="مثال: GF-E1"
+                value={formCode}
+                onChange={(e) => setFormCode(e.target.value)}
+              />
+            </div>
 
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">كود المنطقة</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="مثال: BLD-A-FL3"
-                    value={formCode}
-                    onChange={(e) => setFormCode(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">ترتيب العرض (Sort Order)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="input-field"
-                    value={formSortOrder}
-                    onChange={(e) => setFormSortOrder(Number(e.target.value))}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.75rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="btn btn-secondary"
-                  disabled={isSaving}
-                >
-                  إلغاء
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>{editingArea ? 'حفظ التعديلات' : 'إنشاء المنطقة'}</span>
-                </button>
-              </div>
-            </form>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">ترتيب العرض (Sort Order)</label>
+              <input
+                type="number"
+                min="0"
+                className="input-field"
+                value={formSortOrder}
+                onChange={(e) => setFormSortOrder(Number(e.target.value))}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {deletingArea && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#f87171', marginBottom: '1rem' }}>
-              <Trash2 size={24} />
-              <h3 style={{ fontSize: '1.2rem', margin: 0 }}>تأكيد حذف منطقة العمل</h3>
-            </div>
-
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              هل أنت متأكد من رغبتك في حذف المنطقة <strong style={{ color: '#ffffff' }}>"{deletingArea.name}"</strong>؟ سيتم حذف أو فصل كافة المناطق الفرعية التابعة لها.
-            </p>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setDeletingArea(null)}
-                className="btn btn-secondary"
-                disabled={isDeleting}
-              >
-                إلغاء
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="btn btn-primary"
-                style={{ background: '#dc2626' }}
-                disabled={isDeleting}
-              >
-                {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-                <span>تأكيد الحذف</span>
-              </button>
-            </div>
+      <Modal
+        isOpen={!!deletingArea}
+        onClose={() => setDeletingArea(null)}
+        title="تأكيد حذف منطقة العمل"
+        icon={<Trash2 size={22} color="#f87171" />}
+        maxWidth="sm"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setDeletingArea(null)}
+              className="btn btn-secondary"
+              disabled={isDeleting}
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              className="btn btn-primary"
+              style={{ background: '#dc2626' }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>تأكيد الحذف</span>
+            </button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+          هل أنت متأكد من رغبتك في حذف المنطقة <strong style={{ color: '#ffffff' }}>"{deletingArea?.name}"</strong>؟ سيتم حذف أو فصل كافة المناطق الفرعية التابعة لها.
+        </p>
+      </Modal>
     </div>
   );
 };

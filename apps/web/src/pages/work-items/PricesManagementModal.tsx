@@ -3,6 +3,8 @@ import type { WorkItemPrice } from '../../api/work-categories.api';
 import { workItemPricesApi } from '../../api/work-categories.api';
 import type { Branch } from '../../api/branches.api';
 import { branchesApi } from '../../api/branches.api';
+import { Modal } from '../../components/Modal';
+import { DollarSign } from 'lucide-react';
 
 interface PricesManagementModalProps {
   isOpen: boolean;
@@ -79,26 +81,24 @@ export const PricesManagementModal: React.FC<PricesManagementModalProps> = ({
   if (!isOpen || !workItem) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto" dir="rtl">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="px-6 py-4 bg-slate-800/80 border-b border-slate-700/80 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm">إدارة الأسعار والتكلفة</span>
-              {workItem.name}
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">كود البند: {workItem.code || '—'}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-700/50 transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="p-6 space-y-6 overflow-y-auto flex-1">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`إدارة الأسعار والتكلفة: ${workItem.name}`}
+      subtitle={`كود البند: ${workItem.code || '—'}`}
+      icon={<DollarSign size={22} color="#34d399" />}
+      maxWidth="2xl"
+      footer={
+        <button
+          onClick={onClose}
+          className="btn btn-secondary"
+          style={{ padding: '0.45rem 1.5rem', fontSize: '0.85rem' }}
+        >
+          إغلاق
+        </button>
+      }
+    >
+      <div className="space-y-6">
           {error && (
             <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs">
               {error}
@@ -212,17 +212,6 @@ export const PricesManagementModal: React.FC<PricesManagementModalProps> = ({
             )}
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 bg-slate-800/80 border-t border-slate-700/80 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-all"
-          >
-            إغلاق
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

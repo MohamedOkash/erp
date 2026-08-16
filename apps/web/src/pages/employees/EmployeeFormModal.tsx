@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { Employee, CreateEmployeePayload, UpdateEmployeePayload } from '../../api/employees.api';
 import type { Branch } from '../../api/branches.api';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   Loader2,
   User,
   CreditCard,
@@ -96,55 +96,26 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 100,
-      }}
-    >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '640px',
-          padding: '2rem',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <User size={22} color="#60a5fa" />
-            <h3 style={{ fontSize: '1.25rem' }}>
-              {editingEmployee ? 'تعديل بيانات الموظف / العامل' : 'إضافة موظف / عامل جديد'}
-            </h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            <X size={20} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={editingEmployee ? 'تعديل بيانات الموظف / العامل' : 'إضافة موظف / عامل جديد'}
+      icon={<User size={22} color="#60a5fa" />}
+      maxWidth="lg"
+      footer={
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+          <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSaving}>
+            إلغاء
+          </button>
+          <button type="submit" form="employee-form" className="btn btn-primary" disabled={isSaving}>
+            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckSquare size={16} />}
+            <span>{editingEmployee ? 'حفظ التعديلات' : 'إضافة الموظف'}</span>
           </button>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      }
+    >
+      <form id="employee-form" onSubmit={handleSubmit}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <User size={14} />
@@ -320,18 +291,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
               </label>
             </div>
           </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.75rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSaving}>
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSaving}>
-              {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckSquare size={16} />}
-              <span>{editingEmployee ? 'حفظ التعديلات' : 'إضافة الموظف'}</span>
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
-  );
-};
+      </Modal>
+    );
+  };

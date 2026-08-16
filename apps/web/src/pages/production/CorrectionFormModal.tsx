@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { ProductionRecord, CorrectionPayload } from '../../api/production.api';
 import { productionApi } from '../../api/production.api';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   Loader2,
   RotateCcw,
   AlertCircle,
@@ -76,174 +76,140 @@ export const CorrectionFormModal: React.FC<CorrectionFormModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 110,
-      }}
-    >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '520px',
-          padding: '2rem',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.25rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <RotateCcw size={22} color="#fbbf24" />
-            <h3 style={{ fontSize: '1.25rem' }}>طلب تعديل / تصحيح إنتاج مغلق</h3>
-          </div>
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="طلب تعديل / تصحيح إنتاج مغلق"
+      icon={<RotateCcw size={22} color="#fbbf24" />}
+      maxWidth="md"
+      footer={
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+          <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSubmitting}>
+            إلغاء
+          </button>
           <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+            type="submit"
+            form="correction-form"
+            className="btn btn-primary"
+            disabled={isSubmitting}
+            style={{ gap: '0.4rem', background: '#d97706' }}
           >
-            <X size={20} />
+            {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <RotateCcw size={16} />}
+            <span>تقديم طلب التصحيح</span>
           </button>
         </div>
+      }
+    >
+      <div
+        style={{
+          padding: '0.75rem 1rem',
+          background: 'rgba(245, 158, 11, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.25)',
+          borderRadius: 'var(--radius-md)',
+          color: '#fbbf24',
+          fontSize: '0.82rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          marginBottom: '1.25rem',
+        }}
+      >
+        <Info size={16} />
+        <span>
+          السجل معتمد ومغلق. التصحيح يضاف كقيد إضافي تراكمي (Additive Correction) بعد الاعتماد.
+        </span>
+      </div>
 
+      {error && (
         <div
           style={{
             padding: '0.75rem 1rem',
-            background: 'rgba(245, 158, 11, 0.1)',
-            border: '1px solid rgba(245, 158, 11, 0.25)',
+            background: 'var(--status-danger-bg)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
             borderRadius: 'var(--radius-md)',
-            color: '#fbbf24',
-            fontSize: '0.82rem',
+            color: '#fca5a5',
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
             marginBottom: '1.25rem',
+            fontSize: '0.85rem',
           }}
         >
-          <Info size={16} />
-          <span>
-            السجل معتمد ومغلق. التصحيح يضاف كقيد إضافي تراكمي (Additive Correction) بعد الاعتماد.
-          </span>
+          <AlertCircle size={16} />
+          <span>{error}</span>
         </div>
+      )}
 
-        {error && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--status-danger-bg)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: 'var(--radius-md)',
-              color: '#fca5a5',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              marginBottom: '1.25rem',
-              fontSize: '0.85rem',
-            }}
-          >
-            <AlertCircle size={16} />
-            <span>{error}</span>
+      {successMsg && (
+        <div
+          style={{
+            padding: '0.75rem 1rem',
+            background: 'var(--status-success-bg)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: 'var(--radius-md)',
+            color: '#6ee7b7',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginBottom: '1.25rem',
+            fontSize: '0.85rem',
+          }}
+        >
+          <CheckCircle2 size={16} />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
+      <form id="correction-form" onSubmit={handleSubmit}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="form-label">نوع التصحيح المطلوب *</label>
+            <select
+              className="input-field"
+              value={type}
+              onChange={(e) => setType(e.target.value as any)}
+            >
+              <option value="quantity_adjust">تعديل كمية (Quantity Adjustment)</option>
+              <option value="annul">إلغاء السجل (Annul)</option>
+              <option value="note">إضافة ملاحظة تصحيحية (Note)</option>
+            </select>
           </div>
-        )}
 
-        {successMsg && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--status-success-bg)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: 'var(--radius-md)',
-              color: '#6ee7b7',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              marginBottom: '1.25rem',
-              fontSize: '0.85rem',
-            }}
-          >
-            <CheckCircle2 size={16} />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">نوع التصحيح المطلوب *</label>
-              <select
-                className="input-field"
-                value={type}
-                onChange={(e) => setType(e.target.value as any)}
-              >
-                <option value="quantity_adjust">تعديل كمية (Quantity Adjustment)</option>
-                <option value="annul">إلغاء السجل (Annul)</option>
-                <option value="note">إضافة ملاحظة تصحيحية (Note)</option>
-              </select>
-            </div>
-
-            {type === 'quantity_adjust' && (
-              <div className="form-group animate-fade-in" style={{ margin: 0 }}>
-                <label className="form-label">
-                  فارق الكمية (Delta) *
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginRight: '0.4rem' }}>
-                    (يمكن أن يكون موجب + أو سالب -)
-                  </span>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  placeholder="مثال: +15 أو -5.5"
-                  className="input-field"
-                  value={delta}
-                  onChange={(e) => setDelta(Number(e.target.value))}
-                />
-              </div>
-            )}
-
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">سبب طلب التصحيح والمبرر الهندسي *</label>
-              <textarea
+          {type === 'quantity_adjust' && (
+            <div className="form-group animate-fade-in" style={{ margin: 0 }}>
+              <label className="form-label">
+                فارق الكمية (Delta) *
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginRight: '0.4rem' }}>
+                  (يمكن أن يكون موجب + أو سالب -)
+                </span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
                 required
-                rows={3}
+                placeholder="مثال: +15 أو -5.5"
                 className="input-field"
-                style={{ resize: 'vertical' }}
-                placeholder="يرجى كتابة سبب التعديل وتفاصيل المعاينة الميدانية..."
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                value={delta}
+                onChange={(e) => setDelta(Number(e.target.value))}
               />
             </div>
-          </div>
+          )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.75rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSubmitting}>
-              إلغاء
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={isSubmitting}
-              style={{ gap: '0.4rem', background: '#d97706' }}
-            >
-              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <RotateCcw size={16} />}
-              <span>تقديم طلب التصحيح</span>
-            </button>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="form-label">سبب طلب التصحيح والمبرر الهندسي *</label>
+            <textarea
+              required
+              rows={3}
+              className="input-field"
+              style={{ resize: 'vertical' }}
+              placeholder="يرجى كتابة سبب التعديل وتفاصيل المعاينة الميدانية..."
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </Modal>
   );
 };
+

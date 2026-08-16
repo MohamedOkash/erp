@@ -5,8 +5,8 @@ import type { Employee } from '../../api/employees.api';
 import { employeesApi } from '../../api/employees.api';
 import type { Project } from '../../api/projects.api';
 import { projectsApi } from '../../api/projects.api';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   Loader2,
   ArrowLeftRight,
   User,
@@ -102,51 +102,25 @@ export const TransferRequestModal: React.FC<TransferRequestModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 100,
-      }}
-      dir="rtl"
-    >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '560px',
-          padding: '2rem',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <ArrowLeftRight size={22} color="#60a5fa" />
-            <h3 style={{ fontSize: '1.25rem' }}>طلب نقل كادر أو مشرف ميداني</h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            <X size={20} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="طلب نقل كادر أو مشرف ميداني"
+      icon={<ArrowLeftRight size={22} color="#60a5fa" />}
+      maxWidth="md"
+      footer={
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+          <button type="button" onClick={onClose} className="btn btn-secondary" disabled={submitting}>
+            إلغاء
+          </button>
+          <button type="submit" form="transfer-request-form" className="btn btn-primary" disabled={submitting}>
+            {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
+            <span>إرسال طلب النقل للمدير</span>
           </button>
         </div>
+      }
+    >
+      <form id="transfer-request-form" onSubmit={handleSubmit}>
 
         {error && (
           <div
@@ -168,8 +142,7 @@ export const TransferRequestModal: React.FC<TransferRequestModalProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
               <label className="form-label">
                 <User size={14} />
@@ -267,17 +240,7 @@ export const TransferRequestModal: React.FC<TransferRequestModalProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.75rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-secondary" disabled={submitting}>
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>إرسال طلب النقل للمدير</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

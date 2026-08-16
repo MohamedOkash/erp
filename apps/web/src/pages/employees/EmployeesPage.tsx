@@ -5,6 +5,7 @@ import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
 import { EmployeeFormModal } from './EmployeeFormModal';
 import { XlsxImportModal } from './XlsxImportModal';
+import { Modal } from '../../components/Modal';
 import {
   Users,
   Plus,
@@ -596,113 +597,86 @@ export const EmployeesPage: React.FC = () => {
       />
 
       {/* Deactivate Confirmation Modal */}
-      {deactivatingEmployee && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#f87171', marginBottom: '1rem' }}>
-              <Trash2 size={24} />
-              <h3 style={{ fontSize: '1.2rem', margin: 0 }}>تأكيد تعطيل الموظف</h3>
-            </div>
-
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              هل أنت متأكد من رغبتك في تعطيل الموظف <strong style={{ color: '#ffffff' }}>"{deactivatingEmployee.name}"</strong>؟ (Soft Delete - يمكن إعادة تنشيطه لاحقًا).
-            </p>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setDeactivatingEmployee(null)}
-                className="btn btn-secondary"
-                disabled={isDeactivating}
-              >
-                إلغاء
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDeactivate}
-                className="btn btn-primary"
-                style={{ background: '#dc2626' }}
-                disabled={isDeactivating}
-              >
-                {isDeactivating ? <Loader2 size={16} className="animate-spin" /> : null}
-                <span>تأكيد التعطيل</span>
-              </button>
-            </div>
+      <Modal
+        isOpen={!!deactivatingEmployee}
+        onClose={() => setDeactivatingEmployee(null)}
+        title="تأكيد تعطيل الموظف"
+        icon={<Trash2 size={22} color="#f87171" />}
+        maxWidth="sm"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setDeactivatingEmployee(null)}
+              className="btn btn-secondary"
+              disabled={isDeactivating}
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDeactivate}
+              className="btn btn-primary"
+              style={{ background: '#dc2626' }}
+              disabled={isDeactivating}
+            >
+              {isDeactivating ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>تأكيد التعطيل</span>
+            </button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+          هل أنت متأكد من رغبتك في تعطيل الموظف <strong style={{ color: '#ffffff' }}>"{deactivatingEmployee?.name}"</strong>؟ (Soft Delete - يمكن إعادة تنشيطه لاحقًا).
+        </p>
+      </Modal>
 
       {/* View Assignments Modal */}
-      {viewingAssignmentsEmp && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '520px', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Layers size={20} color="#60a5fa" />
-                <span>تعيينات: {viewingAssignmentsEmp.name}</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setViewingAssignmentsEmp(null)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+      <Modal
+        isOpen={!!viewingAssignmentsEmp}
+        onClose={() => setViewingAssignmentsEmp(null)}
+        title={`تعيينات: ${viewingAssignmentsEmp?.name || ''}`}
+        icon={<Layers size={22} color="#60a5fa" />}
+        maxWidth="md"
+        footer={
+          <button type="button" onClick={() => setViewingAssignmentsEmp(null)} className="btn btn-secondary">
+            إغلاق
+          </button>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          {viewingAssignmentsEmp?.assignments && viewingAssignmentsEmp.assignments.length > 0 ? (
+            viewingAssignmentsEmp.assignments.map((a, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: '0.75rem 1rem',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
               >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {viewingAssignmentsEmp.assignments?.map((a, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    padding: '0.75rem 1rem',
-                    background: 'rgba(15, 23, 42, 0.6)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#ffffff' }}>{a.projectName}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                      كود: {a.projectCode} • دور: {a.assignedRole}
-                    </div>
+                <div>
+                  <div style={{ fontWeight: 600, color: '#ffffff' }}>{a.projectName}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                    كود: {a.projectCode} • دور: {a.assignedRole}
                   </div>
-                  <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>
-                    منذ {a.startDate ? a.startDate.split('T')[0] : '—'}
-                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
+                <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>
+                  منذ {a.startDate ? a.startDate.split('T')[0] : '—'}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, textAlign: 'center', padding: '1rem' }}>
+              لا توجد تعيينات حالية لهذا الموظف
+            </p>
+          )}
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

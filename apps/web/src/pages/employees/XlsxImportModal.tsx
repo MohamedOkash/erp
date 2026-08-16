@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { employeesApi } from '../../api/employees.api';
 import type { ImportUploadResponse } from '../../api/employees.api';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   UploadCloud,
   FileSpreadsheet,
   CheckCircle2,
@@ -30,8 +30,6 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [importResult, setImportResult] = useState<ImportUploadResponse | null>(null);
   const [commitSuccess, setCommitSuccess] = useState<string | null>(null);
-
-  if (!isOpen) return null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -88,54 +86,13 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 100,
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="استيراد بيانات الموظفين من ملف Excel (.xlsx)"
+      icon={<FileSpreadsheet size={22} color="#10b981" />}
+      maxWidth="2xl"
     >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '750px',
-          padding: '2rem',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
-        {/* Modal Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <FileSpreadsheet size={24} color="#10b981" />
-            <h3 style={{ fontSize: '1.25rem' }}>
-              استيراد بيانات الموظفين من ملف Excel (.xlsx)
-            </h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
         {/* Error Alert */}
         {error && (
           <div
@@ -372,7 +329,6 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 };

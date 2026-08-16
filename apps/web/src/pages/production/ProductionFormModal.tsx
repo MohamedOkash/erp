@@ -8,8 +8,8 @@ import type { WorkArea } from '../../api/work-areas.api';
 import type { Employee } from '../../api/employees.api';
 import type { WorkItemStage } from '../../api/work-categories.api';
 import { workItemStagesApi } from '../../api/work-categories.api';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   Loader2,
   Layers,
   Building,
@@ -237,50 +237,25 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 100,
-      }}
-    >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '850px',
-          padding: '2rem',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Layers size={22} color="#60a5fa" />
-            <h3 style={{ fontSize: '1.25rem' }}>إدخال تقرير إنتاجية يومي مرحلي جديد</h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            <X size={20} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="إدخال تقرير إنتاجية يومي مرحلي جديد"
+      icon={<Layers size={22} color="#60a5fa" />}
+      maxWidth="3xl"
+      footer={
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+          <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSubmitting}>
+            إلغاء
+          </button>
+          <button type="submit" form="production-form" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
+            <span>حفظ تقرير الإنتاج (مسودة)</span>
           </button>
         </div>
+      }
+    >
+      <form id="production-form" onSubmit={handleSubmit}>
 
         {validationError && (
           <div
@@ -301,8 +276,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Calendar size={14} />
@@ -665,17 +639,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.75rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSubmitting}>
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>حفظ تقرير الإنتاج (مسودة)</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

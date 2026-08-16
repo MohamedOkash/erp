@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { productionApi } from '../../api/production.api';
 import type { ProductionImportUploadResponse } from '../../api/production.api';
+import { Modal } from '../../components/Modal';
 import {
-  X,
   UploadCloud,
   FileSpreadsheet,
   CheckCircle2,
@@ -88,53 +88,13 @@ export const XlsxProductionImportModal: React.FC<XlsxProductionImportModalProps>
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        zIndex: 100,
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="استيراد سجلات الإنتاجية من ملف Excel (.xlsx)"
+      icon={<FileSpreadsheet size={22} color="#10b981" />}
+      maxWidth="2xl"
     >
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: '750px',
-          padding: '2rem',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
-        {/* Modal Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <FileSpreadsheet size={24} color="#10b981" />
-            <h3 style={{ fontSize: '1.25rem' }}>
-              استيراد سجلات الإنتاجية من ملف Excel (.xlsx)
-            </h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            <X size={20} />
-          </button>
-        </div>
 
         {/* Alerts */}
         {error && (
@@ -377,7 +337,6 @@ export const XlsxProductionImportModal: React.FC<XlsxProductionImportModalProps>
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 };

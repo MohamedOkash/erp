@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { alertsApi } from '../../api/alerts.api';
 import type { AlertRule, NotificationItem } from '../../api/alerts.api';
+import { Modal } from '../../components/Modal';
 import {
   BellRing,
   Plus,
   Play,
   CheckCircle2,
   AlertCircle,
-  X,
   Loader2,
   ShieldAlert,
   Clock,
@@ -309,96 +309,78 @@ export const AlertsPage: React.FC = () => {
       </div>
 
       {/* Create Rule Modal */}
-      {showCreateModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 100,
-          }}
-        >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '500px', padding: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem' }}>إنشاء قاعدة تنبيه جديدة</h3>
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={20} />
-              </button>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="إنشاء قاعدة تنبيه جديدة"
+        icon={<BellRing size={22} color="#60a5fa" />}
+        maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
+              إلغاء
+            </button>
+            <button type="submit" form="create-alert-rule-form" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>إنشاء القاعدة</span>
+            </button>
+          </div>
+        }
+      >
+        <form id="create-alert-rule-form" onSubmit={handleCreateRule}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">اسم القاعدة *</label>
+              <input
+                type="text"
+                required
+                placeholder="مثال: تنبيه انخفاض الإنتاجية عن 75%"
+                className="input-field"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
             </div>
 
-            <form onSubmit={handleCreateRule}>
-              <div className="form-group">
-                <label className="form-label">اسم القاعدة *</label>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">نوع القاعدة *</label>
+              <select
+                className="input-field"
+                value={formData.ruleType}
+                onChange={(e) => setFormData({ ...formData, ruleType: e.target.value })}
+              >
+                <option value="low_productivity">انخفاض الإنتاجية (Low Productivity)</option>
+                <option value="iqama_expiry">اقتراب انتهاء الإقامة/الهوية (Iqama Expiry)</option>
+                <option value="attendance_irregularity">غياب غير مبرر (Attendance Irregularity)</option>
+                <option value="cost_overrun">تجاوز ميزانية التكاليف (Cost Overrun)</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">قيمة الحد الحرج (Threshold) *</label>
                 <input
-                  type="text"
+                  type="number"
                   required
-                  placeholder="مثال: تنبيه انخفاض الإنتاجية عن 75%"
                   className="input-field"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.thresholdValue}
+                  onChange={(e) => setFormData({ ...formData, thresholdValue: Number(e.target.value) })}
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">نوع القاعدة *</label>
-                <select
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">الوحدة</label>
+                <input
+                  type="text"
                   className="input-field"
-                  value={formData.ruleType}
-                  onChange={(e) => setFormData({ ...formData, ruleType: e.target.value })}
-                >
-                  <option value="low_productivity">انخفاض الإنتاجية (Low Productivity)</option>
-                  <option value="iqama_expiry">اقتراب انتهاء الإقامة/الهوية (Iqama Expiry)</option>
-                  <option value="attendance_irregularity">غياب غير مبرر (Attendance Irregularity)</option>
-                  <option value="cost_overrun">تجاوز ميزانية التكاليف (Cost Overrun)</option>
-                </select>
+                  placeholder="%, يوم, SAR"
+                  value={formData.thresholdUnit}
+                  onChange={(e) => setFormData({ ...formData, thresholdUnit: e.target.value })}
+                />
               </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem' }}>
-                <div className="form-group">
-                  <label className="form-label">قيمة الحد الحرج (Threshold) *</label>
-                  <input
-                    type="number"
-                    required
-                    className="input-field"
-                    value={formData.thresholdValue}
-                    onChange={(e) => setFormData({ ...formData, thresholdValue: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">الوحدة</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="%, يوم, SAR"
-                    value={formData.thresholdUnit}
-                    onChange={(e) => setFormData({ ...formData, thresholdUnit: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
-                  إلغاء
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>إنشاء القاعدة</span>
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 };
