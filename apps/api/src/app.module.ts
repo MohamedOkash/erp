@@ -19,6 +19,10 @@ import { ProjectsModule } from './projects/projects.module';
 import { WorkItemsModule } from './work-items/work-items.module';
 import { WorkAreasModule } from './work-areas/work-areas.module';
 import { BoqModule } from './boq/boq.module';
+import { WorkCategoriesModule } from './work-categories/work-categories.module';
+import { WorkItemStagesModule } from './work-item-stages/work-item-stages.module';
+import { WorkItemPricesModule } from './work-item-prices/work-item-prices.module';
+import { LaborRatesModule } from './labor-rates/labor-rates.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -31,6 +35,10 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     WorkItemsModule,
     WorkAreasModule,
     BoqModule,
+    WorkCategoriesModule,
+    WorkItemStagesModule,
+    WorkItemPricesModule,
+    LaborRatesModule,
     EmployeesModule,
     ProductionModule,
     AttendanceModule,
@@ -52,5 +60,3 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
   ],
 })
 export class AppModule {}
-
-
