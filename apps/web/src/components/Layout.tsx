@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { NotificationBell } from './NotificationBell';
 import {
   LayoutDashboard,
   Building,
@@ -54,7 +55,8 @@ export const Layout: React.FC = () => {
     { to: '/incentives', label: 'الحوافز والمكافآت', icon: <Award size={19} /> },
     { to: '/documents', label: 'المستندات والأرشيف', icon: <FileText size={19} /> },
     { to: '/reports', label: 'التقارير والمؤشرات', icon: <BarChart3 size={19} /> },
-    { to: '/alerts', label: 'التنبيهات والإشعارات', icon: <BellRing size={19} /> },
+    { to: '/alerts', label: 'قواعد التنبيهات الميدانية', icon: <BellRing size={19} /> },
+    { to: '/notifications', label: 'مركز الإشعارات والتنبيهات', icon: <Bell size={19} /> },
     { to: '/settings', label: 'الإعدادات', icon: <Settings size={19} /> },
   ];
 
@@ -215,31 +217,8 @@ export const Layout: React.FC = () => {
 
           {/* Right User Area & Notifications */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative' }}>
-            {/* Notification Bell */}
-            <Link
-              to="/alerts"
-              className="btn btn-secondary"
-              style={{
-                padding: '0.45rem',
-                position: 'relative',
-                borderRadius: 'var(--radius-md)',
-              }}
-              title="مركز الإشعارات والتنبيهات"
-            >
-              <Bell size={18} />
-              <span
-                style={{
-                  position: 'absolute',
-                  top: '5px',
-                  right: '5px',
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  background: '#ef4444',
-                  boxShadow: '0 0 8px #ef4444',
-                }}
-              />
-            </Link>
+            {/* Live Notification Bell with Dropdown */}
+            <NotificationBell />
 
             {/* User Avatar & Dropdown Trigger */}
             <div style={{ position: 'relative' }}>

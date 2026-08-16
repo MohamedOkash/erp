@@ -19,6 +19,7 @@ import { IncentivesPage } from './pages/incentives/IncentivesPage';
 import { DocumentsPage } from './pages/documents/DocumentsPage';
 import { SavedReportsPage } from './pages/reports/SavedReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
+import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 
@@ -50,6 +51,7 @@ export const App: React.FC = () => {
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/costs" element={<CostsPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/incentives" element={<IncentivesPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/reports" element={<SavedReportsPage />} />
