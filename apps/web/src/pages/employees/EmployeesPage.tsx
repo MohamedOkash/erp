@@ -1,25 +1,27 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { employeesApi } from '../../api/employees.api';
-import type {
-  Employee,
-  CreateEmployeePayload,
-  UpdateEmployeePayload,
-} from '../../api/employees.api';
+import type { Employee, CreateEmployeePayload, UpdateEmployeePayload } from '../../api/employees.api';
 import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
+import { EmployeeFormModal } from './EmployeeFormModal';
+import { XlsxImportModal } from './XlsxImportModal';
 import {
   Users,
-  Search,
   Plus,
+  Search,
+  Download,
+  UploadCloud,
   Edit2,
   Trash2,
-  Eye,
-  AlertCircle,
   CheckCircle2,
-  X,
+  AlertCircle,
   Loader2,
+  CreditCard,
+  Building,
+  Calendar,
   Briefcase,
-  IdCard,
+  Layers,
+  X,
 } from 'lucide-react';
 
 export const EmployeesPage: React.FC = () => {
@@ -29,6 +31,7 @@ export const EmployeesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -36,37 +39,29 @@ export const EmployeesPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('true');
+  const [statusFilter, setStatusFilter] = useState<string>('');
 
-  // Quick Identity Lookup state
-  const [quickIdentity, setQuickIdentity] = useState('');
-  const [identityResult, setIdentityResult] = useState<Employee | null>(null);
-  const [identityLoading, setIdentityLoading] = useState(false);
-  const [identityError, setIdentityError] = useState<string | null>(null);
+  // Quick Identity Lookup
+  const [identityLookupQuery, setIdentityLookupQuery] = useState('');
+  const [isSearchingIdentity, setIsSearchingIdentity] = useState(false);
+  const [lookupResult, setLookupResult] = useState<Employee | null>(null);
 
-  // Modals state
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  // Modals
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-  const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form State
-  const [formData, setFormData] = useState<CreateEmployeePayload>({
-    name: '',
-    identityNumber: '',
-    identityType: 'national_id',
-    identityExpiryDate: '',
-    nationality: 'Saudi',
-    roleType: 'worker',
-    dailyWage: 200,
-    primaryBranchId: '',
-    code: '',
-    phone: '',
-  });
+  // Deactivate State
+  const [deactivatingEmployee, setDeactivatingEmployee] = useState<Employee | null>(null);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+
+  // View Assignments State
+  const [viewingAssignmentsEmp, setViewingAssignmentsEmp] = useState<Employee | null>(null);
 
   const loadBranches = async () => {
     try {
-      const res = await branchesApi.getBranches({ isActive: true });
+      const res = await branchesApi.list({ isActive: true });
       setBranches(res.data);
     } catch {
       // ignore
@@ -77,13 +72,13 @@ export const EmployeesPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await employeesApi.getEmployees({
+      const res = await employeesApi.list({
         page,
         limit,
         search: search.trim() || undefined,
         branchId: selectedBranch || undefined,
         role: selectedRole || undefined,
-        isActive: selectedStatus === '' ? undefined : selectedStatus === 'true',
+        isActive: statusFilter === '' ? undefined : statusFilter === 'true',
       });
       setEmployees(res.data);
       setTotal(res.total);
@@ -92,7 +87,7 @@ export const EmployeesPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, search, selectedBranch, selectedRole, selectedStatus]);
+  }, [page, limit, search, selectedBranch, selectedRole, statusFilter]);
 
   useEffect(() => {
     loadBranches();
@@ -102,88 +97,45 @@ export const EmployeesPage: React.FC = () => {
     loadEmployees();
   }, [loadEmployees]);
 
-  const handleQuickIdentitySearch = async (e: React.FormEvent) => {
+  const handleIdentityLookup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickIdentity.trim()) return;
+    if (!identityLookupQuery.trim()) return;
 
-    setIdentityLoading(true);
-    setIdentityError(null);
-    setIdentityResult(null);
-
+    setIsSearchingIdentity(true);
+    setLookupResult(null);
+    setError(null);
     try {
-      const result = await employeesApi.getEmployeeByIdentity(quickIdentity.trim());
-      setIdentityResult(result);
+      const emp = await employeesApi.getByIdentity(identityLookupQuery.trim());
+      setLookupResult(emp);
     } catch (err: any) {
-      setIdentityError(err.message || 'لم يتم العثور على موظف بهذا الرقم');
+      setError(err.message || 'لم يتم العثور على أي موظف بهذا الرقم القومي/الهوية');
     } finally {
-      setIdentityLoading(false);
+      setIsSearchingIdentity(false);
     }
   };
 
-  const openCreateModal = () => {
-    setFormData({
-      name: '',
-      identityNumber: '',
-      identityType: 'national_id',
-      identityExpiryDate: '',
-      nationality: 'Saudi',
-      roleType: 'worker',
-      dailyWage: 200,
-      primaryBranchId: branches[0]?.id || '',
-      code: '',
-      phone: '',
-    });
-    setShowCreateModal(true);
+  const handleOpenCreate = () => {
+    setEditingEmployee(null);
+    setIsFormModalOpen(true);
   };
 
-  const openEditModal = (emp: Employee) => {
+  const handleOpenEdit = (emp: Employee) => {
     setEditingEmployee(emp);
-    setFormData({
-      name: emp.name,
-      identityNumber: emp.identityNumber,
-      identityType: emp.identityType || 'national_id',
-      identityExpiryDate: emp.identityExpiryDate ? emp.identityExpiryDate.split('T')[0] : '',
-      nationality: emp.nationality || '',
-      roleType: emp.roleType,
-      dailyWage: emp.dailyWage,
-      primaryBranchId: emp.primaryBranchId || '',
-      code: emp.code || '',
-      phone: emp.phone || '',
-    });
+    setIsFormModalOpen(true);
   };
 
-  const handleSaveEmployee = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (payload: CreateEmployeePayload | UpdateEmployeePayload) => {
     setIsSaving(true);
     setError(null);
-
     try {
       if (editingEmployee) {
-        const payload: UpdateEmployeePayload = {
-          name: formData.name,
-          identityNumber: formData.identityNumber,
-          identityType: formData.identityType,
-          identityExpiryDate: formData.identityExpiryDate || undefined,
-          nationality: formData.nationality || undefined,
-          roleType: formData.roleType,
-          dailyWage: Number(formData.dailyWage),
-          primaryBranchId: formData.primaryBranchId || undefined,
-          code: formData.code || undefined,
-          phone: formData.phone || undefined,
-        };
-        await employeesApi.updateEmployee(editingEmployee.id, payload);
+        await employeesApi.update(editingEmployee.id, payload);
         setSuccessMsg('تم تحديث بيانات الموظف بنجاح');
-        setEditingEmployee(null);
       } else {
-        await employeesApi.createEmployee({
-          ...formData,
-          dailyWage: Number(formData.dailyWage),
-          primaryBranchId: formData.primaryBranchId || undefined,
-          identityExpiryDate: formData.identityExpiryDate || undefined,
-        });
-        setSuccessMsg('تم إضافة الموظف الجديد بنجاح');
-        setShowCreateModal(false);
+        await employeesApi.create(payload as CreateEmployeePayload);
+        setSuccessMsg('تم إنشاء سجل الموظف الجديد بنجاح');
       }
+      setIsFormModalOpen(false);
       loadEmployees();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
@@ -193,46 +145,53 @@ export const EmployeesPage: React.FC = () => {
     }
   };
 
-  const handleDeleteEmployee = async (id: string, name: string) => {
-    if (!window.confirm(`هل أنت متأكد من رغبتك في إلغاء تفعيل الموظف "${name}"؟`)) {
-      return;
-    }
-
+  const handleConfirmDeactivate = async () => {
+    if (!deactivatingEmployee) return;
+    setIsDeactivating(true);
     try {
-      await employeesApi.deleteEmployee(id);
-      setSuccessMsg('تم إلغاء تفعيل الموظف بنجاح');
+      await employeesApi.deactivate(deactivatingEmployee.id);
+      setSuccessMsg(`تم تعطيل / حذف الموظف "${deactivatingEmployee.name}" بنجاح`);
+      setDeactivatingEmployee(null);
       loadEmployees();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل إلغاء تفعيل الموظف');
+      setError(err.message || 'فشل تعطيل الموظف');
+    } finally {
+      setIsDeactivating(false);
     }
   };
 
-  const getIdentityBadge = (type?: string) => {
+  const handleExportXlsx = async () => {
+    setIsExporting(true);
+    setError(null);
+    try {
+      await employeesApi.exportXlsx();
+      setSuccessMsg('تم تصدير ملف الموظفين بنجاح');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setError(err.message || 'فشل تصدير ملف الموظفين');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const getIdentityBadge = (emp: Employee) => {
+    const type = emp.identityType || 'national_id';
     switch (type) {
+      case 'national_id':
+        return <span className="badge badge-primary">هوية وطنية 🇸🇦</span>;
       case 'iqama':
-        return <span className="badge badge-accent">📋 إقامة</span>;
+        return <span className="badge badge-secondary">إقامة مقيم</span>;
       case 'passport':
-        return <span className="badge badge-primary">🛂 جواز</span>;
+        return <span className="badge badge-accent">جواز سفر</span>;
       default:
-        return <span className="badge badge-success">🇸🇦 هوية وطنية</span>;
+        return <span className="badge badge-secondary">{type}</span>;
     }
-  };
-
-  const getRoleLabel = (role: string) => {
-    const map: Record<string, string> = {
-      worker: 'عامل تنفيذ',
-      engineer: 'مهندس موقع',
-      supervisor: 'مشرف تنفيذ',
-      project_manager: 'مدير مشروع',
-      company_admin: 'مدير شركة',
-    };
-    return map[role] || role;
   };
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header & Quick Action */}
+      {/* Header */}
       <div
         style={{
           display: 'flex',
@@ -246,20 +205,42 @@ export const EmployeesPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Users size={28} color="#60a5fa" />
-            <span>إدارة العمال والموظفين</span>
+            <span>إدارة الموظفين والعمالة</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            سجل القوى العاملة، وتوطين الهويات (هوية وطنية / إقامة / جواز)، ومتابعة تواريخ الانتهاء والأجور.
+            سجل القوى العاملة، متابعة الهويات والإقامات، واستيراد وتصدير بيانات الكادر عبر Excel.
           </p>
         </div>
 
-        <button onClick={openCreateModal} className="btn btn-primary" style={{ gap: '0.5rem' }}>
-          <Plus size={18} />
-          <span>إضافة موظف جديد</span>
-        </button>
+        {/* 3 Action Buttons */}
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleExportXlsx}
+            className="btn btn-secondary"
+            disabled={isExporting}
+            style={{ gap: '0.4rem' }}
+          >
+            {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            <span>تصدير Excel</span>
+          </button>
+
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="btn btn-secondary"
+            style={{ gap: '0.4rem', borderColor: 'rgba(16, 185, 129, 0.4)', color: '#34d399' }}
+          >
+            <UploadCloud size={16} />
+            <span>استيراد من Excel</span>
+          </button>
+
+          <button onClick={handleOpenCreate} className="btn btn-primary" style={{ gap: '0.4rem' }}>
+            <Plus size={16} />
+            <span>إضافة موظف</span>
+          </button>
+        </div>
       </div>
 
-      {/* Success / Error Alerts */}
+      {/* Alerts */}
       {successMsg && (
         <div
           style={{
@@ -298,81 +279,51 @@ export const EmployeesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Quick Identity Lookup Card */}
+      {/* Quick Identity Search Box */}
       <div
         className="glass-card"
         style={{
-          padding: '1.25rem',
+          padding: '1rem 1.25rem',
           marginBottom: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(17, 29, 56, 0.7) 100%)',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%)',
+          border: '1px solid rgba(59, 130, 246, 0.25)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <IdCard size={20} color="#60a5fa" />
-          <h3 style={{ fontSize: '1.05rem' }}>البحث الفوري برقم الهوية أو الإقامة</h3>
-        </div>
-
-        <form onSubmit={handleQuickIdentitySearch} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '240px' }} className="input-wrapper">
-            <input
-              type="text"
-              className="input-field"
-              placeholder="أدخل رقم الهوية أو الإقامة أو الجواز للبحث الفوري..."
-              value={quickIdentity}
-              onChange={(e) => setQuickIdentity(e.target.value)}
-            />
+        <form onSubmit={handleIdentityLookup} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#60a5fa', fontWeight: 600, fontSize: '0.9rem' }}>
+            <CreditCard size={18} />
+            <span>فحص هوية / إقامة فوري:</span>
           </div>
-          <button type="submit" className="btn btn-secondary" disabled={identityLoading}>
-            {identityLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-            <span>فحص الهوية</span>
+
+          <input
+            type="text"
+            className="input-field"
+            style={{ maxWidth: '320px', padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+            placeholder="أدخل رقم الهوية أو الإقامة..."
+            value={identityLookupQuery}
+            onChange={(e) => setIdentityLookupQuery(e.target.value)}
+          />
+
+          <button type="submit" className="btn btn-secondary" disabled={isSearchingIdentity} style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}>
+            {isSearchingIdentity ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+            <span>استعلام</span>
           </button>
-        </form>
 
-        {/* Identity Search Result Preview */}
-        {identityResult && (
-          <div
-            style={{
-              marginTop: '1rem',
-              padding: '1rem',
-              background: 'rgba(15, 23, 42, 0.8)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '1rem',
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>{identityResult.name}</span>
-                {getIdentityBadge(identityResult.identityType)}
-                <span className="badge badge-primary">{getRoleLabel(identityResult.roleType)}</span>
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                رقم الهوية: <strong style={{ color: '#fff' }}>{identityResult.identityNumber}</strong> | 
-                الفرع: <strong>{identityResult.branchName || 'غير محدد'}</strong> | 
-                الأجر اليومي: <strong>{identityResult.dailyWage} SAR</strong>
-              </div>
+          {lookupResult && (
+            <div className="animate-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginRight: 'auto' }}>
+              <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>
+                ✓ وُجد: {lookupResult.name} ({lookupResult.roleType}) - {lookupResult.branchName || 'فرع'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setLookupResult(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+              >
+                <X size={14} />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setViewingEmployee(identityResult)}
-              className="btn btn-primary"
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-            >
-              <Eye size={16} />
-              <span>عرض التعيينات الكاملة</span>
-            </button>
-          </div>
-        )}
-
-        {identityError && (
-          <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#f87171' }}>
-            ⚠️ {identityError}
-          </div>
-        )}
+          )}
+        </form>
       </div>
 
       {/* Filters Bar */}
@@ -390,12 +341,12 @@ export const EmployeesPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Search size={14} />
-            <span>بحث بالاسم / الكود</span>
+            <span>بحث بالاسم أو الكود</span>
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="ابحث بالاسم أو الكود..."
+            placeholder="ابحث..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -405,7 +356,10 @@ export const EmployeesPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الفرع التابع</label>
+          <label className="form-label">
+            <Building size={14} />
+            <span>الفرع</span>
+          </label>
           <select
             className="input-field"
             value={selectedBranch}
@@ -424,7 +378,10 @@ export const EmployeesPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الدور الوظيفي</label>
+          <label className="form-label">
+            <Briefcase size={14} />
+            <span>الدور الوظيفي</span>
+          </label>
           <select
             className="input-field"
             value={selectedRole}
@@ -434,9 +391,9 @@ export const EmployeesPage: React.FC = () => {
             }}
           >
             <option value="">كافة الأدوار</option>
-            <option value="worker">عامل تنفيذ</option>
-            <option value="supervisor">مشرف تنفيذ</option>
-            <option value="engineer">مهندس موقع</option>
+            <option value="worker">عامل (Worker)</option>
+            <option value="supervisor">مشرف (Supervisor)</option>
+            <option value="engineer">مهندس (Engineer)</option>
             <option value="project_manager">مدير مشروع</option>
           </select>
         </div>
@@ -445,15 +402,15 @@ export const EmployeesPage: React.FC = () => {
           <label className="form-label">الحالة</label>
           <select
             className="input-field"
-            value={selectedStatus}
+            value={statusFilter}
             onChange={(e) => {
-              setSelectedStatus(e.target.value);
+              setStatusFilter(e.target.value);
               setPage(1);
             }}
           >
-            <option value="true">النشطون فقط</option>
-            <option value="false">المعطلون فقط</option>
-            <option value="">الكل</option>
+            <option value="">كافة الحالات</option>
+            <option value="true">نشط فقط</option>
+            <option value="false">معطل فقط</option>
           </select>
         </div>
       </div>
@@ -464,12 +421,11 @@ export const EmployeesPage: React.FC = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
             <thead>
               <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>الموظف / الكود</th>
-                <th style={{ padding: '1rem' }}>رقم الهوية / الإقامة</th>
-                <th style={{ padding: '1rem' }}>الدور الوظيفي</th>
-                <th style={{ padding: '1rem' }}>الفرع</th>
+                <th style={{ padding: '1rem' }}>الاسم / الكود</th>
+                <th style={{ padding: '1rem' }}>الوثيقة / رقم الهوية</th>
+                <th style={{ padding: '1rem' }}>الفرع الأساسي</th>
+                <th style={{ padding: '1rem' }}>الدور</th>
                 <th style={{ padding: '1rem' }}>الأجر اليومي</th>
-                <th style={{ padding: '1rem' }}>انتهاء الهوية</th>
                 <th style={{ padding: '1rem' }}>الحالة</th>
                 <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
               </tr>
@@ -477,15 +433,15 @@ export const EmployeesPage: React.FC = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '3rem' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
                     <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل البيانات...</p>
+                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل الموظفين...</p>
                   </td>
                 </tr>
               ) : employees.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا توجد سجلات مطابقة للبحث
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    لا يوجد موظفون مطابقون لمعايير البحث
                   </td>
                 </tr>
               ) : (
@@ -498,37 +454,36 @@ export const EmployeesPage: React.FC = () => {
                     }}
                   >
                     <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff' }}>{emp.name}</div>
+                      <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1rem' }}>{emp.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                        {emp.code || 'بدون كود'} {emp.phone && `• ${emp.phone}`}
+                        {emp.code || 'بدون كود'} {emp.phone ? `• ${emp.phone}` : ''}
                       </div>
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <div style={{ fontFamily: 'monospace', fontWeight: 600 }}>{emp.identityNumber}</div>
-                      <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.2rem' }}>
-                        {getIdentityBadge(emp.identityType)}
-                        {emp.nationality && (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                            ({emp.nationality})
-                          </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                        <div>{getIdentityBadge(emp)}</div>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                          {emp.identityNumber || (emp as any).nationalId || '—'}
+                        </span>
+                        {emp.identityExpiryDate && (
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            <Calendar size={11} />
+                            <span>ينتهي: {emp.identityExpiryDate.split('T')[0]}</span>
+                          </div>
                         )}
                       </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span className="badge badge-primary">{getRoleLabel(emp.roleType)}</span>
                     </td>
                     <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
                       {emp.branchName || 'غير محدد'}
                     </td>
-                    <td style={{ padding: '1rem', fontWeight: 600 }}>
-                      {emp.dailyWage} <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR</span>
+                    <td style={{ padding: '1rem' }}>
+                      <span className="badge badge-secondary" style={{ textTransform: 'capitalize' }}>
+                        {emp.roleType || emp.role}
+                      </span>
                     </td>
-                    <td style={{ padding: '1rem', fontSize: '0.85rem' }}>
-                      {emp.identityExpiryDate ? (
-                        <span>{emp.identityExpiryDate.split('T')[0]}</span>
-                      ) : (
-                        <span style={{ color: 'var(--text-dim)' }}>—</span>
-                      )}
+                    <td style={{ padding: '1rem', fontWeight: 600 }}>
+                      {emp.dailyWage}{' '}
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR/يوم</span>
                     </td>
                     <td style={{ padding: '1rem' }}>
                       {emp.isActive ? (
@@ -541,40 +496,40 @@ export const EmployeesPage: React.FC = () => {
                     </td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => setViewingEmployee(emp)}
-                          className="btn btn-secondary"
-                          style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                          title="تفاصيل التعيين"
-                        >
-                          <Eye size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(emp)}
-                          className="btn btn-secondary"
-                          style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                          title="تعديل"
-                        >
-                          <Edit2 size={15} />
-                        </button>
-                        {emp.isActive && (
+                        {emp.assignments && emp.assignments.length > 0 && (
                           <button
                             type="button"
-                            onClick={() => handleDeleteEmployee(emp.id, emp.name)}
+                            onClick={() => setViewingAssignmentsEmp(emp)}
                             className="btn btn-secondary"
-                            style={{
-                              padding: '0.4rem',
-                              borderRadius: 'var(--radius-sm)',
-                              color: '#f87171',
-                              borderColor: 'rgba(239, 68, 68, 0.2)',
-                            }}
-                            title="إلغاء تفعيل"
+                            style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
+                            title="عرض التعيينات"
                           >
-                            <Trash2 size={15} />
+                            <Layers size={14} />
                           </button>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(emp)}
+                          className="btn btn-secondary"
+                          style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
+                          title="تعديل الموظف"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeactivatingEmployee(emp)}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: '0.4rem',
+                            borderRadius: 'var(--radius-sm)',
+                            color: '#f87171',
+                            borderColor: 'rgba(239, 68, 68, 0.25)',
+                          }}
+                          title="تعطيل / حذف"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -596,7 +551,7 @@ export const EmployeesPage: React.FC = () => {
             color: 'var(--text-muted)',
           }}
         >
-          <span>إجمالي السجلات: {total}</span>
+          <span>إجمالي الموظفين: {total}</span>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
               className="btn btn-secondary"
@@ -619,8 +574,29 @@ export const EmployeesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Create / Edit Modal */}
-      {(showCreateModal || editingEmployee) && (
+      {/* Employee Form Modal */}
+      <EmployeeFormModal
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        onSubmit={handleSave}
+        editingEmployee={editingEmployee}
+        branches={branches}
+        isSaving={isSaving}
+      />
+
+      {/* XLSX Import Modal */}
+      <XlsxImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          setSuccessMsg('تم استيراد واعتماد بيانات الموظفين بنجاح!');
+          loadEmployees();
+          setTimeout(() => setSuccessMsg(null), 4000);
+        }}
+      />
+
+      {/* Deactivate Confirmation Modal */}
+      {deactivatingEmployee && (
         <div
           style={{
             position: 'fixed',
@@ -634,181 +610,42 @@ export const EmployeesPage: React.FC = () => {
             zIndex: 100,
           }}
         >
-          <div
-            className="glass-card animate-fade-in"
-            style={{
-              width: '100%',
-              maxWidth: '600px',
-              padding: '2rem',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.3rem' }}>
-                {editingEmployee ? 'تعديل بيانات موظف' : 'إضافة موظف جديد'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setEditingEmployee(null);
-                }}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={20} />
-              </button>
+          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#f87171', marginBottom: '1rem' }}>
+              <Trash2 size={24} />
+              <h3 style={{ fontSize: '1.2rem', margin: 0 }}>تأكيد تعطيل الموظف</h3>
             </div>
 
-            <form onSubmit={handleSaveEmployee}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label">الاسم الكامل *</label>
-                  <input
-                    type="text"
-                    required
-                    className="input-field"
-                    placeholder="مثال: أحمد محمد علي"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              هل أنت متأكد من رغبتك في تعطيل الموظف <strong style={{ color: '#ffffff' }}>"{deactivatingEmployee.name}"</strong>؟ (Soft Delete - يمكن إعادة تنشيطه لاحقًا).
+            </p>
 
-                <div className="form-group">
-                  <label className="form-label">نوع الهوية *</label>
-                  <select
-                    className="input-field"
-                    value={formData.identityType}
-                    onChange={(e) => setFormData({ ...formData, identityType: e.target.value as any })}
-                  >
-                    <option value="national_id">🇸🇦 هوية وطنية</option>
-                    <option value="iqama">📋 إقامة</option>
-                    <option value="passport">🛂 جواز سفر</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">رقم الهوية / الإقامة *</label>
-                  <input
-                    type="text"
-                    required
-                    className="input-field"
-                    placeholder="رقم الهوية الفريد..."
-                    value={formData.identityNumber}
-                    onChange={(e) => setFormData({ ...formData, identityNumber: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">الجنسية</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="مثال: Saudi, Egyptian, Pakistani"
-                    value={formData.nationality || ''}
-                    onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">تاريخ انتهاء الهوية/الإقامة</label>
-                  <input
-                    type="date"
-                    className="input-field"
-                    value={formData.identityExpiryDate || ''}
-                    onChange={(e) => setFormData({ ...formData, identityExpiryDate: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">الدور الوظيفي *</label>
-                  <select
-                    className="input-field"
-                    value={formData.roleType}
-                    onChange={(e) => setFormData({ ...formData, roleType: e.target.value })}
-                  >
-                    <option value="worker">عامل تنفيذ</option>
-                    <option value="supervisor">مشرف تنفيذ</option>
-                    <option value="engineer">مهندس موقع</option>
-                    <option value="project_manager">مدير مشروع</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">الأجر اليومي (SAR)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="input-field"
-                    value={formData.dailyWage}
-                    onChange={(e) => setFormData({ ...formData, dailyWage: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">الفرع التابع</label>
-                  <select
-                    className="input-field"
-                    value={formData.primaryBranchId || ''}
-                    onChange={(e) => setFormData({ ...formData, primaryBranchId: e.target.value })}
-                  >
-                    <option value="">بدون فرع رئيسي</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">كود الموظف</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="مثال: WRK-01"
-                    value={formData.code || ''}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label">رقم الهاتف</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="05xxxxxxxx"
-                    value={formData.phone || ''}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setEditingEmployee(null);
-                  }}
-                  className="btn btn-secondary"
-                  disabled={isSaving}
-                >
-                  إلغاء
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>{editingEmployee ? 'حفظ التعديلات' : 'إضافة الموظف'}</span>
-                </button>
-              </div>
-            </form>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setDeactivatingEmployee(null)}
+                className="btn btn-secondary"
+                disabled={isDeactivating}
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeactivate}
+                className="btn btn-primary"
+                style={{ background: '#dc2626' }}
+                disabled={isDeactivating}
+              >
+                {isDeactivating ? <Loader2 size={16} className="animate-spin" /> : null}
+                <span>تأكيد التعطيل</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* View Assignments Modal */}
-      {viewingEmployee && (
+      {viewingAssignmentsEmp && (
         <div
           style={{
             position: 'fixed',
@@ -822,57 +659,46 @@ export const EmployeesPage: React.FC = () => {
             zIndex: 100,
           }}
         >
-          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '540px', padding: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.25rem' }}>{viewingEmployee.name}</h3>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  رقم الهوية: {viewingEmployee.identityNumber} ({viewingEmployee.roleType})
-                </span>
-              </div>
+          <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '520px', padding: '1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Layers size={20} color="#60a5fa" />
+                <span>تعيينات: {viewingAssignmentsEmp.name}</span>
+              </h3>
               <button
                 type="button"
-                onClick={() => setViewingEmployee(null)}
+                onClick={() => setViewingAssignmentsEmp(null)}
                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Briefcase size={16} color="#60a5fa" />
-              <span>التعيينات النشطة في المشاريع</span>
-            </h4>
-
-            {viewingEmployee.assignments && viewingEmployee.assignments.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {viewingEmployee.assignments.map((a) => (
-                  <div
-                    key={a.projectId}
-                    style={{
-                      padding: '0.85rem 1rem',
-                      background: 'rgba(15, 23, 42, 0.6)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-subtle)',
-                    }}
-                  >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {viewingAssignmentsEmp.assignments?.map((a, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-subtle)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div>
                     <div style={{ fontWeight: 600, color: '#ffffff' }}>{a.projectName}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
-                      الكود: {a.projectCode} • الدور: {a.assignedRole} • بدء التعيين: {a.startDate}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                      كود: {a.projectCode} • دور: {a.assignedRole}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textAlign: 'center', padding: '1.5rem' }}>
-                لا توجد تعيينات نشطة مسجلة لهذا الموظف حاليًا.
-              </p>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-              <button type="button" onClick={() => setViewingEmployee(null)} className="btn btn-secondary">
-                إغلاق
-              </button>
+                  <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>
+                    منذ {a.startDate ? a.startDate.split('T')[0] : '—'}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

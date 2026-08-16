@@ -6,6 +6,7 @@ import { BranchesPage } from './pages/branches/BranchesPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 import { WorkItemsPage } from './pages/work-items/WorkItemsPage';
 import { WorkAreasPage } from './pages/work-areas/WorkAreasPage';
+import { EmployeesPage } from './pages/employees/EmployeesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 
@@ -28,6 +29,7 @@ export const App: React.FC = () => {
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/work-items" element={<WorkItemsPage />} />
         <Route path="/work-areas" element={<WorkAreasPage />} />
+        <Route path="/employees" element={<EmployeesPage />} />
       </Route>
 
       {/* Fallback Redirects */}
