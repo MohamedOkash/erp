@@ -13,6 +13,7 @@ export interface Employee {
   companyId: string;
   identityNumber: string;
   nationalId?: string;
+  deviceCode?: string | null;
   identityType?: 'national_id' | 'iqama' | 'passport';
   identityExpiryDate?: string | null;
   nationality?: string | null;
@@ -54,6 +55,7 @@ export interface EmployeeListResponse {
 export interface CreateEmployeePayload {
   name: string;
   identityNumber: string;
+  deviceCode?: string;
   identityType?: 'national_id' | 'iqama' | 'passport';
   identityExpiryDate?: string;
   nationality?: string;
@@ -68,6 +70,7 @@ export interface CreateEmployeePayload {
 export interface UpdateEmployeePayload {
   name?: string;
   identityNumber?: string;
+  deviceCode?: string;
   identityType?: 'national_id' | 'iqama' | 'passport';
   identityExpiryDate?: string;
   nationality?: string;

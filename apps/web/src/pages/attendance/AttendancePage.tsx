@@ -10,6 +10,8 @@ import type { Employee } from '../../api/employees.api';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { DeviceAttendanceImportModal } from '../../components/DeviceAttendanceImportModal';
+import { AttendancePolicyModal } from '../../components/AttendancePolicyModal';
 import {
   CalendarCheck,
   Plus,
@@ -24,6 +26,7 @@ import {
   Fingerprint,
   Edit3,
   FileSpreadsheet,
+  Sliders,
 } from 'lucide-react';
 
 export const AttendancePage: React.FC = () => {
@@ -45,8 +48,10 @@ export const AttendancePage: React.FC = () => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
-  // Modal
+  // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBiometricModal, setShowBiometricModal] = useState(false);
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form State
@@ -304,10 +309,30 @@ export const AttendancePage: React.FC = () => {
           </p>
         </div>
 
-        <button onClick={openCreateModal} className="btn btn-primary" style={{ gap: '0.5rem' }}>
-          <Plus size={18} />
-          <span>تسجيل حضور يومي</span>
-        </button>
+        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setShowPolicyModal(true)}
+            className="btn btn-secondary"
+            style={{ gap: '0.4rem', borderColor: 'rgba(56, 189, 248, 0.4)', color: '#38bdf8' }}
+          >
+            <Sliders size={16} />
+            <span>سياسة الحضور</span>
+          </button>
+
+          <button
+            onClick={() => setShowBiometricModal(true)}
+            className="btn btn-secondary"
+            style={{ gap: '0.4rem', borderColor: 'rgba(59, 130, 246, 0.4)', color: '#60a5fa' }}
+          >
+            <Fingerprint size={16} />
+            <span>استيراد من جهاز البصمة</span>
+          </button>
+
+          <button onClick={openCreateModal} className="btn btn-primary" style={{ gap: '0.5rem' }}>
+            <Plus size={18} />
+            <span>تسجيل حضور يومي</span>
+          </button>
+        </div>
       </div>
 
       {/* Stats Summary Strip */}
@@ -679,6 +704,27 @@ export const AttendancePage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Biometric Device Import Modal */}
+      <DeviceAttendanceImportModal
+        isOpen={showBiometricModal}
+        onClose={() => setShowBiometricModal(false)}
+        onImportSuccess={() => {
+          setSuccessMsg('تم استيراد واعتماد سجلات البصمة بنجاح');
+          loadAttendance();
+          setTimeout(() => setSuccessMsg(null), 4000);
+        }}
+      />
+
+      {/* Attendance Policy Modal */}
+      <AttendancePolicyModal
+        isOpen={showPolicyModal}
+        onClose={() => setShowPolicyModal(false)}
+        projects={projects}
+        onPolicyChanged={() => {
+          loadAttendance();
+        }}
+      />
     </div>
   );
 };

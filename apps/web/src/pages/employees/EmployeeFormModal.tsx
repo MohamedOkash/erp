@@ -13,6 +13,7 @@ import {
   Calendar,
   Globe,
   CheckSquare,
+  Fingerprint,
 } from 'lucide-react';
 
 interface EmployeeFormModalProps {
@@ -41,6 +42,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   const [dailyWage, setDailyWage] = useState<number>(150);
   const [primaryBranchId, setPrimaryBranchId] = useState('');
   const [code, setCode] = useState('');
+  const [deviceCode, setDeviceCode] = useState('');
   const [phone, setPhone] = useState('');
   const [isActive, setIsActive] = useState(true);
 
@@ -57,6 +59,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
       setDailyWage(Number(editingEmployee.dailyWage) || 150);
       setPrimaryBranchId(editingEmployee.primaryBranchId || editingEmployee.branchId || '');
       setCode(editingEmployee.code || '');
+      setDeviceCode(editingEmployee.deviceCode || '');
       setPhone(editingEmployee.phone || '');
       setIsActive(editingEmployee.isActive ?? true);
     } else {
@@ -69,6 +72,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
       setDailyWage(150);
       setPrimaryBranchId(branches[0]?.id || '');
       setCode('');
+      setDeviceCode('');
       setPhone('');
       setIsActive(true);
     }
@@ -90,6 +94,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
       dailyWage: Number(dailyWage) || 0,
       primaryBranchId: primaryBranchId || undefined,
       code: code.trim() || undefined,
+      deviceCode: deviceCode.trim() || undefined,
       phone: phone.trim() || undefined,
       isActive,
     });
@@ -251,6 +256,20 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
                 placeholder="EMP-001"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">
+                <Fingerprint size={14} color="#60a5fa" />
+                <span>كود جهاز البصمة (Device Code)</span>
+              </label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="DEV-101 أو رقم Enroll"
+                value={deviceCode}
+                onChange={(e) => setDeviceCode(e.target.value)}
               />
             </div>
 
