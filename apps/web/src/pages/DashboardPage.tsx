@@ -63,7 +63,7 @@ export const DashboardPage: React.FC = () => {
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>معرف المستخدم</div>
             <div style={{ fontSize: '0.85rem', fontWeight: 600, fontFamily: 'monospace' }}>
-              {user?.id.substring(0, 13)}...
+              {user?.id?.substring(0, 13) || '—'}...
             </div>
           </div>
         </div>

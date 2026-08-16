@@ -4,6 +4,8 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { BranchesPage } from './pages/branches/BranchesPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
+import { WorkItemsPage } from './pages/work-items/WorkItemsPage';
+import { WorkAreasPage } from './pages/work-areas/WorkAreasPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 
@@ -24,6 +26,8 @@ export const App: React.FC = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/branches" element={<BranchesPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/work-items" element={<WorkItemsPage />} />
+        <Route path="/work-areas" element={<WorkAreasPage />} />
       </Route>
 
       {/* Fallback Redirects */}
