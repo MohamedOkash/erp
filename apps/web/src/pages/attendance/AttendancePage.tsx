@@ -21,6 +21,9 @@ import {
   UserX,
   Clock,
   Zap,
+  Fingerprint,
+  Edit3,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export const AttendancePage: React.FC = () => {
@@ -140,12 +143,109 @@ export const AttendancePage: React.FC = () => {
   };
 
   // Compute summary stats
-  const presentCount = attendance.filter((a) => !a.statusName || a.statusName.includes('حاضر')).length;
-  const absentCount = attendance.filter((a) => a.statusName && a.statusName.includes('غائب')).length;
+  const presentCount = attendance.filter(
+    (a) => a.statusCode === 'present' || (!a.statusCode && (a.statusName || '').includes('حاضر')),
+  ).length;
+  const absentCount = attendance.filter(
+    (a) => a.statusCode === 'absent' || (a.statusName || '').includes('غائب'),
+  ).length;
   const lateCount = attendance.filter(
-    (a) => (a.statusName && a.statusName.includes('متأخر')) || (a.checkInTime && a.checkInTime > '08:30'),
+    (a) => a.statusCode === 'late' || (a.statusName || '').includes('متأخر'),
   ).length;
   const totalOvertime = attendance.reduce((acc, a) => acc + (Number(a.overtimeHours) || 0), 0);
+
+  const getSourceBadge = (source?: string) => {
+    switch (source) {
+      case 'device':
+        return (
+          <span
+            className="badge badge-primary"
+            style={{
+              gap: '0.3rem',
+              fontSize: '0.75rem',
+              background: 'rgba(59, 130, 246, 0.15)',
+              borderColor: 'rgba(59, 130, 246, 0.4)',
+            }}
+          >
+            <Fingerprint size={12} color="#60a5fa" />
+            <span>بصمة جهاز</span>
+          </span>
+        );
+      case 'xlsx':
+        return (
+          <span
+            className="badge badge-secondary"
+            style={{
+              gap: '0.3rem',
+              fontSize: '0.75rem',
+              background: 'rgba(16, 185, 129, 0.15)',
+              borderColor: 'rgba(16, 185, 129, 0.4)',
+              color: '#34d399',
+            }}
+          >
+            <FileSpreadsheet size={12} />
+            <span>إكسيل</span>
+          </span>
+        );
+      default:
+        return (
+          <span className="badge badge-secondary" style={{ gap: '0.3rem', fontSize: '0.75rem' }}>
+            <Edit3 size={12} />
+            <span>يدوي</span>
+          </span>
+        );
+    }
+  };
+
+  const getStatusBadge = (statusName?: string, statusCode?: string) => {
+    const name = statusName || 'حاضر';
+    const code = statusCode || 'present';
+    if (code === 'present' || name.includes('حاضر')) {
+      return (
+        <span className="badge badge-success" style={{ gap: '0.3rem' }}>
+          <UserCheck size={12} />
+          <span>{name}</span>
+        </span>
+      );
+    }
+    if (code === 'late' || name.includes('متأخر')) {
+      return (
+        <span
+          className="badge badge-accent"
+          style={{
+            gap: '0.3rem',
+            background: 'rgba(245, 158, 11, 0.15)',
+            borderColor: 'rgba(245, 158, 11, 0.4)',
+            color: '#f59e0b',
+          }}
+        >
+          <Clock size={12} />
+          <span>{name}</span>
+        </span>
+      );
+    }
+    if (code === 'absent' || name.includes('غائب')) {
+      return (
+        <span
+          className="badge badge-secondary"
+          style={{
+            gap: '0.3rem',
+            background: 'rgba(239, 68, 68, 0.15)',
+            borderColor: 'rgba(239, 68, 68, 0.4)',
+            color: '#f87171',
+          }}
+        >
+          <UserX size={12} />
+          <span>{name}</span>
+        </span>
+      );
+    }
+    return (
+      <span className="badge badge-secondary" style={{ gap: '0.3rem' }}>
+        <span>{name}</span>
+      </span>
+    );
+  };
 
   const statsItems = [
     {
@@ -156,22 +256,22 @@ export const AttendancePage: React.FC = () => {
       color: '#34d399',
     },
     {
-      label: 'الغياب والتغيب',
-      value: absentCount,
-      helper: 'بدون إذن مسبق',
-      icon: <UserX size={22} />,
-      color: '#f87171',
-    },
-    {
       label: 'تأخيرات الحضور',
       value: lateCount,
-      helper: 'بعد الساعة 08:30 ص',
+      helper: 'تجاوز وقت الوردية والسماح',
       icon: <Clock size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'إجمالي الساعات الإضافية',
-      value: `${totalOvertime} ساعة`,
+      label: 'الغياب والتغيب',
+      value: absentCount,
+      helper: 'بدون إذن أو لم يبصموا',
+      icon: <UserX size={22} />,
+      color: '#f87171',
+    },
+    {
+      label: 'ساعات إضافي اليوم',
+      value: `${totalOvertime.toFixed(1)} ساعة`,
       helper: 'تُحسب في مخصصات الرواتب',
       icon: <Zap size={22} />,
       color: '#60a5fa',
@@ -347,6 +447,7 @@ export const AttendancePage: React.FC = () => {
                   <th style={{ padding: '1rem' }}>التاريخ</th>
                   <th style={{ padding: '1rem' }}>الموظف / العامل</th>
                   <th style={{ padding: '1rem' }}>المشروع والفرع</th>
+                  <th style={{ padding: '1rem' }}>المصدر</th>
                   <th style={{ padding: '1rem' }}>حالة الحضور</th>
                   <th style={{ padding: '1rem' }}>وقت الحضور</th>
                   <th style={{ padding: '1rem' }}>وقت الانصراف</th>
@@ -356,7 +457,7 @@ export const AttendancePage: React.FC = () => {
               <tbody>
                 {attendance.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
                       لا توجد سجلات حضور مسجلة
                     </td>
                   </tr>
@@ -383,10 +484,10 @@ export const AttendancePage: React.FC = () => {
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{att.branchName}</div>
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        <span className="badge badge-success" style={{ gap: '0.3rem' }}>
-                          <UserCheck size={12} />
-                          <span>{att.statusName || 'حاضر'}</span>
-                        </span>
+                        {getSourceBadge(att.source)}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {getStatusBadge(att.statusName, att.statusCode)}
                       </td>
                       <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
                         {att.checkInTime || '—'}
@@ -397,7 +498,7 @@ export const AttendancePage: React.FC = () => {
                       <td style={{ padding: '1rem' }}>
                         {Number(att.overtimeHours) > 0 ? (
                           <span className="badge badge-accent">
-                            +{att.overtimeHours} ساعة
+                            +{Number(att.overtimeHours).toFixed(1)} ساعة
                           </span>
                         ) : (
                           <span style={{ color: 'var(--text-dim)' }}>0</span>
