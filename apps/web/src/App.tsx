@@ -17,6 +17,7 @@ import { CostsPage } from './pages/costs/CostsPage';
 import { AlertsPage } from './pages/alerts/AlertsPage';
 import { IncentivesPage } from './pages/incentives/IncentivesPage';
 import { DocumentsPage } from './pages/documents/DocumentsPage';
+import { SavedReportsPage } from './pages/reports/SavedReportsPage';
 import { UnderConstructionPage } from './pages/common/UnderConstructionPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
@@ -51,7 +52,7 @@ export const App: React.FC = () => {
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/incentives" element={<IncentivesPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
-        <Route path="/reports" element={<UnderConstructionPage />} />
+        <Route path="/reports" element={<SavedReportsPage />} />
         <Route path="/settings" element={<UnderConstructionPage />} />
       </Route>
 
