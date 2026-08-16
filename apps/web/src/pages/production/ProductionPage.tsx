@@ -15,6 +15,8 @@ import { ProductionFormModal } from './ProductionFormModal';
 import { ProductionDetailView } from './ProductionDetailView';
 import { CorrectionFormModal } from './CorrectionFormModal';
 import { XlsxProductionImportModal } from './XlsxProductionImportModal';
+import { StatsStrip } from '../../components/StatsStrip';
+import { TableSkeleton } from '../../components/skeletons';
 import {
   Layers,
   Plus,
@@ -28,6 +30,9 @@ import {
   Users,
   Download,
   UploadCloud,
+  TrendingUp,
+  ShieldCheck,
+  Clock,
 } from 'lucide-react';
 
 export const ProductionPage: React.FC = () => {
@@ -101,18 +106,13 @@ export const ProductionPage: React.FC = () => {
       });
       setRecords(res.data);
       setTotal(res.total);
-
-      // If a record is currently open in detail view, update its reference
-      if (viewingRecord) {
-        const updated = res.data.find((r) => r.id === viewingRecord.id);
-        if (updated) setViewingRecord(updated);
-      }
+      setViewingRecord((prev) => (prev ? res.data.find((r) => r.id === prev.id) || prev : null));
     } catch (err: any) {
       setError(err.message || 'فشل تحميل سجلات الإنتاج اليومي');
     } finally {
       setIsLoading(false);
     }
-  }, [fromDate, toDate, selectedBranch, selectedProject, selectedStatus, search, viewingRecord]);
+  }, [fromDate, toDate, selectedBranch, selectedProject, selectedStatus, search]);
 
   useEffect(() => {
     loadDependencies();
@@ -138,6 +138,46 @@ export const ProductionPage: React.FC = () => {
 
   // Filter projects by branch in the page filter
   const branchProjects = projects.filter((p) => !selectedBranch || p.branchId === selectedBranch);
+
+  // Compute summary stats
+  const finalApprovedCount = records.filter((r) => r.status === 'final_approved').length;
+  const pendingCount = records.filter(
+    (r) => r.status === 'submitted' || r.status === 'supervisor_approved' || r.status === 'engineer_approved',
+  ).length;
+  const totalActual = records.reduce((acc, r) => acc + (Number(r.actualQuantity) || 0), 0);
+  const totalTarget = records.reduce((acc, r) => acc + (Number(r.targetQuantity) || 0), 0);
+  const avgCompletion = totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : 0;
+
+  const statsItems = [
+    {
+      label: 'إجمالي السجلات (الشهر)',
+      value: total,
+      helper: `${records.length} مسجلة حالياً`,
+      icon: <Layers size={22} />,
+      color: '#60a5fa',
+    },
+    {
+      label: 'متوسط نسبة الإنجاز',
+      value: `${avgCompletion}%`,
+      helper: `${totalActual.toLocaleString()} / ${totalTarget.toLocaleString()} وحدة`,
+      icon: <TrendingUp size={22} />,
+      color: avgCompletion >= 80 ? '#34d399' : '#f59e0b',
+    },
+    {
+      label: 'معتمد نهائياً ومغلق',
+      value: finalApprovedCount,
+      helper: 'جاهز للحسابات والحوافز',
+      icon: <ShieldCheck size={22} />,
+      color: '#10b981',
+    },
+    {
+      label: 'بانتظار الاعتماد',
+      value: pendingCount,
+      helper: `${records.filter((r) => r.status === 'draft').length} مسودة`,
+      icon: <Clock size={22} />,
+      color: '#fbbf24',
+    },
+  ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -180,65 +220,87 @@ export const ProductionPage: React.FC = () => {
     }
 
     return (
-      <span className="badge" style={{ background: bg, color, fontWeight: 700 }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
+          padding: '0.2rem 0.5rem',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          background: bg,
+          color: color,
+        }}
+      >
         {ratio}%
       </span>
     );
   };
 
-  // Paginated slice
   const paginatedRecords = records.slice((page - 1) * limit, page * limit);
+  const startRecord = records.length === 0 ? 0 : (page - 1) * limit + 1;
+  const endRecord = Math.min(page * limit, records.length);
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      {/* Top Header & Actions Bar */}
       <div
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Layers size={28} color="#60a5fa" />
-            <span>الإنتاج اليومي وتتبع الإنجاز</span>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Layers size={26} color="#60a5fa" />
+            <span>الإنتاجية اليومية (Daily Production)</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            تسجيل الإنجاز الميداني للبنود، والتحقق من توزيع كميات العمال (R5) ومسار الاعتمادات.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            تسجيل ومتابعة الإنتاج الميداني، توزيع حصص العمال ومسار الاعتمادات
           </p>
         </div>
 
-        {/* 3 Action Buttons */}
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
+            type="button"
             onClick={handleExportXlsx}
+            disabled={isExporting || records.length === 0}
             className="btn btn-secondary"
-            disabled={isExporting}
             style={{ gap: '0.4rem' }}
           >
             {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            <span>تصدير Excel</span>
+            <span>تصدير إكسيل</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setIsImportModalOpen(true)}
             className="btn btn-secondary"
-            style={{ gap: '0.4rem', borderColor: 'rgba(16, 185, 129, 0.4)', color: '#34d399' }}
+            style={{ gap: '0.4rem' }}
           >
             <UploadCloud size={16} />
-            <span>استيراد من Excel</span>
+            <span>استيراد إكسيل</span>
           </button>
 
-          <button onClick={() => setIsFormModalOpen(true)} className="btn btn-primary" style={{ gap: '0.4rem' }}>
+          <button
+            type="button"
+            onClick={() => setIsFormModalOpen(true)}
+            className="btn btn-primary"
+            style={{ gap: '0.4rem' }}
+          >
             <Plus size={16} />
-            <span>إدخال إنتاج جديد</span>
+            <span>إضافة تقرير إنتاجية</span>
           </button>
         </div>
       </div>
+
+      {/* Stats Summary Strip */}
+      <StatsStrip items={statsItems} isLoading={isLoading && records.length === 0} />
 
       {/* Alerts */}
       {successMsg && (
@@ -294,7 +356,7 @@ export const ProductionPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Search size={14} />
-            <span>بحث بالمشروع أو البند</span>
+            <span>بحث (بند/مشروع/مشرف)</span>
           </label>
           <input
             type="text"
@@ -309,7 +371,10 @@ export const ProductionPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">من تاريخ</label>
+          <label className="form-label">
+            <Calendar size={14} />
+            <span>من تاريخ</span>
+          </label>
           <input
             type="date"
             className="input-field"
@@ -322,7 +387,10 @@ export const ProductionPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">إلى تاريخ</label>
+          <label className="form-label">
+            <Calendar size={14} />
+            <span>إلى تاريخ</span>
+          </label>
           <input
             type="date"
             className="input-field"
@@ -397,134 +465,141 @@ export const ProductionPage: React.FC = () => {
       </div>
 
       {/* Production Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
-            <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>التاريخ</th>
-                <th style={{ padding: '1rem' }}>المشروع / الفرع</th>
-                <th style={{ padding: '1rem' }}>البند</th>
-                <th style={{ padding: '1rem' }}>النوع</th>
-                <th style={{ padding: '1rem' }}>المستهدف</th>
-                <th style={{ padding: '1rem' }}>الفعلي</th>
-                <th style={{ padding: '1rem' }}>نسبة الإنجاز</th>
-                <th style={{ padding: '1rem' }}>المشرف</th>
-                <th style={{ padding: '1rem' }}>الحالة</th>
-                <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={10} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-                    <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري تحميل سجلات الإنتاج...</p>
-                  </td>
+      {isLoading && records.length === 0 ? (
+        <TableSkeleton rows={6} columns={10} />
+      ) : (
+        <div
+          className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+              <thead>
+                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <th style={{ padding: '1rem' }}>التاريخ</th>
+                  <th style={{ padding: '1rem' }}>المشروع / الفرع</th>
+                  <th style={{ padding: '1rem' }}>البند والمرحلة</th>
+                  <th style={{ padding: '1rem' }}>النوع والفريق</th>
+                  <th style={{ padding: '1rem' }}>المستهدف</th>
+                  <th style={{ padding: '1rem' }}>الفعلي</th>
+                  <th style={{ padding: '1rem' }}>نسبة الإنجاز</th>
+                  <th style={{ padding: '1rem' }}>المشرف</th>
+                  <th style={{ padding: '1rem' }}>الحالة</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
                 </tr>
-              ) : records.length === 0 ? (
-                <tr>
-                  <td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    لا توجد سجلات إنتاجية مطابقة لمعايير البحث
-                  </td>
-                </tr>
-              ) : (
-                paginatedRecords.map((rec) => (
-                  <tr
-                    key={rec.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background var(--transition-fast)',
-                    }}
-                  >
-                    <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
-                        <Calendar size={13} color="#60a5fa" />
-                        <span>{rec.date ? rec.date.split('T')[0] : '—'}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff' }}>{rec.projectName}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                        {rec.branchName || 'فرع'} {rec.workAreaName ? `• ${rec.workAreaName}` : ''}
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span style={{ fontWeight: 600, color: '#cbd5e1' }}>{rec.workItemName}</span>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      {rec.productionType === 'team' ? (
-                        <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
-                          <Users size={11} /> فريق ({rec.teamCode || 'Team'})
-                        </span>
-                      ) : (
-                        <span className="badge badge-secondary" style={{ fontSize: '0.7rem' }}>
-                          فردي ({rec.workers?.length || 0} عمال)
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{rec.targetQuantity}</td>
-                    <td style={{ padding: '1rem', fontWeight: 700, color: '#60a5fa' }}>{rec.actualQuantity}</td>
-                    <td style={{ padding: '1rem' }}>{getRatioBadge(Number(rec.actualQuantity), Number(rec.targetQuantity))}</td>
-                    <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      {rec.supervisorName || '—'}
-                    </td>
-                    <td style={{ padding: '1rem' }}>{getStatusBadge(rec.status)}</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <button
-                        type="button"
-                        onClick={() => setViewingRecord(rec)}
-                        className="btn btn-secondary"
-                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', gap: '0.35rem' }}
-                        title="عرض التفاصيل ومسار الاعتماد"
-                      >
-                        <Eye size={14} color="#60a5fa" />
-                        <span>عرض</span>
-                      </button>
+              </thead>
+              <tbody>
+                {paginatedRecords.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      لا توجد سجلات إنتاجية مطابقة لمعايير البحث
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  paginatedRecords.map((rec) => (
+                    <tr
+                      key={rec.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                    >
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
+                          <Calendar size={13} color="#60a5fa" />
+                          <span>{rec.date ? rec.date.split('T')[0] : '—'}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{rec.projectName}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                          {rec.branchName || 'فرع'} {rec.workAreaName ? `• ${rec.workAreaName}` : ''}
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 600, color: '#cbd5e1' }}>{rec.workItemName}</div>
+                        {rec.stageName && (
+                          <div style={{ fontSize: '0.72rem', color: '#60a5fa' }}>
+                            {rec.stageName} {rec.stagePercentage ? `(${rec.stagePercentage}%)` : ''}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {rec.productionType === 'team' ? (
+                          <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
+                            <Users size={11} /> فريق ({rec.teamCode || 'Team'})
+                          </span>
+                        ) : (
+                          <span className="badge badge-secondary" style={{ fontSize: '0.7rem' }}>
+                            فردي ({rec.workers?.length || 0} عمال)
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{rec.targetQuantity}</td>
+                      <td style={{ padding: '1rem', fontWeight: 700, color: '#60a5fa' }}>{rec.actualQuantity}</td>
+                      <td style={{ padding: '1rem' }}>{getRatioBadge(Number(rec.actualQuantity), Number(rec.targetQuantity))}</td>
+                      <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {rec.supervisorName || '—'}
+                      </td>
+                      <td style={{ padding: '1rem' }}>{getStatusBadge(rec.status)}</td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => setViewingRecord(rec)}
+                          className="btn btn-secondary"
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', gap: '0.35rem' }}
+                          title="عرض التفاصيل ومسار الاعتماد"
+                        >
+                          <Eye size={14} color="#60a5fa" />
+                          <span>عرض</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>إجمالي السجلات: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>
-              صفحة {page} من {Math.ceil(total / limit) || 1}
+          {/* Pagination */}
+          <div
+            style={{
+              padding: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>
+              عرض {startRecord}–{endRecord} من إجمالي {total} سجل إنتاجية
             </span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                السابق
+              </button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>
+                صفحة {page} من {Math.ceil(total / limit) || 1}
+              </span>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                disabled={page * limit >= total}
+                onClick={() => setPage(page + 1)}
+              >
+                التالي
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Production Form Modal */}
       <ProductionFormModal
@@ -543,30 +618,36 @@ export const ProductionPage: React.FC = () => {
         workers={workers}
       />
 
-      {/* Production Detail View Modal */}
-      <ProductionDetailView
-        isOpen={!!viewingRecord}
-        onClose={() => setViewingRecord(null)}
-        record={viewingRecord}
-        onRecordUpdated={() => {
-          loadRecords();
-        }}
-        onRequestCorrection={(rec) => {
-          setCorrectingRecord(rec);
-        }}
-      />
+      {/* Production Detail View Modal (Single Clean Instance) */}
+      {viewingRecord && (
+        <ProductionDetailView
+          key={viewingRecord.id}
+          isOpen={!!viewingRecord}
+          onClose={() => setViewingRecord(null)}
+          record={viewingRecord}
+          onRecordUpdated={() => {
+            loadRecords();
+          }}
+          onRequestCorrection={(rec) => {
+            setCorrectingRecord(rec);
+          }}
+        />
+      )}
 
       {/* Correction Form Modal */}
-      <CorrectionFormModal
-        isOpen={!!correctingRecord}
-        onClose={() => setCorrectingRecord(null)}
-        onSuccess={() => {
-          setSuccessMsg('تم تقديم طلب التصحيح بنجاح!');
-          loadRecords();
-          setTimeout(() => setSuccessMsg(null), 4000);
-        }}
-        record={correctingRecord}
-      />
+      {correctingRecord && (
+        <CorrectionFormModal
+          key={correctingRecord.id}
+          isOpen={!!correctingRecord}
+          onClose={() => setCorrectingRecord(null)}
+          onSuccess={() => {
+            setSuccessMsg('تم تقديم طلب التصحيح بنجاح!');
+            loadRecords();
+            setTimeout(() => setSuccessMsg(null), 4000);
+          }}
+          record={correctingRecord}
+        />
+      )}
 
       {/* XLSX Production Import Modal */}
       <XlsxProductionImportModal

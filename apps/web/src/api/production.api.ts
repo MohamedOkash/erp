@@ -26,6 +26,8 @@ export interface ProductionRecord {
   workItemCode?: string;
   workItemStageId?: string | null;
   stageName?: string | null;
+  stageCode?: string | null;
+  stagePercentage?: number | null;
   workAreaId?: string | null;
   workAreaName?: string | null;
   date: string;
@@ -124,6 +126,61 @@ export interface ProductionImportUploadResponse {
   rows: ProductionImportRow[];
 }
 
+export function normalizeProductionRecord(r: any): ProductionRecord {
+  if (!r) return r;
+  const workers: ProductionWorkerItem[] = (r.workers || []).map((w: any) => ({
+    id: w.id,
+    employeeId: w.employee_id || w.employeeId || '',
+    employeeName: w.employee_name || w.employeeName || 'عامل',
+    employeeCode: w.employee_code || w.employeeCode || '',
+    workerType: w.worker_type || w.workerType || 'individual',
+    individualQuantity: Number(w.individual_quantity ?? w.individualQuantity ?? 0),
+    hoursWorked: Number(w.hours_worked ?? w.hoursWorked ?? 8),
+    overtimeHours: Number(w.overtime_hours ?? w.overtimeHours ?? 0),
+    bonusPercentage: Number(w.bonus_percentage ?? w.bonusPercentage ?? 0),
+    skillLevel: w.skill_level || w.skillLevel || null,
+    isEstimated: w.is_estimated ?? w.isEstimated ?? false,
+    ...w,
+  }));
+
+  return {
+    ...r,
+    id: r.id,
+    companyId: r.company_id || r.companyId || '',
+    branchId: r.branch_id || r.branchId || '',
+    branchName: r.branch_name || r.branchName || 'فرع',
+    projectId: r.project_id || r.projectId || '',
+    projectName: r.project_name || r.projectName || 'مشروع',
+    workItemId: r.work_item_id || r.workItemId || '',
+    workItemName: r.work_item_name || r.workItemName || 'بند',
+    workItemCode: r.work_item_code || r.workItemCode || '',
+    workItemStageId: r.work_item_stage_id || r.workItemStageId || null,
+    stageName: r.stage_name || r.stageName || null,
+    stageCode: r.stage_code || r.stageCode || null,
+    stagePercentage: r.stage_percentage !== undefined ? Number(r.stage_percentage) : r.stagePercentage,
+    workAreaId: r.work_area_id || r.workAreaId || null,
+    workAreaName: r.work_area_name || r.workAreaName || null,
+    date: r.date,
+    productionType: r.production_type || r.productionType || 'individual',
+    actualQuantity: Number(r.actual_quantity ?? r.actualQuantity ?? 0),
+    targetQuantity: Number(r.target_quantity ?? r.targetQuantity ?? 0),
+    teamCode: r.team_code || r.teamCode || null,
+    supervisorId: r.supervisor_id || r.supervisorId || '',
+    supervisorName: r.supervisor_name || r.supervisorName || '—',
+    engineerId: r.engineer_id || r.engineerId || null,
+    engineerName: r.engineer_name || r.engineerName || null,
+    status: r.status || 'draft',
+    rejectionReason: r.rejection_reason || r.rejectionReason || null,
+    submittedAt: r.submitted_at || r.submittedAt || null,
+    supervisorApprovedAt: r.supervisor_approved_at || r.supervisorApprovedAt || null,
+    engineerApprovedAt: r.engineer_approved_at || r.engineerApprovedAt || null,
+    finalApprovedAt: r.final_approved_at || r.finalApprovedAt || null,
+    createdAt: r.created_at || r.createdAt,
+    updatedAt: r.updated_at || r.updatedAt,
+    workers,
+  };
+}
+
 export const productionApi = {
   async list(query: ProductionQuery = {}): Promise<ProductionListResponse> {
     const params = new URLSearchParams();
@@ -136,16 +193,18 @@ export const productionApi = {
     const qs = params.toString();
     const res = await apiClient.get<any>(`/production${qs ? `?${qs}` : ''}`);
 
-    let rawList: ProductionRecord[] = [];
+    let rawList: any[] = [];
     if (Array.isArray(res)) {
       rawList = res;
     } else if (res && Array.isArray(res.data)) {
       rawList = res.data;
     }
 
+    let normalizedList = rawList.map(normalizeProductionRecord);
+
     if (query.search && query.search.trim()) {
       const s = query.search.trim().toLowerCase();
-      rawList = rawList.filter(
+      normalizedList = normalizedList.filter(
         (r) =>
           r.projectName?.toLowerCase().includes(s) ||
           r.workItemName?.toLowerCase().includes(s) ||
@@ -155,8 +214,8 @@ export const productionApi = {
     }
 
     return {
-      data: rawList,
-      total: rawList.length,
+      data: normalizedList,
+      total: normalizedList.length,
     };
   },
 
@@ -164,7 +223,8 @@ export const productionApi = {
     const listRes = await this.list();
     const item = listRes.data.find((r) => r.id === id);
     if (!item) {
-      return apiClient.get<ProductionRecord>(`/production/${id}`);
+      const raw = await apiClient.get<any>(`/production/${id}`);
+      return normalizeProductionRecord(raw);
     }
     return item;
   },
