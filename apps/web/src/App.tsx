@@ -18,7 +18,7 @@ import { AlertsPage } from './pages/alerts/AlertsPage';
 import { IncentivesPage } from './pages/incentives/IncentivesPage';
 import { DocumentsPage } from './pages/documents/DocumentsPage';
 import { SavedReportsPage } from './pages/reports/SavedReportsPage';
-import { UnderConstructionPage } from './pages/common/UnderConstructionPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 
@@ -53,7 +53,7 @@ export const App: React.FC = () => {
         <Route path="/incentives" element={<IncentivesPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/reports" element={<SavedReportsPage />} />
-        <Route path="/settings" element={<UnderConstructionPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       {/* Fallback Redirects */}
