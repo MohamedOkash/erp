@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -26,10 +27,25 @@ export class ProductionWorkerItemDto {
   hoursWorked?: number;
 
   @IsOptional()
+  @IsNumber()
+  @Min(0)
+  overtimeHours?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  bonusPercentage?: number;
+
+  @IsOptional()
+  @IsString()
+  skillLevel?: string;
+
+  @IsOptional()
   @IsString()
   workerType?: 'individual' | 'team';
 
   @IsOptional()
+  @IsBoolean()
   isEstimated?: boolean;
 }
 
@@ -49,6 +65,10 @@ export class CreateProductionDto {
   @IsNotEmpty()
   @IsString()
   workItemId: string;
+
+  @IsOptional()
+  @IsString()
+  workItemStageId?: string;
 
   @IsOptional()
   @IsString()

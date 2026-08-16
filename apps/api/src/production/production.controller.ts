@@ -33,6 +33,14 @@ export class ProductionController {
     return this.productionService.createProductionRecord(user.companyId, dto);
   }
 
+  @Get('progress-weighted')
+  async getWeightedProgress(
+    @Query('projectId') projectId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.productionService.getWeightedProgress(user.companyId, projectId);
+  }
+
   /**
    * List production records with filters
    * Route: GET /api/v1/production

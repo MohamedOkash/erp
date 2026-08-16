@@ -39,14 +39,26 @@ export class ProductionService {
     }
 
     return this.db.withTenantTransaction(companyId, async (client) => {
+      // If targetQuantity not provided but workItemStageId is, suggest standard_productivity
+      let targetQuantity = dto.targetQuantity || 0;
+      if (!targetQuantity && dto.workItemStageId) {
+        const stageRes = await client.query(
+          `SELECT standard_productivity FROM work_item_stages WHERE id = $1 AND company_id = $2`,
+          [dto.workItemStageId, companyId],
+        );
+        if (stageRes.rows.length > 0 && stageRes.rows[0].standard_productivity) {
+          targetQuantity = parseFloat(stageRes.rows[0].standard_productivity);
+        }
+      }
+
       // 1. Insert into production_records
       const insertRecordRes = await client.query(
         `INSERT INTO production_records (
-          company_id, branch_id, project_id, work_item_id, work_area_id,
+          company_id, branch_id, project_id, work_item_id, work_item_stage_id, work_area_id,
           date, production_type, actual_quantity, target_quantity, team_code,
           supervisor_id, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'draft')
-        RETURNING id, company_id, branch_id, project_id, work_item_id, work_area_id,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'draft')
+        RETURNING id, company_id, branch_id, project_id, work_item_id, work_item_stage_id, work_area_id,
                   date, production_type, actual_quantity, target_quantity, team_code,
                   supervisor_id, engineer_id, status, created_at, updated_at`,
         [
@@ -54,11 +66,12 @@ export class ProductionService {
           dto.branchId,
           dto.projectId,
           dto.workItemId,
+          dto.workItemStageId || null,
           dto.workAreaId || null,
           dto.date,
           dto.productionType,
           dto.actualQuantity,
-          dto.targetQuantity || 0,
+          targetQuantity,
           dto.teamCode || null,
           dto.supervisorId,
         ],
@@ -81,10 +94,10 @@ export class ProductionService {
           const insertWorkerRes = await client.query(
             `INSERT INTO production_workers (
               company_id, production_record_id, employee_id, worker_type,
-              individual_quantity, hours_worked, is_estimated
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+              individual_quantity, hours_worked, overtime_hours, bonus_percentage, skill_level, is_estimated
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING id, company_id, production_record_id, employee_id,
-                      worker_type, individual_quantity, hours_worked, is_estimated`,
+                      worker_type, individual_quantity, hours_worked, overtime_hours, bonus_percentage, skill_level, is_estimated`,
             [
               companyId,
               record.id,
@@ -92,6 +105,9 @@ export class ProductionService {
               workerType,
               worker.individualQuantity || 0,
               worker.hoursWorked || 8,
+              worker.overtimeHours || 0,
+              worker.bonusPercentage || 0,
+              worker.skillLevel || null,
               isEstimated,
             ],
           );
@@ -140,6 +156,7 @@ export class ProductionService {
         SELECT pr.id, pr.company_id, pr.branch_id, b.name AS branch_name,
                pr.project_id, p.name AS project_name,
                pr.work_item_id, wi.name AS work_item_name, wi.code AS work_item_code,
+               pr.work_item_stage_id, wis.name AS stage_name, wis.code AS stage_code, wis.percentage AS stage_percentage,
                pr.work_area_id, wa.name AS work_area_name,
                pr.date, pr.production_type, pr.actual_quantity, pr.target_quantity,
                pr.team_code, pr.supervisor_id, sup.name AS supervisor_name,
@@ -151,6 +168,7 @@ export class ProductionService {
         JOIN branches b ON pr.branch_id = b.id AND pr.company_id = b.company_id
         JOIN projects p ON pr.project_id = p.id AND pr.company_id = p.company_id
         JOIN work_items wi ON pr.work_item_id = wi.id AND pr.company_id = wi.company_id
+        LEFT JOIN work_item_stages wis ON pr.work_item_stage_id = wis.id AND pr.company_id = wis.company_id
         LEFT JOIN work_areas wa ON pr.work_area_id = wa.id AND pr.company_id = wa.company_id
         LEFT JOIN employees sup ON pr.supervisor_id = sup.id AND pr.company_id = sup.company_id
         LEFT JOIN employees eng ON pr.engineer_id = eng.id AND pr.company_id = eng.company_id
@@ -170,7 +188,7 @@ export class ProductionService {
       const workersRes = await client.query(
         `SELECT pw.id, pw.production_record_id, pw.employee_id, e.name AS employee_name,
                 e.code AS employee_code, pw.worker_type, pw.individual_quantity,
-                pw.hours_worked, pw.is_estimated
+                pw.hours_worked, pw.overtime_hours, pw.bonus_percentage, pw.skill_level, pw.is_estimated
          FROM production_workers pw
          JOIN employees e ON pw.employee_id = e.id AND pw.company_id = e.company_id
          WHERE pw.production_record_id = ANY($1::uuid[]) AND pw.company_id = $2`,
@@ -189,6 +207,22 @@ export class ProductionService {
         ...r,
         workers: workersByRecord.get(r.id) || [],
       }));
+    });
+  }
+
+  /**
+   * Get weighted progress from view v_boq_progress_weighted
+   */
+  async getWeightedProgress(companyId: string, projectId?: string) {
+    return this.db.withTenantClient(companyId, async (client) => {
+      let sql = `SELECT * FROM v_boq_progress_weighted WHERE company_id = $1`;
+      const params: any[] = [companyId];
+      if (projectId) {
+        sql += ` AND project_id = $2`;
+        params.push(projectId);
+      }
+      const res = await client.query(sql, params);
+      return res.rows;
     });
   }
 

@@ -200,6 +200,22 @@ ALTER TABLE production_workers ADD COLUMN IF NOT EXISTS overtime_hours NUMERIC(5
 ALTER TABLE production_workers ADD COLUMN IF NOT EXISTS bonus_percentage NUMERIC(5,2) DEFAULT 0;
 ALTER TABLE production_workers ADD COLUMN IF NOT EXISTS skill_level VARCHAR(20);  -- 'skilled', 'unskilled'
 
+-- Update Unique index on production_records to include stage_id
+DROP INDEX IF EXISTS uq_production_no_duplicate;
+CREATE UNIQUE INDEX uq_production_no_duplicate 
+ON production_records (
+    company_id,
+    date,
+    project_id,
+    branch_id,
+    work_item_id,
+    COALESCE(work_item_stage_id, '00000000-0000-0000-0000-000000000000'::uuid),
+    COALESCE(work_area_id, '00000000-0000-0000-0000-000000000000'::uuid),
+    COALESCE(team_code, ''),
+    supervisor_id
+) 
+WHERE status NOT IN ('rejected', 'cancelled');
+
 -- View: v_boq_progress_weighted
 CREATE OR REPLACE VIEW v_boq_progress_weighted AS
 SELECT
