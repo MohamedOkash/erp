@@ -24,6 +24,7 @@ import { WorkItemStagesModule } from './work-item-stages/work-item-stages.module
 import { WorkItemPricesModule } from './work-item-prices/work-item-prices.module';
 import { LaborRatesModule } from './labor-rates/labor-rates.module';
 import { TransfersModule } from './transfers/transfers.module';
+import { ControlCardsModule } from './control-cards/control-cards.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -41,6 +42,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     WorkItemPricesModule,
     LaborRatesModule,
     TransfersModule,
+    ControlCardsModule,
     EmployeesModule,
     ProductionModule,
     AttendanceModule,
