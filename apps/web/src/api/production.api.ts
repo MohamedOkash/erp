@@ -58,8 +58,6 @@ export const productionApi = {
     status?: string;
     fromDate?: string;
     toDate?: string;
-    page?: number;
-    limit?: number;
   } = {}): Promise<ProductionListResponse> {
     const params = new URLSearchParams();
     if (query.projectId) params.append('projectId', query.projectId);
@@ -68,11 +66,27 @@ export const productionApi = {
     if (query.status) params.append('status', query.status);
     if (query.fromDate) params.append('fromDate', query.fromDate);
     if (query.toDate) params.append('toDate', query.toDate);
-    if (query.page) params.append('page', String(query.page));
-    if (query.limit) params.append('limit', String(query.limit));
 
     const qs = params.toString();
-    return apiClient.get<ProductionListResponse>(`/production${qs ? `?${qs}` : ''}`);
+    const res = await apiClient.get<any>(`/production${qs ? `?${qs}` : ''}`);
+
+    if (Array.isArray(res)) {
+      return {
+        data: res,
+        total: res.length,
+        page: 1,
+        limit: res.length || 15,
+        totalPages: 1,
+      };
+    }
+
+    return {
+      data: res.data || [],
+      total: res.total || (res.data ? res.data.length : 0),
+      page: res.page || 1,
+      limit: res.limit || 15,
+      totalPages: res.totalPages || 1,
+    };
   },
 
   async createProductionRecord(payload: CreateProductionPayload): Promise<{ id: string; status: string; actualQuantity: number }> {

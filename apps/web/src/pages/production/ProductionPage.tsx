@@ -36,8 +36,6 @@ export const ProductionPage: React.FC = () => {
   const [workersList, setWorkersList] = useState<Employee[]>([]);
 
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [limit] = useState(15);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -103,8 +101,6 @@ export const ProductionPage: React.FC = () => {
     setError(null);
     try {
       const res = await productionApi.getProductionRecords({
-        page,
-        limit,
         projectId: selectedProject || undefined,
         branchId: selectedBranch || undefined,
         status: selectedStatus || undefined,
@@ -116,7 +112,7 @@ export const ProductionPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, selectedProject, selectedBranch, selectedStatus]);
+  }, [selectedProject, selectedBranch, selectedStatus]);
 
   useEffect(() => {
     loadDependencies();
@@ -349,7 +345,6 @@ export const ProductionPage: React.FC = () => {
             value={selectedProject}
             onChange={(e) => {
               setSelectedProject(e.target.value);
-              setPage(1);
             }}
           >
             <option value="">كافة المشاريع</option>
@@ -368,7 +363,6 @@ export const ProductionPage: React.FC = () => {
             value={selectedBranch}
             onChange={(e) => {
               setSelectedBranch(e.target.value);
-              setPage(1);
             }}
           >
             <option value="">كافة الفروع</option>
@@ -387,7 +381,6 @@ export const ProductionPage: React.FC = () => {
             value={selectedStatus}
             onChange={(e) => {
               setSelectedStatus(e.target.value);
-              setPage(1);
             }}
           >
             <option value="">كافة الحالات</option>
@@ -554,7 +547,7 @@ export const ProductionPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination count */}
         <div
           style={{
             padding: '1rem',
@@ -567,25 +560,6 @@ export const ProductionPage: React.FC = () => {
           }}
         >
           <span>إجمالي السجلات: {total}</span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-            >
-              السابق
-            </button>
-            <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-              disabled={page * limit >= total}
-              onClick={() => setPage(page + 1)}
-            >
-              التالي
-            </button>
-          </div>
         </div>
       </div>
 

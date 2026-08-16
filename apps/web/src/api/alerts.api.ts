@@ -25,7 +25,8 @@ export interface NotificationItem {
 
 export const alertsApi = {
   async getAlertRules(): Promise<{ data: AlertRule[] }> {
-    return apiClient.get<{ data: AlertRule[] }>('/alert-rules');
+    const res = await apiClient.get<any>('/alert-rules');
+    return { data: Array.isArray(res) ? res : (res.data || []) };
   },
 
   async createAlertRule(payload: {
@@ -39,8 +40,8 @@ export const alertsApi = {
     return apiClient.post<AlertRule>('/alert-rules', payload);
   },
 
-  async evaluateRules(): Promise<{ evaluatedRulesCount: number; triggeredAlertsCount: number }> {
-    return apiClient.post<{ evaluatedRulesCount: number; triggeredAlertsCount: number }>('/alert-rules/evaluate');
+  async evaluateRules(): Promise<{ rulesEvaluated?: number; alertsTriggered?: number; evaluatedRulesCount?: number; triggeredAlertsCount?: number }> {
+    return apiClient.post('/alerts/evaluate');
   },
 
   async getNotifications(query: { isRead?: boolean; page?: number; limit?: number } = {}): Promise<{
@@ -53,11 +54,18 @@ export const alertsApi = {
     if (query.page) params.append('page', String(query.page));
     if (query.limit) params.append('limit', String(query.limit));
     const qs = params.toString();
-    return apiClient.get(`/notifications${qs ? `?${qs}` : ''}`);
+    const res = await apiClient.get<any>(`/notifications${qs ? `?${qs}` : ''}`);
+    const data = Array.isArray(res) ? res : (res.data || []);
+    const unread = data.filter((n: NotificationItem) => !n.isRead).length;
+    return {
+      data,
+      total: res.total || data.length,
+      unreadCount: res.unreadCount !== undefined ? res.unreadCount : unread,
+    };
   },
 
-  async markAllRead(): Promise<{ message: string; updatedCount: number }> {
-    return apiClient.post<{ message: string; updatedCount: number }>('/notifications/mark-all-read');
+  async markAllRead(): Promise<{ message: string; updatedCount?: number }> {
+    return apiClient.post<{ message: string; updatedCount?: number }>('/notifications/mark-all-read');
   },
 
   async markRead(id: string): Promise<{ id: string; isRead: boolean }> {

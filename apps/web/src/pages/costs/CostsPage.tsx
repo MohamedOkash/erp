@@ -85,8 +85,8 @@ export const CostsPage: React.FC = () => {
         }),
         costsApi.getSummary(),
       ]);
-      setCosts(listRes.data);
-      setTotal(listRes.total);
+      setCosts(listRes.data || []);
+      setTotal(listRes.total || (listRes.data ? listRes.data.length : 0));
       setSummary(summaryRes);
     } catch (err: any) {
       setError(err.message || 'فشل تحميل بيانات التكاليف');
@@ -261,41 +261,43 @@ export const CostsPage: React.FC = () => {
       )}
 
       {/* Summary KPI Cards */}
-      {summary && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div className="glass-card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>إجمالي التكاليف المسجلة</span>
-              <DollarSign size={18} color="#34d399" />
-            </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#34d399' }}>
-              {Number(summary.totalAmount).toLocaleString()}{' '}
-              <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>SAR</span>
-            </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '1rem',
+          marginBottom: '1.5rem',
+        }}
+      >
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>إجمالي التكاليف المسجلة</span>
+            <DollarSign size={18} color="#34d399" />
           </div>
-
-          <div className="glass-card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>توزيع الفئات</span>
-              <PieChart size={18} color="#60a5fa" />
-            </div>
-            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-              {summary.byCategory.slice(0, 3).map((c) => (
-                <span key={c.category} className="badge badge-secondary" style={{ fontSize: '0.75rem' }}>
-                  {c.category}: {Number(c.totalAmount).toLocaleString()} SAR
-                </span>
-              ))}
-            </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#34d399' }}>
+            {Number(summary?.totalAmount || 0).toLocaleString()}{' '}
+            <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>SAR</span>
           </div>
         </div>
-      )}
+
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>توزيع الفئات</span>
+            <PieChart size={18} color="#60a5fa" />
+          </div>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            {summary?.byCategory && summary.byCategory.length > 0 ? (
+              summary.byCategory.slice(0, 3).map((c) => (
+                <span key={c.category} className="badge badge-secondary" style={{ fontSize: '0.75rem' }}>
+                  {c.category}: {Number(c.totalAmount || 0).toLocaleString()} SAR
+                </span>
+              ))
+            ) : (
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>لا توجد مصاريف بعد</span>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Filters Bar */}
       <div
