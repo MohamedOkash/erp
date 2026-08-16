@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Param,
   Patch,
@@ -54,6 +55,22 @@ export class WorkItemsController {
     @Body() dto: UpdateWorkItemDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
+    if (dto.defaultDailyTarget !== undefined || dto.customDailyTarget !== undefined) {
+      const roleCodes = (user.roles || []).map((r: any) => (typeof r === 'string' ? r : r.roleCode));
+      const canManageTargets = roleCodes.some((r: string) =>
+        ['project_manager', 'program_manager', 'admin', 'company_admin', 'super_admin'].includes(r),
+      );
+      if (!canManageTargets) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.FORBIDDEN,
+            message: 'Only Project Managers, Program Managers and Admins can modify target values',
+            code: 'FORBIDDEN',
+          },
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
     return this.workItemsService.updateWorkItem(user.companyId, id, dto);
   }
 

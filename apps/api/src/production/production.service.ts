@@ -291,42 +291,31 @@ export class ProductionService {
           break;
 
         case 'supervisor':
-          if (!userRoles.includes('supervisor')) {
-            throw new HttpException(
-              {
-                statusCode: HttpStatus.FORBIDDEN,
-                message: 'Role not authorized for supervisor approval. Supervisor role required.',
-                code: 'ROLE_NOT_AUTHORIZED_FOR_APPROVAL',
-              },
-              HttpStatus.FORBIDDEN,
-            );
-          }
-          if (currentStatus !== 'submitted') {
-            throw new HttpException(
-              {
-                statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-                message: `Invalid state machine transition: cannot approve as supervisor from status '${currentStatus}'`,
-                code: 'INVALID_TRANSITION',
-              },
-              HttpStatus.UNPROCESSABLE_ENTITY,
-            );
-          }
-          nextStatus = 'supervisor_approved';
-          timestampColumn = 'supervisor_approved_at';
-          break;
+          // Phase 1: Supervisors are removed from approval chain; they only submit.
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.FORBIDDEN,
+              message: 'Supervisors cannot approve production records; they can only submit.',
+              code: 'ROLE_NOT_AUTHORIZED_FOR_APPROVAL',
+            },
+            HttpStatus.FORBIDDEN,
+          );
 
         case 'engineer':
-          if (!userRoles.includes('engineer')) {
+          const canEngineerApprove = userRoles.some((r) =>
+            ['engineer', 'project_manager', 'program_manager', 'admin', 'company_admin', 'super_admin'].includes(r),
+          );
+          if (!canEngineerApprove) {
             throw new HttpException(
               {
                 statusCode: HttpStatus.FORBIDDEN,
-                message: 'Role not authorized for engineer approval. Engineer role required.',
+                message: 'Role not authorized for engineer approval. Engineer or Manager role required.',
                 code: 'ROLE_NOT_AUTHORIZED_FOR_APPROVAL',
               },
               HttpStatus.FORBIDDEN,
             );
           }
-          if (currentStatus !== 'supervisor_approved') {
+          if (currentStatus !== 'submitted' && currentStatus !== 'supervisor_approved') {
             throw new HttpException(
               {
                 statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -341,14 +330,14 @@ export class ProductionService {
           break;
 
         case 'final':
-          const isAdmin = userRoles.some((r) =>
-            ['admin', 'company_admin', 'super_admin'].includes(r),
+          const canFinalApprove = userRoles.some((r) =>
+            ['project_manager', 'program_manager', 'admin', 'company_admin', 'super_admin'].includes(r),
           );
-          if (!isAdmin) {
+          if (!canFinalApprove) {
             throw new HttpException(
               {
                 statusCode: HttpStatus.FORBIDDEN,
-                message: 'Role not authorized for final approval. Admin role required.',
+                message: 'Role not authorized for final approval. Project Manager, Program Manager or Admin role required.',
                 code: 'ROLE_NOT_AUTHORIZED_FOR_APPROVAL',
               },
               HttpStatus.FORBIDDEN,
