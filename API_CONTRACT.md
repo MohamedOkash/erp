@@ -1128,3 +1128,47 @@
     "totalPages": 1
   }
   ```
+
+---
+
+## 14. موديولات إعادة هيكلة SACODECO (Finishing BOQ, Stages, Prices, Labor Rates & Transfers)
+
+### 1) موديول الأقسام والفئات (Work Categories Module)
+- **`GET /api/v1/work-categories`**: استعراض شجرة أقسام التشطيبات (15 قسماً).
+- **`POST /api/v1/work-categories`**: إضافة قسم/فئة جديدة.
+  - **Body:** `{ "name": "أعمال الإيبوكسي", "code": "EPX", "description": "دهانات أرضيات إيبوكسي", "parentId": "uuid" }`
+- **`PATCH /api/v1/work-categories/:id`**: تعديل قسم.
+- **`DELETE /api/v1/work-categories/:id`**: حذف قسم.
+
+### 2) موديول مراحل البنود والأوزان النسبية (Work Item Stages Module)
+- **`GET /api/v1/work-items/:itemId/stages`**: قائمة مراحل تنفيذ البند مع الأوزان والإنتاجية القياسية.
+- **`POST /api/v1/work-items/:itemId/stages`**: إضافة مرحلة للبند.
+  - **Body:** `{ "name": "مرحلة المعجون والسنفرة", "code": "STG-PNT-01", "percentage": 0.40, "standardProductivity": 35 }`
+- **`PATCH /api/v1/work-item-stages/:id`**: تعديل مرحلة.
+- **`DELETE /api/v1/work-item-stages/:id`**: حذف مرحلة.
+
+### 3) موديول أسعار البنود (Work Item Prices Module)
+- **`GET /api/v1/work-items/:itemId/prices`**: استعراض أسعار البند (سعر العقد، سعر المواد، أجور العمالة).
+- **`POST /api/v1/work-items/:itemId/prices`**: تحديد سعر للبند (عام أو مخصص لفرع).
+  - **Body:** `{ "branchId": "uuid", "contractPrice": 120, "materialPrice": 45, "laborRateSkilled": 224, "laborRateUnskilled": 208 }`
+- **`PATCH /api/v1/work-item-prices/:id`**: تعديل سعر.
+
+### 4) موديول أجور العمالة للشركة (Labor Rates Module)
+- **`GET /api/v1/labor-rates`**: استعراض يوميات وأجور العمالة المعتمدة.
+- **`POST /api/v1/labor-rates`**: إضافة أجر فئة عمالة.
+  - **Body:** `{ "rateType": "skilled", "dailyRate": 224, "hourlyRate": 28 }`
+- **`PATCH /api/v1/labor-rates/:id`**: تحديث الأجر.
+
+### 5) موديول تنقل الكوادر والمشرفين (Staff Transfers Module)
+- **`POST /api/v1/transfers/request`**: تقديم طلب نقل كادر بين المشاريع.
+  - **Body:** `{ "employeeId": "uuid", "fromProjectId": "uuid", "toProjectId": "uuid", "reason": "حاجة ماسة للمشروع", "urgency": "urgent", "transferDate": "2026-08-16" }`
+- **`POST /api/v1/transfers/:id/approve`**: اعتماد وموافقة الإدارة على طلب النقل.
+- **`POST /api/v1/transfers/:id/reject`**: رفض طلب النقل مع ذكر السبب `{ "rejectionReason": "عدم توفر بديل" }`.
+- **`POST /api/v1/transfers/:id/execute`**: التنفيذ الفعلي للنقل وتحديث تعيين الموظف آلياً في المشروع الجديد.
+- **`GET /api/v1/transfers`**: استعراض سجل طلبات النقل مع الفلاتر (`status`, `employeeId`, `projectId`, `urgency`, `page`, `limit`).
+
+### 6) حساب التقدم التراكمي الموزون (Weighted Progress Calculation)
+- **`GET /api/v1/production/progress-weighted?projectId=uuid`**: استعلام التقدم الموزون للمشروع من خلال View `v_boq_progress_weighted`:
+  - $\text{weighted\_done} = \sum (\text{actual\_quantity} \times \text{wis.percentage})$
+  - $\text{progress\_percentage} = (\text{weighted\_done} / \text{boq\_items.total\_quantity}) \times 100$
+  - يحسب فقط السجلات المعتمدة نهائياً (`status = 'final_approved'`).
