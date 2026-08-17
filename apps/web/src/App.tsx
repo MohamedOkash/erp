@@ -21,6 +21,7 @@ import { SavedReportsPage } from './pages/reports/SavedReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { RbacMatrixPage } from './pages/rbac/RbacMatrixPage';
+import { UsersPage } from './pages/users/UsersPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 
@@ -56,6 +57,7 @@ export const App: React.FC = () => {
         <Route path="/incentives" element={<IncentivesPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/reports" element={<SavedReportsPage />} />
+        <Route path="/users" element={<UsersPage />} />
         <Route path="/rbac" element={<RbacMatrixPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

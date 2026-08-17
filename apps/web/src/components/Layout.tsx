@@ -82,6 +82,7 @@ export const Layout: React.FC = () => {
     { to: '/reports', label: 'التقارير والمؤشرات', icon: <BarChart3 size={19} /> },
     { to: '/alerts', label: 'قواعد التنبيهات الميدانية', icon: <BellRing size={19} /> },
     { to: '/notifications', label: 'مركز الإشعارات والتنبيهات', icon: <Bell size={19} /> },
+    { to: '/users', label: 'إدارة الحسابات والمستخدمين', icon: <Users size={19} /> },
     { to: '/rbac', label: 'مصفوفة الصلاحيات والأدوار', icon: <Shield size={19} /> },
     { to: '/settings', label: 'الإعدادات', icon: <Settings size={19} /> },
   ];
