@@ -14,6 +14,7 @@ export interface ModalProps {
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
   headerActions?: React.ReactNode;
+  zIndex?: number;
 }
 
 const maxWidthMap: Record<string, string> = {
@@ -40,25 +41,75 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnOverlayClick = true,
   closeOnEscape = true,
   headerActions,
+  zIndex = 1000,
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const modalContainerRef = useRef<HTMLDivElement>(null);
 
-  // Lock background body scroll and bind Escape key
+  // Lock background body scroll, bind Escape key, and trap focus
   useEffect(() => {
     if (!isOpen) return;
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
+    // Focus first focusable element inside modal
+    const timer = setTimeout(() => {
+      if (modalContainerRef.current) {
+        const focusable = modalContainerRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length > 0) {
+          // Focus the first interactive input or close button
+          const firstInput = Array.from(focusable).find(
+            (el) => el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA',
+          );
+          if (firstInput) {
+            firstInput.focus();
+          } else {
+            focusable[0].focus();
+          }
+        }
+      }
+    }, 50);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (closeOnEscape && e.key === 'Escape') {
+        e.stopPropagation();
         onClose();
+        return;
+      }
+
+      // Focus Trap for Tab key
+      if (e.key === 'Tab' && modalContainerRef.current) {
+        const focusables = modalContainerRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusables.length === 0) return;
+
+        const firstElement = focusables[0];
+        const lastElement = focusables[focusables.length - 1];
+
+        if (e.shiftKey) {
+          // Shift + Tab
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          // Tab
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      clearTimeout(timer);
       document.body.style.overflow = originalOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -78,6 +129,8 @@ export const Modal: React.FC<ModalProps> = ({
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
+      role="dialog"
+      aria-modal="true"
       style={{
         position: 'fixed',
         inset: 0,
@@ -87,12 +140,13 @@ export const Modal: React.FC<ModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1.25rem',
-        zIndex: 1000,
+        zIndex,
         overflow: 'hidden',
       }}
       dir="rtl"
     >
       <div
+        ref={modalContainerRef}
         className="glass-card animate-fade-in"
         style={{
           width: '100%',
@@ -101,7 +155,7 @@ export const Modal: React.FC<ModalProps> = ({
           height: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          padding: 0, // Padding handled individually on Header, Body, and Footer
+          padding: 0,
           overflow: 'hidden',
           border: '1px solid rgba(59, 130, 246, 0.3)',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(59, 130, 246, 0.15)',
@@ -157,7 +211,7 @@ export const Modal: React.FC<ModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="إغلاق"
+                aria-label="إغلاق النافذة"
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
