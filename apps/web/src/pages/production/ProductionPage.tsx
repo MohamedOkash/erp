@@ -19,6 +19,7 @@ import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
 import { WheelDatePicker } from '../../components/WheelPicker';
 import { useAuth } from '../../contexts/AuthContext';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   Layers,
   Plus,
@@ -40,6 +41,7 @@ import {
 
 export const ProductionPage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [records, setRecords] = useState<ProductionRecord[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -281,10 +283,10 @@ export const ProductionPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Layers size={26} color="#60a5fa" />
-            <span>الإنتاجية اليومية (Daily Production)</span>
+            <span>{t('operations.production_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            تسجيل ومتابعة الإنتاج الميداني، توزيع حصص العمال ومسار الاعتمادات
+            {t('nav.links.production')}
           </p>
         </div>
 
@@ -297,7 +299,7 @@ export const ProductionPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            <span>تصدير إكسيل</span>
+            <span>{t('common.export_excel')}</span>
           </button>
 
           <button
@@ -307,7 +309,7 @@ export const ProductionPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             <UploadCloud size={16} />
-            <span>استيراد إكسيل</span>
+            <span>{t('operations.import_excel')}</span>
           </button>
 
           <button
@@ -317,7 +319,7 @@ export const ProductionPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             <Plus size={16} />
-            <span>إضافة تقرير إنتاجية</span>
+            <span>{t('operations.record_production')}</span>
           </button>
         </div>
       </div>

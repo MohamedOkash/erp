@@ -14,6 +14,7 @@ import { WheelDatePicker, WheelTimePicker } from '../../components/WheelPicker';
 import { DeviceAttendanceImportModal } from '../../components/DeviceAttendanceImportModal';
 import { AttendancePolicyModal } from '../../components/AttendancePolicyModal';
 import { useAuth } from '../../contexts/AuthContext';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   CalendarCheck,
   Plus,
@@ -34,6 +35,7 @@ import {
 
 export const AttendancePage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -328,10 +330,10 @@ export const AttendancePage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <CalendarCheck size={26} color="#60a5fa" />
-            <span>الحضور والانصراف الميداني</span>
+            <span>{t('operations.attendance_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            تسجيل حضور العمالة بالمواقع، أوقات الحضور والانصراف، وساعات العمل الإضافية لحساب الأجور
+            {t('nav.links.attendance')}
           </p>
         </div>
 
@@ -342,7 +344,7 @@ export const AttendancePage: React.FC = () => {
             style={{ gap: '0.4rem', borderColor: 'rgba(56, 189, 248, 0.4)', color: '#38bdf8' }}
           >
             <Sliders size={16} />
-            <span>سياسة الحضور</span>
+            <span>{t('nav.links.settings')}</span>
           </button>
 
           <button
@@ -351,12 +353,12 @@ export const AttendancePage: React.FC = () => {
             style={{ gap: '0.4rem', borderColor: 'rgba(59, 130, 246, 0.4)', color: '#60a5fa' }}
           >
             <Fingerprint size={16} />
-            <span>استيراد من جهاز البصمة</span>
+            <span>{t('operations.import_biometric')}</span>
           </button>
 
           <button onClick={openCreateModal} className="btn btn-primary" style={{ gap: '0.5rem' }}>
             <Plus size={18} />
-            <span>تسجيل حضور يومي</span>
+            <span>{t('operations.check_in')}</span>
           </button>
         </div>
       </div>

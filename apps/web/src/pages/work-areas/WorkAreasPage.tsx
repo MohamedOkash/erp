@@ -4,6 +4,7 @@ import type { WorkArea, CreateWorkAreaPayload, UpdateWorkAreaPayload } from '../
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
 import { Modal } from '../../components/Modal';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   Network,
   Plus,
@@ -25,6 +26,7 @@ interface TreeNode extends WorkArea {
 }
 
 export const WorkAreasPage: React.FC = () => {
+  const { t } = useI18n();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [areas, setAreas] = useState<WorkArea[]>([]);
@@ -335,10 +337,10 @@ export const WorkAreasPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Network size={28} color="#60a5fa" />
-            <span>الهيكل المكاني ومناطق العمل (Work Areas)</span>
+            <span>{t('operations.work_areas_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            شجرة هرمية تفصيلية لمناطق المشروع (مبنى ← دور ← شقة / جناح ← غرفة).
+            {t('nav.links.work_areas')}
           </p>
         </div>
 
@@ -349,7 +351,7 @@ export const WorkAreasPage: React.FC = () => {
           disabled={!selectedProject}
         >
           <Plus size={18} />
-          <span>إضافة منطقة رئيسية</span>
+          <span>{t('operations.add_zone')}</span>
         </button>
       </div>
 

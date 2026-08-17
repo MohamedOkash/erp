@@ -5,6 +5,7 @@ import type { Project } from '../../api/projects.api';
 import { projectsApi } from '../../api/projects.api';
 import { TransferRequestModal } from './TransferRequestModal';
 import { useAuth } from '../../contexts/AuthContext';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   ArrowLeftRight,
   Plus,
@@ -21,6 +22,7 @@ import {
 
 export const TransfersPage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [transfers, setTransfers] = useState<StaffTransfer[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState(0);
@@ -147,21 +149,21 @@ export const TransfersPage: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1380px', margin: '0 auto' }} dir="rtl">
+    <div className="animate-fade-in" style={{ maxWidth: '1380px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <ArrowLeftRight size={28} color="#60a5fa" />
-            <span>نظام تنقل الكوادر والمشرفين الميدانيين</span>
+            <span>{t('operations.transfers_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            إدارة طلبات نقل المشرفين والفنيين بين المشاريع بناءً على الحاجة التشغيلية واعتماد الإدارة.
+            {t('nav.links.transfers')}
           </p>
         </div>
         <button onClick={() => setIsRequestModalOpen(true)} className="btn btn-primary" style={{ gap: '0.5rem' }}>
           <Plus size={18} />
-          <span>طلب نقل كادر</span>
+          <span>{t('operations.request_transfer')}</span>
         </button>
       </div>
 

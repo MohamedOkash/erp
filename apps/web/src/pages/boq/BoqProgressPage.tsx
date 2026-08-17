@@ -6,6 +6,7 @@ import type { Project } from '../../api/projects.api';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
 import { useAuth } from '../../contexts/AuthContext';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   FileSpreadsheet,
   TrendingUp,
@@ -19,6 +20,7 @@ import {
 
 export const BoqProgressPage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [boqItems, setBoqItems] = useState<BoqItemProgress[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState(0);
@@ -147,10 +149,10 @@ export const BoqProgressPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <FileSpreadsheet size={26} color="#60a5fa" />
-            <span>المقايسة وتقدم التنفيذ (BOQ Progress)</span>
+            <span>{t('operations.boq_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            متابعة نسب الإنجاز التراكمية الحية لبنود المقايسة المحسوبة تلقائيًا من سجلات الإنتاج المعتمدة نهائيًا
+            {t('nav.links.boq')}
           </p>
         </div>
       </div>
