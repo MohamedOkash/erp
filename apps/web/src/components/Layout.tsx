@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useI18n } from '../i18n/I18nContext';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { NotificationBell } from './NotificationBell';
 import { AccountSettingsModal } from './AccountSettingsModal';
 import {
@@ -35,14 +37,15 @@ import {
 
 interface SidebarLink {
   to: string;
-  label: string;
+  key: string;
+  defaultLabel: string;
   icon: React.ReactNode;
   comingSoon?: boolean;
 }
 
 interface SidebarGroup {
   id: string;
-  title: string;
+  defaultTitle: string;
   icon: React.ReactNode;
   color: string;
   links: SidebarLink[];
@@ -51,71 +54,71 @@ interface SidebarGroup {
 const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     id: 'overview',
-    title: 'نظرة عامة',
+    defaultTitle: 'نظرة عامة',
     icon: <LayoutDashboard size={16} />,
     color: '#60a5fa',
     links: [
-      { to: '/dashboard', label: 'لوحة التحكم', icon: <LayoutDashboard size={16} /> },
-      { to: '/control-cards', label: 'بطاقات التحكم', icon: <FileSpreadsheet size={16} /> },
-      { to: '/daily-report', label: 'التقرير اليومي', icon: <BarChart3 size={16} /> },
+      { to: '/dashboard', key: 'dashboard', defaultLabel: 'لوحة التحكم', icon: <LayoutDashboard size={16} /> },
+      { to: '/control-cards', key: 'control_cards', defaultLabel: 'بطاقات التحكم', icon: <FileSpreadsheet size={16} /> },
+      { to: '/daily-report', key: 'daily_report', defaultLabel: 'التقرير اليومي', icon: <BarChart3 size={16} /> },
     ],
   },
   {
     id: 'operations',
-    title: 'عمليات الموقع',
+    defaultTitle: 'عمليات الموقع',
     icon: <HardHat size={16} />,
     color: '#f59e0b',
     links: [
-      { to: '/production', label: 'الإنتاجية اليومية', icon: <Layers size={16} /> },
-      { to: '/boq', label: 'المقايسة وتقدم التنفيذ', icon: <FileSpreadsheet size={16} /> },
-      { to: '/work-areas', label: 'مناطق العمل (الهيكل)', icon: <Network size={16} /> },
-      { to: '/attendance', label: 'الحضور والانصراف', icon: <CalendarCheck size={16} /> },
-      { to: '/transfers', label: 'نقل الكوادر والمشرفين', icon: <ArrowLeftRight size={16} /> },
+      { to: '/production', key: 'production', defaultLabel: 'الإنتاجية اليومية', icon: <Layers size={16} /> },
+      { to: '/boq', key: 'boq', defaultLabel: 'المقايسة وتقدم التنفيذ', icon: <FileSpreadsheet size={16} /> },
+      { to: '/work-areas', key: 'work_areas', defaultLabel: 'مناطق العمل (الهيكل)', icon: <Network size={16} /> },
+      { to: '/attendance', key: 'attendance', defaultLabel: 'الحضور والانصراف', icon: <CalendarCheck size={16} /> },
+      { to: '/transfers', key: 'transfers', defaultLabel: 'نقل الكوادر والمشرفين', icon: <ArrowLeftRight size={16} /> },
     ],
   },
   {
     id: 'resources',
-    title: 'الموارد والبيانات',
+    defaultTitle: 'الموارد والبيانات',
     icon: <Building size={16} />,
     color: '#34d399',
     links: [
-      { to: '/employees', label: 'الموظفون والعمال', icon: <Users size={16} /> },
-      { to: '/branches', label: 'الفروع', icon: <Building size={16} /> },
-      { to: '/projects', label: 'المشاريع', icon: <FolderKanban size={16} /> },
-      { to: '/work-items', label: 'بنود الأعمال (BOQ)', icon: <CheckSquare size={16} /> },
+      { to: '/employees', key: 'employees', defaultLabel: 'الموظفون والعمال', icon: <Users size={16} /> },
+      { to: '/branches', key: 'branches', defaultLabel: 'الفروع', icon: <Building size={16} /> },
+      { to: '/projects', key: 'projects', defaultLabel: 'المشاريع', icon: <FolderKanban size={16} /> },
+      { to: '/work-items', key: 'work_items', defaultLabel: 'بنود الأعمال (BOQ)', icon: <CheckSquare size={16} /> },
     ],
   },
   {
     id: 'finance',
-    title: 'المالية',
+    defaultTitle: 'المالية',
     icon: <DollarSign size={16} />,
     color: '#a78bfa',
     links: [
-      { to: '/costs', label: 'التكاليف والمصروفات', icon: <DollarSign size={16} /> },
-      { to: '/incentives', label: 'الحوافز والمكافآت', icon: <Award size={16} /> },
+      { to: '/costs', key: 'costs', defaultLabel: 'التكاليف والمصروفات', icon: <DollarSign size={16} /> },
+      { to: '/incentives', key: 'incentives', defaultLabel: 'الحوافز والمكافآت', icon: <Award size={16} /> },
     ],
   },
   {
     id: 'documents',
-    title: 'المستندات والتقارير',
+    defaultTitle: 'المستندات والتقارير',
     icon: <FileText size={16} />,
     color: '#38bdf8',
     links: [
-      { to: '/documents', label: 'المستندات والأرشيف', icon: <FileText size={16} /> },
-      { to: '/reports', label: 'التقارير والمؤشرات', icon: <BarChart3 size={16} /> },
-      { to: '/alerts', label: 'قواعد التنبيهات الميدانية', icon: <BellRing size={16} /> },
+      { to: '/documents', key: 'documents', defaultLabel: 'المستندات والأرشيف', icon: <FileText size={16} /> },
+      { to: '/reports', key: 'reports', defaultLabel: 'التقارير والمؤشرات', icon: <BarChart3 size={16} /> },
+      { to: '/alerts', key: 'alerts', defaultLabel: 'قواعد التنبيهات الميدانية', icon: <BellRing size={16} /> },
     ],
   },
   {
     id: 'system',
-    title: 'النظام والأمان',
+    defaultTitle: 'النظام والأمان',
     icon: <Shield size={16} />,
     color: '#f87171',
     links: [
-      { to: '/notifications', label: 'مركز الإشعارات والتنبيهات', icon: <Bell size={16} /> },
-      { to: '/users', label: 'إدارة الحسابات والمستخدمين', icon: <Users size={16} /> },
-      { to: '/rbac', label: 'الصلاحيات (RBAC)', icon: <Shield size={16} /> },
-      { to: '/settings', label: 'الإعدادات', icon: <Settings size={16} /> },
+      { to: '/notifications', key: 'notifications', defaultLabel: 'مركز الإشعارات والتنبيهات', icon: <Bell size={16} /> },
+      { to: '/users', key: 'users', defaultLabel: 'إدارة الحسابات والمستخدمين', icon: <Users size={16} /> },
+      { to: '/rbac', key: 'rbac', defaultLabel: 'الصلاحيات (RBAC)', icon: <Shield size={16} /> },
+      { to: '/settings', key: 'settings', defaultLabel: 'الإعدادات', icon: <Settings size={16} /> },
     ],
   },
 ];
@@ -123,6 +126,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { t, direction } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -302,7 +306,7 @@ export const Layout: React.FC = () => {
                     <span style={{ color: group.color, display: 'flex', alignItems: 'center' }}>
                       {group.icon}
                     </span>
-                    <span>{group.title}</span>
+                    <span>{t('nav.groups.' + group.id) || group.defaultTitle}</span>
                     <span
                       style={{
                         fontSize: '0.68rem',
@@ -358,12 +362,14 @@ export const Layout: React.FC = () => {
                           textDecoration: 'none',
                           transition: 'all var(--transition-fast)',
                           whiteSpace: 'nowrap',
-                          boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.25)' : 'none',
+                          boxShadow: isActive ? '0 2px 8px rgba(37, 99, 250, 0.25)' : 'none',
                         })}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
                           <span style={{ opacity: 0.9 }}>{link.icon}</span>
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{link.label}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {t('nav.links.' + link.key) || link.defaultLabel}
+                          </span>
                         </div>
                         {link.comingSoon && (
                           <span
@@ -468,8 +474,11 @@ export const Layout: React.FC = () => {
             )}
           </div>
 
-          {/* Right User Area & Notifications & Theme */}
+          {/* Right User Area & Notifications & Theme & Language */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative' }}>
+            {/* 3-Languages Switcher */}
+            <LanguageSwitcher />
+
             {/* Theme Toggle Button */}
             <button
               type="button"
@@ -484,7 +493,7 @@ export const Layout: React.FC = () => {
                 width: '38px',
                 height: '38px',
               }}
-              title={theme === 'dark' ? 'التبديل إلى الثيم الفاتح (Light Mode)' : 'التبديل إلى الثيم الداكن (Dark Mode)'}
+              title={theme === 'dark' ? t('header.light_mode') : t('header.dark_mode')}
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? (
@@ -514,9 +523,9 @@ export const Layout: React.FC = () => {
                   transition: 'background var(--transition-fast)',
                 }}
               >
-                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ textAlign: direction === 'rtl' ? 'left' : 'right', display: 'flex', flexDirection: 'column', alignItems: direction === 'rtl' ? 'flex-end' : 'flex-start' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                    {user?.fullName || user?.username}
+                    {user?.fullName || user?.username || t('header.user_default')}
                   </span>
                   <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.1rem' }}>
                     {user?.roles?.map((r) => (
@@ -551,8 +560,8 @@ export const Layout: React.FC = () => {
                   style={{
                     position: 'absolute',
                     top: '120%',
-                    left: 0,
-                    width: '200px',
+                    [direction === 'rtl' ? 'left' : 'right']: 0,
+                    width: '210px',
                     padding: '0.5rem',
                     boxShadow: 'var(--shadow-lg)',
                     zIndex: 60,
@@ -560,9 +569,9 @@ export const Layout: React.FC = () => {
                   }}
                 >
                   <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user?.fullName || user?.username || 'مستخدم النظام'}</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user?.fullName || user?.username || t('header.user_default')}</div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                      معرف: {user?.id ? `${user.id.substring(0, 8)}...` : '—'}
+                      {user?.id ? `${user.id.substring(0, 8)}...` : '—'}
                     </div>
                   </div>
 
@@ -585,14 +594,14 @@ export const Layout: React.FC = () => {
                         border: 'none',
                         cursor: 'pointer',
                         borderRadius: 'var(--radius-sm)',
-                        textAlign: 'right',
+                        textAlign: direction === 'rtl' ? 'right' : 'left',
                         transition: 'background var(--transition-fast)',
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)')}
                       onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
                     >
                       <User size={15} color="#60a5fa" />
-                      <span>إعدادات الحساب والأمان</span>
+                      <span>{t('header.account_settings')}</span>
                     </button>
 
                     <Link
@@ -613,7 +622,7 @@ export const Layout: React.FC = () => {
                       onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
                     >
                       <Settings size={15} color="#94a3b8" />
-                      <span>إعدادات المنظومة</span>
+                      <span>{t('header.system_settings')}</span>
                     </Link>
 
                     <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.25rem 0' }} />
@@ -633,11 +642,11 @@ export const Layout: React.FC = () => {
                         border: 'none',
                         cursor: 'pointer',
                         borderRadius: 'var(--radius-sm)',
-                        textAlign: 'right',
+                        textAlign: direction === 'rtl' ? 'right' : 'left',
                       }}
                     >
                       <LogOut size={15} />
-                      <span>تسجيل الخروج</span>
+                      <span>{t('header.logout')}</span>
                     </button>
                   </div>
                 </div>

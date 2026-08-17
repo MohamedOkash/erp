@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 import { authApi } from '../api/auth.api';
 import {
   User,
@@ -26,6 +27,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   onClose,
 }) => {
   const { user } = useAuth();
+  const { t, direction } = useI18n();
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
 
   // Profile Form state
@@ -65,11 +67,11 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) {
-      setProfileError('الاسم الكامل مطلوب');
+      setProfileError(t('account_modal.full_name') + ' ' + t('common.required'));
       return;
     }
     if (!username.trim()) {
-      setProfileError('اسم المستخدم مطلوب');
+      setProfileError(t('account_modal.username') + ' ' + t('common.required'));
       return;
     }
 
@@ -83,11 +85,11 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
       });
-      setProfileSuccess('تم تحديث البيانات الشخصية بنجاح.');
+      setProfileSuccess(t('common.success'));
       setTimeout(() => setProfileSuccess(null), 3500);
     } catch (err: any) {
       setProfileError(
-        err?.response?.data?.message || err?.message || 'فشل تحديث البيانات الشخصية',
+        err?.response?.data?.message || err?.message || t('common.error'),
       );
     } finally {
       setSavingProfile(false);
@@ -97,15 +99,15 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword) {
-      setPasswordError('كلمة المرور الحالية مطلوبة');
+      setPasswordError(t('account_modal.current_password') + ' ' + t('common.required'));
       return;
     }
     if (!newPassword || newPassword.length < 8) {
-      setPasswordError('كلمة المرور الجديدة يجب أن تتكون من 8 أحرف على الأقل');
+      setPasswordError(t('account_modal.password_hint'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('كلمة المرور الجديدة غير متطابقة مع حقل التأكيد');
+      setPasswordError(t('account_modal.confirm_password') + ' != ' + t('account_modal.new_password'));
       return;
     }
 
@@ -117,7 +119,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
         currentPassword,
         newPassword,
       });
-      setPasswordSuccess('تم تغيير كلمة المرور بنجاح.');
+      setPasswordSuccess(t('common.success'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -125,10 +127,10 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     } catch (err: any) {
       const code = err?.response?.data?.code;
       if (code === 'WRONG_CURRENT_PASSWORD') {
-        setPasswordError('كلمة المرور الحالية غير صحيحة');
+        setPasswordError('Current password is wrong / كلمة المرور الحالية غير صحيحة');
       } else {
         setPasswordError(
-          err?.response?.data?.message || err?.message || 'فشل تغيير كلمة المرور',
+          err?.response?.data?.message || err?.message || t('common.error'),
         );
       }
     } finally {
@@ -137,7 +139,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="إعدادات الحساب الشخصي والأمان">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('account_modal.title')}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {/* Navigation Tabs */}
         <div
@@ -167,7 +169,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
             }}
           >
             <User size={16} />
-            <span>البيانات الشخصية والملف</span>
+            <span>{t('account_modal.tab_profile')}</span>
           </button>
 
           <button
@@ -189,7 +191,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
             }}
           >
             <KeyRound size={16} />
-            <span>أمان الحساب وكلمة المرور</span>
+            <span>{t('account_modal.tab_password')}</span>
           </button>
         </div>
 
@@ -238,25 +240,25 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">الاسم الكامل *</label>
+                <label className="form-label">{t('account_modal.full_name')} *</label>
                 <input
                   type="text"
                   className="input-field"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="مثال: م. فهد العتيبي"
+                  placeholder="e.g. Fahad Al-Otaibi"
                   required
                 />
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">اسم المستخدم (Username) *</label>
+                <label className="form-label">{t('account_modal.username')} *</label>
                 <input
                   type="text"
                   className="input-field"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="مثال: fahad_eng"
+                  placeholder="e.g. fahad_eng"
                   required
                 />
               </div>
@@ -264,7 +266,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">البريد الإلكتروني</label>
+                <label className="form-label">{t('account_modal.email')}</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="email"
@@ -273,12 +275,12 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@company.com"
                   />
-                  <Mail size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
+                  <Mail size={16} style={{ position: 'absolute', [direction === 'rtl' ? 'left' : 'right']: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
                 </div>
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">رقم الهاتف</label>
+                <label className="form-label">{t('account_modal.phone')}</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="text"
@@ -287,7 +289,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="05XXXXXXXX"
                   />
-                  <Phone size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
+                  <Phone size={16} style={{ position: 'absolute', [direction === 'rtl' ? 'left' : 'right']: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
                 </div>
               </div>
             </div>
@@ -306,7 +308,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
                 <Shield size={16} color="#60a5fa" />
-                <span style={{ color: 'var(--text-muted)' }}>الأدوار الوظيفية الحالية:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('account_modal.roles')}:</span>
               </div>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 {(user?.roles || []).map((r, i) => (
@@ -319,11 +321,11 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
               <button type="button" onClick={onClose} className="btn btn-secondary">
-                إلغاء
+                {t('common.cancel')}
               </button>
               <button type="submit" disabled={savingProfile} className="btn btn-primary" style={{ minWidth: '130px' }}>
                 {savingProfile ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                <span>حفظ التعديلات</span>
+                <span>{t('account_modal.save_profile')}</span>
               </button>
             </div>
           </form>
@@ -373,23 +375,23 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
             )}
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">كلمة المرور الحالية *</label>
+              <label className="form-label">{t('account_modal.current_password')} *</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="password"
                   className="input-field"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="أدخل كلمة المرور الحالية للتأكيد"
+                  placeholder="••••••••"
                   required
                 />
-                <Lock size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
+                <Lock size={16} style={{ position: 'absolute', [direction === 'rtl' ? 'left' : 'right']: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
               </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">كلمة المرور الجديدة * (8+ أحرف)</label>
+                <label className="form-label">{t('account_modal.new_password')} *</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="password"
@@ -400,12 +402,12 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                     required
                     minLength={8}
                   />
-                  <KeyRound size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
+                  <KeyRound size={16} style={{ position: 'absolute', [direction === 'rtl' ? 'left' : 'right']: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
                 </div>
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">تأكيد كلمة المرور الجديدة *</label>
+                <label className="form-label">{t('account_modal.confirm_password')} *</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="password"
@@ -417,23 +419,23 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                     minLength={8}
                   />
                   {confirmPassword && newPassword === confirmPassword && (
-                    <Check size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#10b981', pointerEvents: 'none' }} />
+                    <Check size={16} style={{ position: 'absolute', [direction === 'rtl' ? 'left' : 'right']: '10px', top: '50%', transform: 'translateY(-50%)', color: '#10b981', pointerEvents: 'none' }} />
                   )}
                 </div>
               </div>
             </div>
 
             <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)' }}>
-              يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل للحفاظ على أمان حسابك في النظام.
+              {t('account_modal.password_hint')}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
               <button type="button" onClick={onClose} className="btn btn-secondary">
-                إلغاء
+                {t('common.cancel')}
               </button>
               <button type="submit" disabled={savingPassword} className="btn btn-primary" style={{ minWidth: '140px' }}>
                 {savingPassword ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
-                <span>تغيير كلمة المرور</span>
+                <span>{t('account_modal.change_password')}</span>
               </button>
             </div>
           </form>
@@ -442,3 +444,4 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     </Modal>
   );
 };
+

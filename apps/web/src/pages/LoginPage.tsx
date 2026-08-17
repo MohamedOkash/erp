@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import {
   Building2,
   Lock,
@@ -16,6 +18,7 @@ import {
 
 export const LoginPage: React.FC = () => {
   const { login, isAuthenticated } = useAuth();
+  const { t, direction } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,7 +39,7 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) {
-      setError('يرجى إدخال اسم المستخدم');
+      setError(t('auth.username_label') + ' ' + t('common.required'));
       return;
     }
 
@@ -59,7 +62,7 @@ export const LoginPage: React.FC = () => {
       }
       navigate(target, { replace: true });
     } catch (err: any) {
-      setError(err.message || 'فشل تسجيل الدخول، تأكد من صحة البيانات');
+      setError(err.message || t('common.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -84,6 +87,11 @@ export const LoginPage: React.FC = () => {
       }}
     >
       <div className="app-bg-glow" />
+
+      {/* Language Switcher in top corner */}
+      <div style={{ position: 'absolute', top: '1.5rem', [direction === 'rtl' ? 'left' : 'right']: '1.5rem', zIndex: 20 }}>
+        <LanguageSwitcher />
+      </div>
 
       <div
         className="glass-card animate-fade-in"
@@ -113,10 +121,10 @@ export const LoginPage: React.FC = () => {
             <Building2 size={32} color="#ffffff" />
           </div>
           <h1 style={{ fontSize: '1.6rem', marginBottom: '0.4rem' }}>
-            نظام إدارة الإنتاج والتشطيبات
+            {t('app.title')}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            منظومة المقاولات وإدارة العمليات الميدانية المتكاملة
+            {t('app.subtitle')}
           </p>
         </div>
 
@@ -146,14 +154,14 @@ export const LoginPage: React.FC = () => {
           <div className="form-group">
             <label className="form-label" htmlFor="login-username">
               <UserIcon size={16} />
-              <span>اسم المستخدم</span>
+              <span>{t('auth.username_label')}</span>
             </label>
             <div className="input-wrapper">
               <input
                 id="login-username"
                 type="text"
                 className="input-field"
-                placeholder="أدخل اسم المستخدم (مثال: admin)"
+                placeholder="admin"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isSubmitting}
@@ -165,14 +173,14 @@ export const LoginPage: React.FC = () => {
           <div className="form-group">
             <label className="form-label" htmlFor="login-password">
               <Lock size={16} />
-              <span>كلمة المرور</span>
+              <span>{t('auth.password_label')}</span>
             </label>
             <div className="input-wrapper">
               <input
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 className="input-field"
-                placeholder="أدخل كلمة المرور (افتراضي: 123456)"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isSubmitting}
@@ -182,7 +190,7 @@ export const LoginPage: React.FC = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute',
-                  left: '0.85rem',
+                  [direction === 'rtl' ? 'left' : 'right']: '0.85rem',
                   background: 'none',
                   border: 'none',
                   color: 'var(--text-dim)',
@@ -204,11 +212,11 @@ export const LoginPage: React.FC = () => {
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <span>جاري تسجيل الدخول...</span>
+              <span>{t('auth.logging_in')}</span>
             ) : (
               <>
                 <LogIn size={18} />
-                <span>تسجيل الدخول للنظام</span>
+                <span>{t('auth.login_btn')}</span>
               </>
             )}
           </button>

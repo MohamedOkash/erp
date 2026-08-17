@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 import { projectsApi, type Project } from '../api/projects.api';
 import { controlCardsApi, type ControlCardSummary } from '../api/control-cards.api';
 import { alertsApi, type NotificationItem } from '../api/alerts.api';
@@ -26,6 +27,7 @@ import {
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [controlCards, setControlCards] = useState<ControlCardSummary[]>([]);
@@ -93,30 +95,30 @@ export const DashboardPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'متوسط إنجاز بنود التحكم',
+      label: t('dashboard.avg_progress'),
       value: `${avgProgress}%`,
-      helper: `هامش ربحي: ${Math.round(totalMarginSum).toLocaleString()} SAR`,
+      helper: `${t('dashboard.profit_margin')}: ${Math.round(totalMarginSum).toLocaleString()} SAR`,
       icon: <TrendingUp size={22} />,
       color: '#34d399',
     },
     {
-      label: 'المشاريع الجارية في التنفيذ',
+      label: t('dashboard.total_projects'),
       value: projects.length,
-      helper: 'مواقع عمل نشطة ميدانياً',
+      helper: `${projects.length} ${t('common.active')}`,
       icon: <Building2 size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'تنبيهات وانحرافات الموقع',
+      label: t('dashboard.unread_alerts'),
       value: unreadAlertsCount,
-      helper: unreadAlertsCount > 0 ? 'تتطلب مراجعة فورية' : 'كافة المؤشرات طبيعية',
+      helper: unreadAlertsCount > 0 ? t('common.required') : t('common.all'),
       icon: <AlertTriangle size={22} />,
       color: unreadAlertsCount > 0 ? '#f87171' : '#34d399',
     },
     {
-      label: 'طلبات نقل العمالة المعلقة',
+      label: t('dashboard.pending_transfers'),
       value: pendingTransfersCount,
-      helper: 'بانتظار موافقة الإدارة',
+      helper: `${pendingTransfersCount} ${t('common.status')}`,
       icon: <ArrowRightLeft size={22} />,
       color: '#f59e0b',
     },
@@ -143,25 +145,25 @@ export const DashboardPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
             <span className="badge badge-success" style={{ fontSize: '0.75rem', gap: '0.3rem' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d399' }} />
-              <span>المنظومة متصلة بالخادم الحي (Live API)</span>
+              <span>Live API</span>
             </span>
           </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.35rem 0', color: '#ffffff' }}>
-            مرحباً بك، {user?.fullName || user?.username} 👋
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.35rem 0', color: 'var(--text-heading)' }}>
+            {t('dashboard.welcome', { name: user?.fullName || user?.username || '' })} 👋
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-            لوحة الإدارة والمتابعة التنفيذية — شركة ساكوديكو للمقاولات العامة (SACODECO)
+            {t('dashboard.overview_subtitle')}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <Link to="/production" className="btn btn-primary" style={{ gap: '0.4rem' }}>
             <Plus size={16} />
-            <span>تسجيل إنتاجية اليوم</span>
+            <span>{t('dashboard.new_production')}</span>
           </Link>
           <Link to="/control-cards" className="btn btn-secondary" style={{ gap: '0.4rem' }}>
             <Layers size={16} />
-            <span>بطاقات التحكم</span>
+            <span>{t('dashboard.open_control_card')}</span>
           </Link>
         </div>
       </div>
