@@ -308,9 +308,9 @@ export const Layout: React.FC = () => {
                   }}
                 >
                   <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user?.fullName || user?.username}</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user?.fullName || user?.username || 'مستخدم النظام'}</div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                      معرف: {user?.id.substring(0, 8)}...
+                      معرف: {user?.id ? `${user.id.substring(0, 8)}...` : '—'}
                     </div>
                   </div>
 

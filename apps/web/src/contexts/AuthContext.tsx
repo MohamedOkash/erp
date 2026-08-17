@@ -51,7 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const profile = await authApi.getProfile();
         if (isMounted) {
-          setUser(profile);
+          const resolvedUser = (profile as any)?.user || profile;
+          setUser(resolvedUser);
           setToken(storedToken);
         }
       } catch {
