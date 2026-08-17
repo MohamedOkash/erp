@@ -10,13 +10,28 @@ export interface UserPermission {
   action: string;
 }
 
+export interface UserScope {
+  id: string;
+  projectId: string;
+  projectName?: string;
+  projectCode?: string;
+  branchId?: string | null;
+  branchName?: string | null;
+  workAreaId?: string | null;
+  workAreaName?: string | null;
+}
+
 export interface User {
   id: string;
   companyId: string;
+  employeeId?: string;
   username: string;
   fullName: string;
+  email?: string;
+  phone?: string;
   roles: UserRole[];
-  permissions: UserPermission[];
+  permissions: Array<string | UserPermission>;
+  scopes?: UserScope[];
 }
 
 export interface LoginResponse {

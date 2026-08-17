@@ -106,15 +106,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const hasPermission = useCallback(
-    (module: string, action: string) => {
+    (module: string, action?: string) => {
       if (!user) return false;
       // Super admin / company admin has all permissions
-      if (user.roles?.some((r) => ['super_admin', 'company_admin'].includes(r.roleCode))) {
+      if (user.roles?.some((r) => ['super_admin', 'company_admin', 'admin'].includes(r.roleCode))) {
         return true;
       }
-      return !!user.permissions?.some(
-        (p) => p.module === module && (p.action === action || p.action === 'all'),
-      );
+      const targetCode = action ? `${module}.${action}` : module;
+      return !!user.permissions?.some((p) => {
+        if (typeof p === 'string') {
+          return p === targetCode || p === `${module}.all` || p === '*';
+        }
+        return p.module === module && (action ? (p.action === action || p.action === 'all') : true);
+      });
     },
     [user],
   );
