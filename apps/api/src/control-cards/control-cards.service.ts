@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { CompanySettingsService } from '../company-settings/company-settings.service';
 
 @Injectable()
 export class ControlCardsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly companySettings: CompanySettingsService,
+  ) {}
 
   /**
    * 1) List control cards summary for work items
@@ -83,16 +87,24 @@ export class ControlCardsService {
         });
       }
 
+      const settings = await this.companySettings.getSettingsMap(companyId);
+      const defaultProductivity = settings.default_daily_productivity || 20;
+      const defaultSkilledDaily = settings.default_skilled_daily_wage || 224;
+      const defaultUnskilledDaily = settings.default_unskilled_daily_wage || 208;
+      const defaultSkilledCrew = settings.default_crew_skilled || 1;
+      const defaultUnskilledCrew = settings.default_crew_unskilled || 1;
+      const decimals = settings.rounding_decimals !== undefined ? settings.rounding_decimals : 2;
+
       // Format response cards
       return res.rows.map((row: any) => {
-        const perDay = Number(row.default_daily_target) || 20;
-        const skilledDaily = Number(row.labor_rate_skilled) || 224;
-        const unskilledDaily = Number(row.labor_rate_unskilled) || 208;
-        const crewDailyCost = skilledDaily * 1 + unskilledDaily * 1; // 432
-        const laborCostPerUnit = perDay > 0 ? Number((crewDailyCost / perDay).toFixed(2)) : 0;
+        const perDay = Number(row.default_daily_target) || defaultProductivity;
+        const skilledDaily = Number(row.labor_rate_skilled) || defaultSkilledDaily;
+        const unskilledDaily = Number(row.labor_rate_unskilled) || defaultUnskilledDaily;
+        const crewDailyCost = skilledDaily * defaultSkilledCrew + unskilledDaily * defaultUnskilledCrew;
+        const laborCostPerUnit = perDay > 0 ? Number((crewDailyCost / perDay).toFixed(decimals)) : 0;
         const price = Number(row.contract_price || row.default_unit_rate || 0);
         const materialPrice = Number(row.material_price || 0);
-        const marginPerUnit = Number((price - materialPrice - laborCostPerUnit).toFixed(2));
+        const marginPerUnit = Number((price - materialPrice - laborCostPerUnit).toFixed(decimals));
         const liveProg = progressMap[row.work_item_id] || { boqQty: 0, weightedDone: 0, progressPct: 0 };
 
         return {
@@ -160,25 +172,34 @@ export class ControlCardsService {
       );
       const priceRow = priceRes.rows[0] || {};
 
+      const settings = await this.companySettings.getSettingsMap(companyId);
+      const hoursPerDay = settings.hours_per_work_day || 8;
+      const defaultProductivity = settings.default_daily_productivity || 20;
+      const defaultSkilledDaily = settings.default_skilled_daily_wage || 224;
+      const defaultUnskilledDaily = settings.default_unskilled_daily_wage || 208;
+      const defaultSkilledCrew = settings.default_crew_skilled || 1;
+      const defaultUnskilledCrew = settings.default_crew_unskilled || 1;
+      const decimals = settings.rounding_decimals !== undefined ? settings.rounding_decimals : 2;
+
       // 4. Fetch company standard labor rates
       const ratesRes = await client.query(
         `SELECT rate_type, daily_rate FROM labor_rates WHERE company_id = $1`,
         [companyId],
       );
-      let skilledDaily = Number(priceRow.labor_rate_skilled) || 224;
-      let unskilledDaily = Number(priceRow.labor_rate_unskilled) || 208;
+      let skilledDaily = Number(priceRow.labor_rate_skilled) || defaultSkilledDaily;
+      let unskilledDaily = Number(priceRow.labor_rate_unskilled) || defaultUnskilledDaily;
       ratesRes.rows.forEach((r: any) => {
         if (r.rate_type === 'skilled' && !priceRow.labor_rate_skilled) skilledDaily = Number(r.daily_rate);
         if (r.rate_type === 'unskilled' && !priceRow.labor_rate_unskilled) unskilledDaily = Number(r.daily_rate);
       });
 
       // Calculations
-      const perDay = Number(itemRow.default_daily_target) || 20;
+      const perDay = Number(itemRow.default_daily_target) || defaultProductivity;
 
       const formattedStages = stagesRes.rows.map((stg: any) => {
         const percentage = Number(stg.percentage) || 0;
         const standardProductivity = Number(stg.standard_productivity) || perDay;
-        const actualTotalProductivity = Number((percentage * perDay).toFixed(2));
+        const actualTotalProductivity = Number((percentage * perDay).toFixed(decimals));
         return {
           id: stg.id,
           name: stg.name,
@@ -187,23 +208,23 @@ export class ControlCardsService {
           standardProductivity,
           actualTotalProductivity,
           crew: {
-            skilled: Number(stg.crew_skilled_count) || 1,
-            unskilled: Number(stg.crew_unskilled_count) || 1,
+            skilled: Number(stg.crew_skilled_count) || defaultSkilledCrew,
+            unskilled: Number(stg.crew_unskilled_count) || defaultUnskilledCrew,
           },
         };
       });
 
       // Crew calculations (from first stage or standard)
-      const primaryCrew = formattedStages[0]?.crew || { skilled: 1, unskilled: 1 };
-      const totalCrewMembers = primaryCrew.skilled + primaryCrew.unskilled; // 2
-      const perHour = totalCrewMembers > 0 ? Number((perDay / (totalCrewMembers * 8)).toFixed(2)) : 0; // 20 / 16 = 1.25
+      const primaryCrew = formattedStages[0]?.crew || { skilled: defaultSkilledCrew, unskilled: defaultUnskilledCrew };
+      const totalCrewMembers = primaryCrew.skilled + primaryCrew.unskilled;
+      const perHour = totalCrewMembers > 0 ? Number((perDay / (totalCrewMembers * hoursPerDay)).toFixed(decimals)) : 0;
 
-      const crewDailyCost = skilledDaily * primaryCrew.skilled + unskilledDaily * primaryCrew.unskilled; // 432
-      const laborCostPerUnit = perDay > 0 ? Number((crewDailyCost / perDay).toFixed(2)) : 0; // 21.6
+      const crewDailyCost = skilledDaily * primaryCrew.skilled + unskilledDaily * primaryCrew.unskilled;
+      const laborCostPerUnit = perDay > 0 ? Number((crewDailyCost / perDay).toFixed(decimals)) : 0;
 
-      const price = Number(priceRow.contract_price || itemRow.default_unit_rate || 0); // 235
-      const materialPrice = Number(priceRow.material_price || 0); // 0
-      const marginPerUnit = Number((price - materialPrice - laborCostPerUnit).toFixed(2)); // 213.4
+      const price = Number(priceRow.contract_price || itemRow.default_unit_rate || 0);
+      const materialPrice = Number(priceRow.material_price || 0);
+      const marginPerUnit = Number((price - materialPrice - laborCostPerUnit).toFixed(decimals));
 
       // Live metrics from site executions
       let liveMetrics = {

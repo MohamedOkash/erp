@@ -29,6 +29,7 @@ import { ControlCardsModule } from './control-cards/control-cards.module';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
+import { CompanySettingsModule } from './company-settings/company-settings.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -37,6 +38,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     DatabaseModule,
     CommonModule,
     AuthModule,
+    CompanySettingsModule,
     UsersModule,
     RolesModule,
     BranchesModule,

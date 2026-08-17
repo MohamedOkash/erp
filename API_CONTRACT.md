@@ -1389,4 +1389,83 @@
   }
   ```
 
+---
+
+## 19. إعدادات المنشأة ومعاملات الحساب الديناميكية (Company Settings & Dynamic Parameters)
+
+### 1) استعراض الإعدادات والمعاملات (Get Company Settings)
+- **المسار:** `GET /api/v1/company-settings`
+- **الحماية:** `SessionAuthGuard` (عزل تام للشركة المستأجرة Tenant Isolation)
+- **الاستجابة الناجحة (200 OK):**
+  ```json
+  {
+    "list": [
+      {
+        "id": "uuid",
+        "company_id": "uuid-company",
+        "key": "hours_per_work_day",
+        "value": "8",
+        "data_type": "number",
+        "category": "calculation",
+        "display_name_ar": "ساعات العمل اليومية القياسية",
+        "description_ar": "عدد ساعات يوم العمل المعتمدة في حساب إنتاجية الساعة وتكلفة الأجور"
+      },
+      {
+        "id": "uuid",
+        "company_id": "uuid-company",
+        "key": "overtime_multiplier",
+        "value": "1.5",
+        "data_type": "number",
+        "category": "calculation",
+        "display_name_ar": "معامل احتساب الوقت الإضافي",
+        "description_ar": "مضاعف أجر الساعة لساعات العمل الإضافية في حساب تكاليف العمالة"
+      },
+      {
+        "id": "uuid",
+        "company_id": "uuid-company",
+        "key": "rounding_decimals",
+        "value": "2",
+        "data_type": "number",
+        "category": "calculation",
+        "display_name_ar": "دقة التقريب العشري",
+        "description_ar": "عدد الخانات العشرية في احتساب المبالغ والكميات ونسب الإنجاز"
+      }
+    ],
+    "settings": {
+      "hours_per_work_day": 8,
+      "overtime_multiplier": 1.5,
+      "rounding_decimals": 2,
+      "default_crew_skilled": 1,
+      "default_crew_unskilled": 1,
+      "default_daily_productivity": 20,
+      "default_skilled_daily_wage": 224,
+      "default_unskilled_daily_wage": 208
+    }
+  }
+  ```
+
+### 2) تحديث المعاملات الحسابية (Update Company Settings)
+- **المسار:** `PUT /api/v1/company-settings`
+- **الحماية:** `SessionAuthGuard`
+- **الـ Request Body:**
+  ```json
+  {
+    "settings": {
+      "hours_per_work_day": 8,
+      "overtime_multiplier": 1.5,
+      "rounding_decimals": 2,
+      "default_crew_skilled": 2,
+      "default_crew_unskilled": 1,
+      "default_daily_productivity": 25,
+      "default_skilled_daily_wage": 250,
+      "default_unskilled_daily_wage": 220
+    }
+  }
+  ```
+- **الاستجابة:** `200 OK` ترجع الكائن المحدث كاملاً.
+- **التأثير الحي المباشر:**
+  - `ControlCardsService`: يعتمد فوراً ساعات اليوم، تكوين الطاقم، اليوميات الافتراضية ودقة التقريب.
+  - `CostsService`: يعتمد فوراً ساعات اليوم ومضاعف الإضافي في `autoCalculateLaborCosts`.
+
+
 

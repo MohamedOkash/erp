@@ -5,6 +5,7 @@ import {
 import { DatabaseService } from '../database/database.service';
 import { ScopeService } from '../common/services/scope.service';
 import { AuthenticatedUser } from '../auth/auth.service';
+import { CompanySettingsService } from '../company-settings/company-settings.service';
 import { CreateCostDto } from './dto/create-cost.dto';
 import { UpdateCostDto } from './dto/update-cost.dto';
 import { QueryCostDto } from './dto/query-cost.dto';
@@ -14,6 +15,7 @@ export class CostsService {
   constructor(
     private readonly db: DatabaseService,
     private readonly scopeService: ScopeService,
+    private readonly companySettings: CompanySettingsService,
   ) {}
 
   /**
@@ -446,6 +448,11 @@ export class CostsService {
    * Formula: (days_present * daily_wage) + (overtime_hours * (daily_wage / 8 * 1.5))
    */
   async autoCalculateLaborCosts(companyId: string, query: QueryCostDto) {
+    const settings = await this.companySettings.getSettingsMap(companyId);
+    const hoursPerDay = settings.hours_per_work_day || 8;
+    const overtimeMultiplier = settings.overtime_multiplier || 1.5;
+    const decimals = settings.rounding_decimals !== undefined ? settings.rounding_decimals : 2;
+
     return this.db.withTenantClient(companyId, async (client) => {
       const conditions: string[] = [
         'a.company_id = $1',
@@ -488,8 +495,8 @@ export class CostsService {
           COALESCE(SUM(a.overtime_hours), 0) AS "overtimeHours",
           ROUND(
             (COUNT(a.id) * COALESCE(e.daily_wage, 0)) + 
-            (COALESCE(SUM(a.overtime_hours), 0) * (COALESCE(e.daily_wage, 0) / 8.0 * 1.5)),
-            2
+            (COALESCE(SUM(a.overtime_hours), 0) * (COALESCE(e.daily_wage, 0) / ${hoursPerDay} * ${overtimeMultiplier})),
+            ${decimals}
           ) AS "estimatedLaborCost"
         FROM attendance a
         JOIN attendance_statuses s ON a.status_id = s.id
@@ -519,7 +526,7 @@ export class CostsService {
 
       return {
         data,
-        totalEstimatedLaborCost: Number(totalEstimatedLaborCost.toFixed(2)),
+        totalEstimatedLaborCost: Number(totalEstimatedLaborCost.toFixed(decimals)),
         employeeCount: employeeSet.size,
       };
     });

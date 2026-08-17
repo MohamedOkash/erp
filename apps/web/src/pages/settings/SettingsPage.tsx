@@ -4,6 +4,9 @@ import {
   type LaborRateItem,
   type CreateLaborRatePayload,
 } from '../../api/labor-rates.api';
+import {
+  companySettingsApi,
+} from '../../api/company-settings.api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
@@ -26,11 +29,16 @@ import {
   Briefcase,
   Check,
   X,
+  Calculator,
+  Sliders,
+  HardHat,
+  Activity,
+  Info,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'company' | 'rates' | 'roles'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'rates' | 'roles' | 'calculations'>('company');
 
   // Company Settings Form State
   const [companyName, setCompanyName] = useState('شركة ساكوديكو للمقاولات العامة (SACODECO)');
@@ -57,6 +65,20 @@ export const SettingsPage: React.FC = () => {
   });
   const [isSavingRate, setIsSavingRate] = useState(false);
 
+  // Calculation & Operational Settings State
+  const [calcSettings, setCalcSettings] = useState<Record<string, any>>({
+    hours_per_work_day: 8,
+    overtime_multiplier: 1.5,
+    rounding_decimals: 2,
+    default_crew_skilled: 1,
+    default_crew_unskilled: 1,
+    default_daily_productivity: 20,
+    default_skilled_daily_wage: 224,
+    default_unskilled_daily_wage: 208,
+  });
+  const [isLoadingCalc, setIsLoadingCalc] = useState(false);
+  const [isSavingCalc, setIsSavingCalc] = useState(false);
+
   // Alerts State
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -75,9 +97,25 @@ export const SettingsPage: React.FC = () => {
     }
   }, []);
 
+  // Load Calculation Settings
+  const loadCalculationSettings = useCallback(async () => {
+    setIsLoadingCalc(true);
+    try {
+      const res = await companySettingsApi.getSettings();
+      if (res && res.settings) {
+        setCalcSettings(res.settings);
+      }
+    } catch (err: any) {
+      console.error('Failed to load calculation settings:', err);
+    } finally {
+      setIsLoadingCalc(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadRates();
-  }, [loadRates]);
+    loadCalculationSettings();
+  }, [loadRates, loadCalculationSettings]);
 
   const handleSaveCompany = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +124,25 @@ export const SettingsPage: React.FC = () => {
       setIsSavingCompany(false);
       setSuccessMsg('تم حفظ وتحديث بيانات الشركة والإعدادات العامة بنجاح.');
     }, 400);
+  };
+
+  const handleSaveCalculationSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingCalc(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      const res = await companySettingsApi.updateSettings(calcSettings);
+      if (res && res.settings) {
+        setCalcSettings(res.settings);
+      }
+      setSuccessMsg('تم حفظ وتحديث جميع معاملات المعادلات الرياضية والتشغيلية بنجاح!');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'فشل حفظ معاملات الحساب');
+    } finally {
+      setIsSavingCalc(false);
+    }
   };
 
   const handleOpenCreateRate = () => {
@@ -378,6 +435,26 @@ export const SettingsPage: React.FC = () => {
         >
           <Users size={16} />
           <span>المستخدمون ومصفوفة الصلاحيات (RBAC)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('calculations')}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'calculations' ? '2px solid var(--brand-blue)' : '2px solid transparent',
+            color: activeTab === 'calculations' ? '#ffffff' : 'var(--text-muted)',
+            fontWeight: activeTab === 'calculations' ? 700 : 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            transition: 'all var(--transition-fast)',
+          }}
+        >
+          <Calculator size={16} color="#60a5fa" />
+          <span>معادلات الحساب والتشغيل (Calculation Settings)</span>
         </button>
       </div>
 
@@ -716,6 +793,351 @@ export const SettingsPage: React.FC = () => {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* TAB 4: CALCULATION & OPERATIONAL SETTINGS */}
+      {activeTab === 'calculations' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Header Banner */}
+          <div
+            className="glass-card"
+            style={{
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(15, 23, 42, 0.8) 100%)',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(59, 130, 246, 0.2)',
+                  border: '1px solid rgba(59, 130, 246, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#60a5fa',
+                }}
+              >
+                <Calculator size={26} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
+                  معاملات المعادلات الحسابية والتشغيلية (Dynamic Calculation Parameters)
+                </h3>
+                <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  جميع الأرقام والمعادلات في النظام هي قيم ابتدائية قابلة للتعديل والتحكم الكامل في أي لحظة. لا توجد ثوابت مقدسة.
+                </p>
+              </div>
+            </div>
+            {isLoadingCalc && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                <Loader2 size={16} className="animate-spin" />
+                <span>جاري تحميل الإعدادات...</span>
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleSaveCalculationSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Parameters Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+              {/* Card 1: Work Hours & Overtime */}
+              <div className="glass-card" style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <Clock size={18} color="#60a5fa" />
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                    معايير أوقات وساعات العمل
+                  </h4>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>ساعات العمل اليومية القياسية *</span>
+                      <span style={{ color: '#60a5fa', fontWeight: 700 }}>ساعة / يوم</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="24"
+                      step="0.5"
+                      required
+                      className="input-field"
+                      value={calcSettings.hours_per_work_day ?? 8}
+                      onChange={(e) => setCalcSettings({ ...calcSettings, hours_per_work_day: Number(e.target.value) })}
+                    />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                      تُستخدم لحساب إنتاجية الساعة الفردية (Daily Target ÷ Crew Hours) وتكلفة أجر الساعة للعمالة.
+                    </span>
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>معامل احتساب الوقت الإضافي (Overtime Multiplier) *</span>
+                      <span style={{ color: '#60a5fa', fontWeight: 700 }}>مضاعف (Multiplier)</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      step="0.1"
+                      required
+                      className="input-field"
+                      value={calcSettings.overtime_multiplier ?? 1.5}
+                      onChange={(e) => setCalcSettings({ ...calcSettings, overtime_multiplier: Number(e.target.value) })}
+                    />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                      مضاعف أجر الساعة لساعات العمل الإضافية (مثال: 1.5 يعني أجر ساعة ونصف لكل ساعة إضافية).
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Rounding Decimals */}
+              <div className="glass-card" style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <Sliders size={18} color="#34d399" />
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                    دقة الحسابات والتقريب العشري
+                  </h4>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>دقة التقريب العشري (Rounding Decimals) *</span>
+                      <span style={{ color: '#34d399', fontWeight: 700 }}>خانات عشرية</span>
+                    </label>
+                    <select
+                      className="input-field"
+                      value={calcSettings.rounding_decimals ?? 2}
+                      onChange={(e) => setCalcSettings({ ...calcSettings, rounding_decimals: Number(e.target.value) })}
+                    >
+                      <option value="0">0 خانات (أرقام صحيحة فقط)</option>
+                      <option value="1">1 خانة عشرية (مثال: 21.5)</option>
+                      <option value="2">2 خانات عشرية (مثال: 21.60) - قياسي معتمد</option>
+                      <option value="3">3 خانات عشرية (مثال: 21.605)</option>
+                      <option value="4">4 خانات عشرية (مثال: 21.6052)</option>
+                    </select>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                      تُحدد دقة تقريب تكاليف الوحدة، هوامش الربح، والكميات ونسب الإنجاز في بطاقات التحكم والتقارير.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Default Crew Composition */}
+              <div className="glass-card" style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <HardHat size={18} color="#fbbf24" />
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                    تكوين طاقم العمل الافتراضي (Default Crew)
+                  </h4>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">عدد الفنيين (المعلمين) *</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="50"
+                      required
+                      className="input-field"
+                      value={calcSettings.default_crew_skilled ?? 1}
+                      onChange={(e) => setCalcSettings({ ...calcSettings, default_crew_skilled: Number(e.target.value) })}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">عدد المساعدين (العمال) *</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="50"
+                      required
+                      className="input-field"
+                      value={calcSettings.default_crew_unskilled ?? 1}
+                      onChange={(e) => setCalcSettings({ ...calcSettings, default_crew_unskilled: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem', display: 'block' }}>
+                  التركيبة الافتراضية لطاقم العمل في بطاقات التحكم في حال عدم تحديد تكوين مخصص للمرحلة التنفيذية.
+                </span>
+              </div>
+
+              {/* Card 4: Default Wage & Productivity Rates */}
+              <div className="glass-card" style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <Activity size={18} color="#a78bfa" />
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                    الإنتاجيات واليوميات القياسية المرجعية
+                  </h4>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>معدل الإنتاج القياسي اليومي للبند *</span>
+                      <span style={{ color: '#a78bfa', fontWeight: 700 }}>وحدة / يوم</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="0.5"
+                      required
+                      className="input-field"
+                      value={calcSettings.default_daily_productivity ?? 20}
+                      onChange={(e) => setCalcSettings({ ...calcSettings, default_daily_productivity: Number(e.target.value) })}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">يومية الفني الافتراضية *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        required
+                        className="input-field"
+                        value={calcSettings.default_skilled_daily_wage ?? 224}
+                        onChange={(e) => setCalcSettings({ ...calcSettings, default_skilled_daily_wage: Number(e.target.value) })}
+                      />
+                    </div>
+
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">يومية المساعد الافتراضية *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        required
+                        className="input-field"
+                        value={calcSettings.default_unskilled_daily_wage ?? 208}
+                        onChange={(e) => setCalcSettings({ ...calcSettings, default_unskilled_daily_wage: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Equations Impact Summary */}
+            <div
+              className="glass-card"
+              style={{
+                padding: '1.5rem',
+                background: 'rgba(15, 23, 42, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+                <Info size={18} color="#60a5fa" />
+                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                  معاينة حية لتطبيق هذه المعاملات على معادلات المنظومة الحالية
+                </h4>
+              </div>
+
+              {(() => {
+                const hours = Number(calcSettings.hours_per_work_day) || 8;
+                const overtime = Number(calcSettings.overtime_multiplier) || 1.5;
+                const skilledCrew = Number(calcSettings.default_crew_skilled) || 1;
+                const unskilledCrew = Number(calcSettings.default_crew_unskilled) || 1;
+                const totalCrew = skilledCrew + unskilledCrew;
+                const perDay = Number(calcSettings.default_daily_productivity) || 20;
+                const skilledWage = Number(calcSettings.default_skilled_daily_wage) || 224;
+                const unskilledWage = Number(calcSettings.default_unskilled_daily_wage) || 208;
+                const decimals = Number(calcSettings.rounding_decimals) !== undefined ? Number(calcSettings.rounding_decimals) : 2;
+
+                const crewDailyCost = skilledCrew * skilledWage + unskilledCrew * unskilledWage;
+                const laborCostPerUnit = perDay > 0 ? (crewDailyCost / perDay).toFixed(decimals) : '0';
+                const hourlyPerWorker = totalCrew > 0 ? (perDay / (totalCrew * hours)).toFixed(decimals) : '0';
+                const overtimeHourlySkilled = (skilledWage / hours * overtime).toFixed(decimals);
+
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                    <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>تكلفة طاقم العمل اليومي</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#60a5fa', marginTop: '0.25rem' }}>
+                        {crewDailyCost} ريال / يوم
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        ({skilledCrew} × {skilledWage}) + ({unskilledCrew} × {unskilledWage})
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>تكلفة أجر العمالة للوحدة القياسية</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399', marginTop: '0.25rem' }}>
+                        {laborCostPerUnit} ريال / م²
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        {crewDailyCost} ÷ {perDay} م²
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>إنتاجية ساعة العمل للفرد الواحد</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '0.25rem' }}>
+                        {hourlyPerWorker} م² / (ساعة · فرد)
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        {perDay} ÷ ({totalCrew} أفراد × {hours} ساعات)
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>أجر ساعة الإضافي للفني</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#a78bfa', marginTop: '0.25rem' }}>
+                        {overtimeHourlySkilled} ريال / ساعة
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        ({skilledWage} ÷ {hours}) × {overtime}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Submit Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="submit"
+                disabled={isSavingCalc}
+                className="btn btn-primary"
+                style={{
+                  padding: '0.75rem 2rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)',
+                }}
+              >
+                {isSavingCalc ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>جاري حفظ المعاملات...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    <span>حفظ وتطبيق جميع المعاملات الحسابية</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
