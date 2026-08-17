@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useI18n } from '../i18n/I18nContext';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -43,6 +44,7 @@ export const Modal: React.FC<ModalProps> = ({
   headerActions,
   zIndex = 1000,
 }) => {
+  const { direction, t } = useI18n();
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
 
@@ -60,27 +62,18 @@ export const Modal: React.FC<ModalProps> = ({
           'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         );
         if (focusable.length > 0) {
-          // Focus the first interactive input or close button
-          const firstInput = Array.from(focusable).find(
-            (el) => el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA',
-          );
-          if (firstInput) {
-            firstInput.focus();
-          } else {
-            focusable[0].focus();
-          }
+          focusable[0].focus();
         }
       }
     }, 50);
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (closeOnEscape && e.key === 'Escape') {
-        e.stopPropagation();
+      if (e.key === 'Escape' && closeOnEscape) {
         onClose();
         return;
       }
 
-      // Focus Trap for Tab key
+      // Trap focus
       if (e.key === 'Tab' && modalContainerRef.current) {
         const focusables = modalContainerRef.current.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -134,8 +127,8 @@ export const Modal: React.FC<ModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.82)',
-        backdropFilter: 'blur(10px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        backdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -143,7 +136,7 @@ export const Modal: React.FC<ModalProps> = ({
         zIndex,
         overflow: 'hidden',
       }}
-      dir="rtl"
+      dir={direction}
     >
       <div
         ref={modalContainerRef}
@@ -157,10 +150,11 @@ export const Modal: React.FC<ModalProps> = ({
           flexDirection: 'column',
           padding: 0,
           overflow: 'hidden',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(59, 130, 246, 0.15)',
+          border: '1px solid var(--border-glow, rgba(59, 130, 246, 0.3))',
+          boxShadow: 'var(--shadow-xl, 0 25px 50px -12px rgba(0, 0, 0, 0.5))',
           borderRadius: 'var(--radius-xl, 16px)',
-          background: 'rgba(15, 23, 42, 0.95)',
+          background: 'var(--bg-surface, #111d38)',
+          color: 'var(--text-main, #ffffff)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -174,7 +168,7 @@ export const Modal: React.FC<ModalProps> = ({
               justifyContent: 'space-between',
               padding: '1.25rem 1.75rem',
               borderBottom: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
-              background: 'rgba(30, 41, 59, 0.5)',
+              background: 'var(--bg-surface-elevated, rgba(30, 41, 59, 0.5))',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
@@ -211,7 +205,7 @@ export const Modal: React.FC<ModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="إغلاق النافذة"
+                aria-label={t('common.close')}
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -263,7 +257,7 @@ export const Modal: React.FC<ModalProps> = ({
               gap: '0.75rem',
               padding: '1.25rem 1.75rem',
               borderTop: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
-              background: 'rgba(15, 23, 42, 0.85)',
+              background: 'var(--bg-surface-elevated, rgba(30, 41, 59, 0.7))',
             }}
           >
             {footer}

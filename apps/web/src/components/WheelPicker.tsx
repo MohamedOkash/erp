@@ -1,21 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, Clock, X, Check, RotateCcw } from 'lucide-react';
-
-const ARABIC_MONTHS = [
-  { value: 1, name: 'يناير (01)' },
-  { value: 2, name: 'فبراير (02)' },
-  { value: 3, name: 'مارس (03)' },
-  { value: 4, name: 'أبريل (04)' },
-  { value: 5, name: 'مايو (05)' },
-  { value: 6, name: 'يونيو (06)' },
-  { value: 7, name: 'يوليو (07)' },
-  { value: 8, name: 'أغسطس (08)' },
-  { value: 9, name: 'سبتمبر (09)' },
-  { value: 10, name: 'أكتوبر (10)' },
-  { value: 11, name: 'نوفمبر (11)' },
-  { value: 12, name: 'ديسمبر (12)' },
-];
+import { useI18n } from '../i18n/I18nContext';
 
 const ITEM_HEIGHT = 40; // Height of each item in px
 const VISIBLE_COUNT = 5; // 5 items visible (2 above, 1 selected in middle, 2 below)
@@ -207,7 +193,7 @@ export interface WheelDatePickerProps {
 export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
   value,
   onChange,
-  placeholder = 'اختر التاريخ...',
+  placeholder,
   disabled = false,
   minYear = new Date().getFullYear() - 6,
   maxYear = new Date().getFullYear() + 6,
@@ -216,6 +202,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
   id,
   name,
 }) => {
+  const { t, direction } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -261,45 +248,45 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const POPUP_WIDTH = 340;
-    const POPUP_HEIGHT = 380;
+    const popupWidth = 340;
+    const popupHeight = 350;
+    const margin = 8;
 
-    let left = rect.right - POPUP_WIDTH;
-    if (left < 10) {
-      left = Math.max(10, rect.left);
-    }
-    if (left + POPUP_WIDTH > window.innerWidth - 10) {
-      left = window.innerWidth - POPUP_WIDTH - 10;
+    let top = rect.bottom + margin;
+    if (top + popupHeight > window.innerHeight) {
+      top = Math.max(margin, rect.top - popupHeight - margin);
     }
 
-    let top = rect.bottom + 6;
-    if (top + POPUP_HEIGHT > window.innerHeight && rect.top > POPUP_HEIGHT) {
-      top = rect.top - POPUP_HEIGHT - 6;
+    let left = rect.left;
+    if (direction === 'rtl') {
+      left = rect.right - popupWidth;
+    }
+    if (left + popupWidth > window.innerWidth - margin) {
+      left = window.innerWidth - popupWidth - margin;
+    }
+    if (left < margin) {
+      left = margin;
     }
 
     setCoords({ top, left });
-  }, []);
+  }, [direction]);
 
-  // Listen to scroll / resize while open
   useEffect(() => {
-    if (isOpen) {
-      updatePosition();
-      const handleScrollOrResize = () => {
-        updatePosition();
-      };
-      window.addEventListener('scroll', handleScrollOrResize, true);
-      window.addEventListener('resize', handleScrollOrResize);
-      return () => {
-        window.removeEventListener('scroll', handleScrollOrResize, true);
-        window.removeEventListener('resize', handleScrollOrResize);
-      };
-    }
+    if (!isOpen) return;
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
   }, [isOpen, updatePosition]);
 
-  // Click outside to close
+  // Click outside listener
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
       if (
         triggerRef.current &&
         !triggerRef.current.contains(target) &&
@@ -309,35 +296,22 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
         setIsOpen(false);
       }
     };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  // Calculate days in month
+  // Days in selected month/year
   const daysInMonth = new Date(tempYear, tempMonth, 0).getDate();
   const adjustedDay = Math.min(tempDay, daysInMonth);
 
-  // Generate item arrays
   const days = Array.from({ length: daysInMonth }, (_, i) => ({
     value: i + 1,
     label: String(i + 1).padStart(2, '0'),
   }));
 
-  const months = ARABIC_MONTHS.map((m) => ({
-    value: m.value,
-    label: m.name,
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    value: i + 1,
+    label: t(`wheel_picker.m${i + 1}`),
   }));
 
   const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => {
@@ -370,6 +344,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
 
   // Formatted display value
   const displayValue = value ? value : '';
+  const resolvedPlaceholder = placeholder || t('wheel_picker.placeholder_date');
 
   return (
     <div
@@ -406,24 +381,22 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0.6rem 0.85rem',
-          background: disabled ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.3)',
+          background: disabled ? 'rgba(255, 255, 255, 0.02)' : 'var(--bg-input, rgba(0, 0, 0, 0.3))',
           border: isOpen
             ? '1px solid var(--accent-primary, #3b82f6)'
             : '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))',
           borderRadius: 'var(--radius-md, 8px)',
-          color: displayValue ? '#ffffff' : 'var(--text-muted, #94a3b8)',
+          color: displayValue ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
           fontSize: '0.85rem',
           fontFamily: 'inherit',
           cursor: disabled ? 'not-allowed' : 'pointer',
-          textAlign: 'right',
-          direction: 'rtl',
           outline: 'none',
           boxShadow: isOpen ? '0 0 0 3px rgba(59, 130, 246, 0.2)' : 'none',
           transition: 'all 0.2s ease',
         }}
       >
         <span style={{ fontWeight: displayValue ? 600 : 400, fontFamily: displayValue ? 'monospace, Cairo' : 'inherit' }}>
-          {displayValue || placeholder}
+          {displayValue || resolvedPlaceholder}
         </span>
         <Calendar size={16} style={{ color: isOpen ? 'var(--accent-primary, #3b82f6)' : 'var(--text-muted, #94a3b8)' }} />
       </button>
@@ -440,13 +413,13 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
               zIndex: 9999999,
               width: '340px',
               maxWidth: '92vw',
-              background: 'rgba(15, 23, 42, 0.98)',
+              background: 'var(--bg-surface, #111d38)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(59, 130, 246, 0.4)',
+              border: '1px solid var(--border-glow, rgba(59, 130, 246, 0.4))',
               borderRadius: '14px',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-subtle, rgba(255, 255, 255, 0.1))',
               padding: '16px',
-              direction: 'rtl',
+              direction: direction,
               animation: 'fadeInScale 0.15s ease',
             }}
           >
@@ -458,12 +431,12 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 justifyContent: 'space-between',
                 marginBottom: '12px',
                 paddingBottom: '10px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Calendar size={16} color="#60a5fa" />
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>تحديد التاريخ</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-heading, #fff)' }}>{t('wheel_picker.select_date')}</span>
               </div>
               <button
                 type="button"
@@ -486,9 +459,9 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 position: 'relative',
                 display: 'flex',
                 gap: '6px',
-                background: 'rgba(0, 0, 0, 0.4)',
+                background: 'rgba(0, 0, 0, 0.2)',
                 borderRadius: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.04)',
+                border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.04))',
                 overflow: 'hidden',
               }}
             >
@@ -514,7 +487,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 items={days}
                 selectedValue={adjustedDay}
                 onSelect={setTempDay}
-                ariaLabel="اليوم"
+                ariaLabel={t('wheel_picker.day')}
               />
 
               {/* Month Column */}
@@ -522,7 +495,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 items={months}
                 selectedValue={tempMonth}
                 onSelect={setTempMonth}
-                ariaLabel="الشهر"
+                ariaLabel={t('wheel_picker.month')}
               />
 
               {/* Year Column */}
@@ -530,11 +503,11 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 items={years}
                 selectedValue={tempYear}
                 onSelect={setTempYear}
-                ariaLabel="السنة"
+                ariaLabel={t('wheel_picker.year')}
               />
             </div>
 
-            {/* Column Header Titles (RTL: Day | Month | Year) */}
+            {/* Column Header Titles */}
             <div
               style={{
                 display: 'flex',
@@ -545,9 +518,9 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 fontWeight: 600,
               }}
             >
-              <span>اليوم</span>
-              <span>الشهر</span>
-              <span>السنة</span>
+              <span>{t('wheel_picker.day')}</span>
+              <span>{t('wheel_picker.month')}</span>
+              <span>{t('wheel_picker.year')}</span>
             </div>
 
             {/* Quick Action Footer */}
@@ -558,7 +531,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 justifyContent: 'space-between',
                 marginTop: '14px',
                 paddingTop: '12px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                borderTop: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))',
                 gap: '8px',
               }}
             >
@@ -574,14 +547,14 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                     borderRadius: '6px',
                     background: 'rgba(59, 130, 246, 0.15)',
                     border: '1px solid rgba(59, 130, 246, 0.3)',
-                    color: '#93c5fd',
+                    color: '#60a5fa',
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
                   }}
                 >
                   <RotateCcw size={12} />
-                  اليوم
+                  {t('wheel_picker.today')}
                 </button>
                 <button
                   type="button"
@@ -597,7 +570,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                     cursor: 'pointer',
                   }}
                 >
-                  مسح
+                  {t('wheel_picker.clear')}
                 </button>
               </div>
 
@@ -620,7 +593,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
                 }}
               >
                 <Check size={14} />
-                تأكيد
+                {t('wheel_picker.confirm')}
               </button>
             </div>
           </div>,
@@ -649,7 +622,7 @@ export interface WheelTimePickerProps {
 export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
   value,
   onChange,
-  placeholder = 'اختر الوقت...',
+  placeholder,
   disabled = false,
   minuteStep = 5,
   style,
@@ -657,6 +630,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
   id,
   name,
 }) => {
+  const { t, direction } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -687,41 +661,42 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const POPUP_WIDTH = 300;
-    const POPUP_HEIGHT = 380;
+    const popupWidth = 300;
+    const popupHeight = 350;
+    const margin = 8;
 
-    let left = rect.right - POPUP_WIDTH;
-    if (left < 10) {
-      left = Math.max(10, rect.left);
-    }
-    if (left + POPUP_WIDTH > window.innerWidth - 10) {
-      left = window.innerWidth - POPUP_WIDTH - 10;
+    let top = rect.bottom + margin;
+    if (top + popupHeight > window.innerHeight) {
+      top = Math.max(margin, rect.top - popupHeight - margin);
     }
 
-    let top = rect.bottom + 6;
-    if (top + POPUP_HEIGHT > window.innerHeight && rect.top > POPUP_HEIGHT) {
-      top = rect.top - POPUP_HEIGHT - 6;
+    let left = rect.left;
+    if (direction === 'rtl') {
+      left = rect.right - popupWidth;
+    }
+    if (left + popupWidth > window.innerWidth - margin) {
+      left = window.innerWidth - popupWidth - margin;
+    }
+    if (left < margin) {
+      left = margin;
     }
 
     setCoords({ top, left });
-  }, []);
+  }, [direction]);
 
   useEffect(() => {
-    if (isOpen) {
-      updatePosition();
-      const handleScrollOrResize = () => {
-        updatePosition();
-      };
-      window.addEventListener('scroll', handleScrollOrResize, true);
-      window.addEventListener('resize', handleScrollOrResize);
-      return () => {
-        window.removeEventListener('scroll', handleScrollOrResize, true);
-        window.removeEventListener('resize', handleScrollOrResize);
-      };
-    }
+    if (!isOpen) return;
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
   }, [isOpen, updatePosition]);
 
   useEffect(() => {
+    if (!isOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
@@ -733,32 +708,20 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
         setIsOpen(false);
       }
     };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
   const hours = Array.from({ length: 24 }, (_, i) => ({
     value: i,
-    label: `${String(i).padStart(2, '0')}:00 ${i < 12 ? 'ص' : 'م'}`,
+    label: `${String(i).padStart(2, '0')}:00`,
   }));
 
   const minutes = Array.from({ length: Math.ceil(60 / minuteStep) }, (_, i) => {
     const m = (i * minuteStep) % 60;
     return {
       value: m,
-      label: String(m).padStart(2, '0') + ' دقيقة',
+      label: String(m).padStart(2, '0'),
     };
   });
 
@@ -784,6 +747,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
   };
 
   const displayValue = value || '';
+  const resolvedPlaceholder = placeholder || t('wheel_picker.placeholder_time');
 
   return (
     <div
@@ -818,24 +782,22 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0.6rem 0.85rem',
-          background: disabled ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.3)',
+          background: disabled ? 'rgba(255, 255, 255, 0.02)' : 'var(--bg-input, rgba(0, 0, 0, 0.3))',
           border: isOpen
             ? '1px solid var(--accent-primary, #3b82f6)'
             : '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))',
           borderRadius: 'var(--radius-md, 8px)',
-          color: displayValue ? '#ffffff' : 'var(--text-muted, #94a3b8)',
+          color: displayValue ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
           fontSize: '0.85rem',
           fontFamily: 'inherit',
           cursor: disabled ? 'not-allowed' : 'pointer',
-          textAlign: 'right',
-          direction: 'rtl',
           outline: 'none',
           boxShadow: isOpen ? '0 0 0 3px rgba(59, 130, 246, 0.2)' : 'none',
           transition: 'all 0.2s ease',
         }}
       >
         <span style={{ fontWeight: displayValue ? 600 : 400, fontFamily: displayValue ? 'monospace, Cairo' : 'inherit' }}>
-          {displayValue || placeholder}
+          {displayValue || resolvedPlaceholder}
         </span>
         <Clock size={16} style={{ color: isOpen ? 'var(--accent-primary, #3b82f6)' : 'var(--text-muted, #94a3b8)' }} />
       </button>
@@ -851,13 +813,13 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
               zIndex: 9999999,
               width: '300px',
               maxWidth: '92vw',
-              background: 'rgba(15, 23, 42, 0.98)',
+              background: 'var(--bg-surface, #111d38)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(59, 130, 246, 0.4)',
+              border: '1px solid var(--border-glow, rgba(59, 130, 246, 0.4))',
               borderRadius: '14px',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-subtle, rgba(255, 255, 255, 0.1))',
               padding: '16px',
-              direction: 'rtl',
+              direction: direction,
               animation: 'fadeInScale 0.15s ease',
             }}
           >
@@ -868,12 +830,12 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                 justifyContent: 'space-between',
                 marginBottom: '12px',
                 paddingBottom: '10px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Clock size={16} color="#60a5fa" />
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>تحديد الوقت</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-heading, #fff)' }}>{t('wheel_picker.select_time')}</span>
               </div>
               <button
                 type="button"
@@ -895,9 +857,9 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                 position: 'relative',
                 display: 'flex',
                 gap: '6px',
-                background: 'rgba(0, 0, 0, 0.4)',
+                background: 'rgba(0, 0, 0, 0.2)',
                 borderRadius: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.04)',
+                border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.04))',
                 overflow: 'hidden',
               }}
             >
@@ -921,14 +883,14 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                 items={hours}
                 selectedValue={tempHour}
                 onSelect={setTempHour}
-                ariaLabel="الساعة"
+                ariaLabel={t('wheel_picker.hour')}
               />
 
               <WheelColumn
                 items={minutes}
                 selectedValue={tempMinute}
                 onSelect={setTempMinute}
-                ariaLabel="الدقيقة"
+                ariaLabel={t('wheel_picker.minute')}
               />
             </div>
 
@@ -942,8 +904,8 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                 fontWeight: 600,
               }}
             >
-              <span>الساعة</span>
-              <span>الدقيقة</span>
+              <span>{t('wheel_picker.hour')}</span>
+              <span>{t('wheel_picker.minute')}</span>
             </div>
 
             <div
@@ -953,7 +915,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                 justifyContent: 'space-between',
                 marginTop: '14px',
                 paddingTop: '12px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                borderTop: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))',
                 gap: '8px',
               }}
             >
@@ -969,14 +931,14 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                     borderRadius: '6px',
                     background: 'rgba(59, 130, 246, 0.15)',
                     border: '1px solid rgba(59, 130, 246, 0.3)',
-                    color: '#93c5fd',
+                    color: '#60a5fa',
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
                   }}
                 >
                   <RotateCcw size={12} />
-                  الآن
+                  {t('wheel_picker.now')}
                 </button>
                 <button
                   type="button"
@@ -992,7 +954,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                     cursor: 'pointer',
                   }}
                 >
-                  مسح
+                  {t('wheel_picker.clear')}
                 </button>
               </div>
 
@@ -1015,7 +977,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
                 }}
               >
                 <Check size={14} />
-                تأكيد
+                {t('wheel_picker.confirm')}
               </button>
             </div>
           </div>,

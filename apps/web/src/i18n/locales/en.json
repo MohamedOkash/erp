@@ -16,6 +16,9 @@
     "search": "Search...",
     "filter": "Filter",
     "all": "All",
+    "all_branches": "All Branches",
+    "all_projects": "All Projects",
+    "all_categories": "All Categories & Items",
     "reset": "Reset",
     "actions": "Actions",
     "status": "Status",
@@ -41,26 +44,60 @@
     "from": "From",
     "to": "To",
     "required": "Required",
-    "optional": "Optional"
+    "optional": "Optional",
+    "currency_sar": "SAR",
+    "unit_m2": "m²",
+    "unit_m": "lm",
+    "unit_item": "pcs",
+    "page": "Page",
+    "of": "of",
+    "records": "records"
+  },
+  "wheel_picker": {
+    "select_date": "Select Date",
+    "select_time": "Select Time",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
+    "hour": "Hour",
+    "minute": "Minute",
+    "today": "Today",
+    "now": "Now",
+    "clear": "Clear",
+    "confirm": "Confirm",
+    "placeholder_date": "Select date...",
+    "placeholder_time": "Select time...",
+    "m1": "January (01)",
+    "m2": "February (02)",
+    "m3": "March (03)",
+    "m4": "April (04)",
+    "m5": "May (05)",
+    "m6": "June (06)",
+    "m7": "July (07)",
+    "m8": "August (08)",
+    "m9": "September (09)",
+    "m10": "October (10)",
+    "m11": "November (11)",
+    "m12": "December (12)"
   },
   "nav": {
     "groups": {
       "overview": "Overview",
       "operations": "Site Operations",
       "resources": "Resources & Data",
-      "finance": "Finance",
+      "finance": "Finance, Control & Security",
       "documents": "Docs & Reports",
       "system": "System & Security"
     },
     "links": {
-      "dashboard": "Dashboard",
+      "dashboard": "Command & Control Dashboard",
       "control_cards": "Control & Profit Cards",
       "daily_report": "Unified Daily Report",
       "production": "Daily Production & Stages",
       "boq": "BOQ & Progress Tracking",
       "work_areas": "Work Areas & Buildings",
       "attendance": "Attendance & Time Logs",
-      "transfers": "Labor Transfers",
+      "transfers": "Labor & Staff Transfers",
       "employees": "Employees & Workers Directory",
       "branches": "Branches & Warehouses",
       "projects": "Projects & Contracts",
@@ -72,7 +109,7 @@
       "alerts": "Field Alert Rules",
       "notifications": "Notifications & Alerts Hub",
       "users": "Users & Accounts Management",
-      "rbac": "Permissions & Roles (RBAC)",
+      "rbac": "Permissions Matrix (RBAC)",
       "settings": "System Settings"
     }
   },
@@ -84,7 +121,8 @@
     "system_settings": "System Settings",
     "logout": "Logout",
     "language": "Language",
-    "user_default": "System User"
+    "user_default": "System User",
+    "role_admin": "System Administrator"
   },
   "auth": {
     "login_title": "Sign In to ERP System",
@@ -94,7 +132,13 @@
     "login_btn": "Sign In",
     "logging_in": "Authenticating...",
     "forgot_password": "Forgot password?",
-    "credentials_hint": "Contact IT administration for assistance"
+    "credentials_hint": "Contact IT administration for assistance",
+    "quick_demo": "Quick Demo Login:",
+    "role_admin": "System Admin",
+    "role_pm": "Project Manager",
+    "role_engineer": "Site Engineer",
+    "role_supervisor": "Site Supervisor",
+    "role_accountant": "Cost Accountant"
   },
   "dashboard": {
     "welcome": "Welcome, {name}",
@@ -147,7 +191,14 @@
     "projects_title": "Projects & Contracts Management",
     "add_project": "Add New Project",
     "work_items_title": "Work Items & Catalog (BOQ Items)",
-    "add_item": "Add Work Item"
+    "add_item": "Add Work Item",
+    "manage_stages": "Manage Stages",
+    "manage_prices": "Manage Prices",
+    "item_name": "Item Name",
+    "item_code": "Item Code",
+    "category": "Finishing Category",
+    "daily_target": "Daily Target",
+    "unit_price": "Contract Unit Price"
   },
   "finance_reports": {
     "costs_title": "Production Costs & Expense Reconciliation",
@@ -163,7 +214,11 @@
     "settings_title": "System Settings & Preferences",
     "notifications_title": "Live Notifications & Alerts Hub",
     "add_user": "Add New User",
-    "mark_all_read": "Mark All as Read"
+    "mark_all_read": "Mark All as Read",
+    "mark_read": "Mark Read",
+    "notifications_empty": "No notifications currently",
+    "notifications_all_read": "All notifications read",
+    "unread_badge": "New"
   },
   "account_modal": {
     "title": "Personal Account & Security Settings",

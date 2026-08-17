@@ -233,7 +233,7 @@ export const LoginPage: React.FC = () => {
               fontWeight: 600,
             }}
           >
-            حسابات العرض التجريبي السريع (كلمة المرور: 123456)
+            {t('auth.quick_demo')} (123456)
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
@@ -251,7 +251,7 @@ export const LoginPage: React.FC = () => {
               onClick={() => handleQuickDemoLogin('admin')}
             >
               <ShieldCheck size={16} color="#60a5fa" />
-              <span>مدير النظام</span>
+              <span>{t('auth.role_admin')}</span>
             </button>
 
             <button
@@ -268,7 +268,7 @@ export const LoginPage: React.FC = () => {
               onClick={() => handleQuickDemoLogin('engineer')}
             >
               <Compass size={16} color="#34d399" />
-              <span>مهندس موقع</span>
+              <span>{t('auth.role_engineer')}</span>
             </button>
 
             <button
@@ -285,7 +285,7 @@ export const LoginPage: React.FC = () => {
               onClick={() => handleQuickDemoLogin('supervisor')}
             >
               <HardHat size={16} color="#fbbf24" />
-              <span>مشرف تنفيذ</span>
+              <span>{t('auth.role_supervisor')}</span>
             </button>
           </div>
         </div>
