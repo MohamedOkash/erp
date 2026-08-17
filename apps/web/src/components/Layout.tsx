@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { NotificationBell } from './NotificationBell';
 import { AccountSettingsModal } from './AccountSettingsModal';
 import {
@@ -28,6 +29,8 @@ import {
   Shield,
   HardHat,
   ChevronDown,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 interface SidebarLink {
@@ -119,6 +122,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 
 export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -464,8 +468,32 @@ export const Layout: React.FC = () => {
             )}
           </div>
 
-          {/* Right User Area & Notifications */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative' }}>
+          {/* Right User Area & Notifications & Theme */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative' }}>
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="btn btn-secondary"
+              style={{
+                padding: '0.45rem',
+                borderRadius: 'var(--radius-md)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '38px',
+                height: '38px',
+              }}
+              title={theme === 'dark' ? 'التبديل إلى الثيم الفاتح (Light Mode)' : 'التبديل إلى الثيم الداكن (Dark Mode)'}
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? (
+                <Sun size={18} color="#fbbf24" />
+              ) : (
+                <Moon size={18} color="#3b82f6" />
+              )}
+            </button>
+
             {/* Live Notification Bell with Dropdown */}
             <NotificationBell />
 
@@ -487,7 +515,7 @@ export const Layout: React.FC = () => {
                 }}
               >
                 <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>
                     {user?.fullName || user?.username}
                   </span>
                   <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.1rem' }}>
