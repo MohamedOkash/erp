@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { NotificationBell } from './NotificationBell';
@@ -32,6 +32,31 @@ export const Layout: React.FC = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user dropdown when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [userMenuOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -77,7 +102,7 @@ export const Layout: React.FC = () => {
           transition: 'all var(--transition-normal)',
           position: 'sticky',
           top: 0,
-          zIndex: 50,
+          zIndex: 40,
           overflow: 'hidden',
           flexShrink: 0,
         }}
@@ -191,7 +216,7 @@ export const Layout: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '0 1.5rem',
-            zIndex: 40,
+            zIndex: 45,
             flexShrink: 0,
           }}
         >
@@ -221,7 +246,7 @@ export const Layout: React.FC = () => {
             <NotificationBell />
 
             {/* User Avatar & Dropdown Trigger */}
-            <div style={{ position: 'relative' }}>
+            <div ref={userMenuRef} style={{ position: 'relative' }}>
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
