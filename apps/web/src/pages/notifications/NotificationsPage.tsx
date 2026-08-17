@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   notificationsApi,
   type NotificationItem,
 } from '../../api/notifications.api';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { Modal } from '../../components/Modal';
 import {
   Bell,
   CheckCircle2,
@@ -16,9 +18,12 @@ import {
   Shield,
   Loader2,
   Calendar,
+  ExternalLink,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 export const NotificationsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [total, setTotal] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -31,6 +36,9 @@ export const NotificationsPage: React.FC = () => {
   const [isMarkingAll, setIsMarkingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Detail Modal for system/general notifications
+  const [selectedNotification, setSelectedNotification] = useState<NotificationItem | null>(null);
 
   const loadNotifications = useCallback(async () => {
     setIsLoading(true);
@@ -62,7 +70,50 @@ export const NotificationsPage: React.FC = () => {
     loadNotifications();
   }, [loadNotifications]);
 
-  const handleMarkAsRead = async (id: string) => {
+  const handleRowClick = async (n: NotificationItem) => {
+    // 1. Mark as read
+    if (!n.isRead) {
+      try {
+        await notificationsApi.markAsRead(n.id);
+        setNotifications((prev) =>
+          prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item)),
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      } catch {
+        // ignore
+      }
+    }
+
+    // 2. Smart Routing based on type & content
+    const type = (n.type || '').toLowerCase();
+    const title = (n.title || '').toLowerCase();
+    const msg = (n.message || '').toLowerCase();
+
+    if (type === 'alert' || type === 'warning' || title.includes('تنبيه') || title.includes('alert') || msg.includes('تجاوز')) {
+      navigate('/alerts');
+    } else if (
+      type === 'approval_request' ||
+      type === 'production' ||
+      type === 'correction' ||
+      title.includes('اعتماد') ||
+      title.includes('إنتاج') ||
+      msg.includes('إنتاجية')
+    ) {
+      navigate('/production');
+    } else if (type === 'transfer' || title.includes('نقل') || msg.includes('نقل')) {
+      navigate('/transfers');
+    } else if (type === 'attendance' || title.includes('حضور') || msg.includes('بصمة')) {
+      navigate('/attendance');
+    } else if (title.includes('مستند') || title.includes('وثيقة')) {
+      navigate('/documents');
+    } else {
+      // General / System -> Open Modal
+      setSelectedNotification(n);
+    }
+  };
+
+  const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     try {
       await notificationsApi.markAsRead(id);
       setNotifications((prev) =>
@@ -70,6 +121,7 @@ export const NotificationsPage: React.FC = () => {
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
       setSuccessMsg('تم تحديث حالة الإشعار إلى مقروء.');
+      setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
       setError(err.message || 'فشل تحديث الإشعار');
     }
@@ -83,6 +135,7 @@ export const NotificationsPage: React.FC = () => {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
       setSuccessMsg('تم تعليم كافة الإشعارات كمقروءة بنجاح.');
+      setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
       setError(err.message || 'فشل تعليم الإشعارات كمقروءة');
     } finally {
@@ -98,6 +151,8 @@ export const NotificationsPage: React.FC = () => {
         return <AlertTriangle size={18} color="#f59e0b" />;
       case 'approval_request':
         return <CheckCircle2 size={18} color="#60a5fa" />;
+      case 'transfer':
+        return <ArrowLeftRight size={18} color="#06b6d4" />;
       default:
         return <Info size={18} color="#34d399" />;
     }
@@ -111,8 +166,26 @@ export const NotificationsPage: React.FC = () => {
         return <span className="badge badge-secondary" style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}>تحذير</span>;
       case 'approval_request':
         return <span className="badge badge-primary">طلب اعتماد</span>;
+      case 'transfer':
+        return <span className="badge badge-secondary" style={{ color: '#06b6d4', borderColor: 'rgba(6, 182, 212, 0.3)' }}>طلب نقل</span>;
       default:
         return <span className="badge badge-success">إشعار نظام</span>;
+    }
+  };
+
+  const formatNotificationDate = (dateStr?: string) => {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '—';
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    } catch {
+      return '—';
     }
   };
 
@@ -172,21 +245,25 @@ export const NotificationsPage: React.FC = () => {
             <span>مركز الإشعارات والتنبيهات الميدانية</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            سجل كامل لكافة التنبيهات، طلبات الاعتماد، والرسائل النظامية الخاصة بالمستخدم
+            سجل كامل لكافة التنبيهات، طلبات الاعتماد، والرسائل النظامية الخاصة بالمستخدم مع التوجيه الذكي
           </p>
         </div>
 
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllRead}
-            disabled={isMarkingAll}
-            className="btn btn-primary"
-            style={{ gap: '0.4rem', background: '#3b82f6' }}
-          >
-            {isMarkingAll ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-            <span>تعليم الكل كمقروء ({unreadCount})</span>
-          </button>
-        )}
+        <button
+          onClick={handleMarkAllRead}
+          disabled={isMarkingAll || unreadCount === 0}
+          className="btn btn-primary"
+          style={{
+            gap: '0.4rem',
+            background: unreadCount > 0 ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : 'rgba(255, 255, 255, 0.08)',
+            border: unreadCount > 0 ? '1px solid #3b82f6' : '1px solid var(--border-subtle)',
+            color: unreadCount > 0 ? '#fff' : 'var(--text-dim)',
+            cursor: unreadCount > 0 ? 'pointer' : 'not-allowed',
+          }}
+        >
+          {isMarkingAll ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+          <span>تحديد الكل كمقروء {unreadCount > 0 ? `(${unreadCount})` : ''}</span>
+        </button>
       </div>
 
       {/* Stats Summary Strip */}
@@ -195,6 +272,7 @@ export const NotificationsPage: React.FC = () => {
       {/* Alerts */}
       {successMsg && (
         <div
+          className="animate-fade-in"
           style={{
             padding: '0.75rem 1rem',
             background: 'var(--status-success-bg)',
@@ -214,6 +292,7 @@ export const NotificationsPage: React.FC = () => {
 
       {error && (
         <div
+          className="animate-fade-in"
           style={{
             padding: '0.75rem 1rem',
             background: 'var(--status-danger-bg)',
@@ -273,6 +352,7 @@ export const NotificationsPage: React.FC = () => {
             <option value="alert">تنبيهات عاجلة (Alerts)</option>
             <option value="warning">تحذيرات الموقع (Warnings)</option>
             <option value="approval_request">طلبات اعتماد (Approvals)</option>
+            <option value="transfer">طلبات نقل (Transfers)</option>
             <option value="info">إشعارات عامة (Info)</option>
           </select>
         </div>
@@ -308,23 +388,31 @@ export const NotificationsPage: React.FC = () => {
                   notifications.map((n) => (
                     <tr
                       key={n.id}
+                      onClick={() => handleRowClick(n)}
                       style={{
                         borderBottom: '1px solid var(--border-subtle)',
-                        background: n.isRead ? 'transparent' : 'rgba(59, 130, 246, 0.05)',
+                        background: n.isRead ? 'transparent' : 'rgba(59, 130, 246, 0.08)',
                         transition: 'background var(--transition-fast)',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(59, 130, 246, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = n.isRead ? 'transparent' : 'rgba(59, 130, 246, 0.08)';
                       }}
                     >
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         {getNotificationIcon(n.type)}
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <div style={{ fontWeight: 700, color: n.isRead ? 'rgba(255,255,255,0.85)' : '#ffffff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <span>{n.title}</span>
                           {!n.isRead && (
-                            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#60a5fa' }} />
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#60a5fa' }} />
                           )}
                         </div>
-                        <div style={{ marginTop: '0.2rem' }}>{getTypeBadge(n.type)}</div>
+                        <div style={{ marginTop: '0.25rem' }}>{getTypeBadge(n.type)}</div>
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                         {n.message}
@@ -332,40 +420,35 @@ export const NotificationsPage: React.FC = () => {
                       <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                           <Calendar size={13} color="#60a5fa" />
-                          <span>
-                            {n.createdAt
-                              ? new Date(n.createdAt).toLocaleDateString('ar-SA', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })
-                              : '—'}
+                          <span style={{ fontFamily: 'monospace' }}>
+                            {formatNotificationDate(n.createdAt)}
                           </span>
                         </div>
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
-                        {!n.isRead ? (
-                          <button
-                            type="button"
-                            onClick={() => handleMarkAsRead(n.id)}
-                            className="btn btn-secondary"
-                            style={{
-                              padding: '0.35rem 0.65rem',
-                              fontSize: '0.75rem',
-                              gap: '0.3rem',
-                              color: '#34d399',
-                              borderColor: 'rgba(52, 211, 153, 0.3)',
-                            }}
-                            title="تعليم كمقروء"
-                          >
-                            <Check size={13} />
-                            <span>تحديد كمقروء</span>
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>مقروء ✓</span>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                          {!n.isRead && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleMarkAsRead(n.id, e)}
+                              className="btn btn-secondary"
+                              style={{
+                                padding: '0.35rem 0.65rem',
+                                fontSize: '0.75rem',
+                                gap: '0.3rem',
+                                color: '#34d399',
+                                borderColor: 'rgba(52, 211, 153, 0.3)',
+                              }}
+                              title="تعليم كمقروء"
+                            >
+                              <Check size={13} />
+                              <span>تحديد كمقروء</span>
+                            </button>
+                          )}
+                          <span style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>
+                            <ExternalLink size={13} />
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -411,6 +494,55 @@ export const NotificationsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* System Notification Detail Modal */}
+      <Modal
+        isOpen={!!selectedNotification}
+        onClose={() => setSelectedNotification(null)}
+        title={selectedNotification?.title || 'تفاصيل الإشعار'}
+      >
+        {selectedNotification && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              {getNotificationIcon(selectedNotification.type)}
+              <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>
+                {selectedNotification.title}
+              </span>
+            </div>
+
+            <div
+              style={{
+                padding: '1rem',
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-subtle)',
+                color: 'rgba(255, 255, 255, 0.9)',
+                lineHeight: 1.6,
+                fontSize: '0.9rem',
+              }}
+            >
+              {selectedNotification.message}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+              <span>النوع: {getTypeBadge(selectedNotification.type)}</span>
+              <span>التوقيت: {formatNotificationDate(selectedNotification.createdAt)}</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setSelectedNotification(null)}
+                style={{ padding: '0.5rem 1.25rem' }}
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
+
