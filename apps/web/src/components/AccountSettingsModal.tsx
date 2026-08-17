@@ -139,7 +139,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('account_modal.title')}>
+    <Modal isOpen={isOpen} onClose={onClose} title={t('account_modal.title')} maxWidth="lg" maxHeight="85vh">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {/* Navigation Tabs */}
         <div
