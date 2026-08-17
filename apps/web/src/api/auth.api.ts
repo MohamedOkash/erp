@@ -6,6 +6,18 @@ export interface LoginDto {
   password?: string;
 }
 
+export interface UpdateProfilePayload {
+  username?: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export const authApi = {
   /**
    * Login user with username and password
@@ -22,9 +34,24 @@ export const authApi = {
   },
 
   /**
+   * Update current user profile info
+   */
+  async updateProfile(dto: UpdateProfilePayload): Promise<{ user: User }> {
+    return apiClient.patch<{ user: User }>('/auth/me', dto);
+  },
+
+  /**
+   * Change current user password
+   */
+  async changePassword(dto: ChangePasswordPayload): Promise<{ success: boolean; message: string }> {
+    return apiClient.post<{ success: boolean; message: string }>('/auth/change-password', dto);
+  },
+
+  /**
    * Logout current session
    */
   async logout(): Promise<{ message: string }> {
     return apiClient.post<{ message: string }>('/auth/logout');
   },
 };
+

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   HttpCode,
   HttpStatus,
   Post,
@@ -11,6 +12,8 @@ import {
 import { Request } from 'express';
 import { AuthService, AuthenticatedUser } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { SessionAuthGuard } from './guards/session-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
@@ -56,6 +59,33 @@ export class AuthController {
   }
 
   /**
+   * Update current authenticated user profile
+   * Route: PATCH /api/v1/auth/me
+   */
+  @Patch('me')
+  @UseGuards(SessionAuthGuard)
+  async updateMe(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(user.companyId, user.userId, dto);
+  }
+
+  /**
+   * Change current authenticated user password
+   * Route: POST /api/v1/auth/change-password
+   */
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(SessionAuthGuard)
+  async changePassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(user.companyId, user.userId, dto);
+  }
+
+  /**
    * User logout endpoint (invalidates current session)
    * Route: POST /api/v1/auth/logout
    */
@@ -68,4 +98,5 @@ export class AuthController {
     return this.authService.logout(token);
   }
 }
+
 

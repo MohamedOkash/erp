@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { NotificationBell } from './NotificationBell';
+import { AccountSettingsModal } from './AccountSettingsModal';
 import {
   LayoutDashboard,
   Building,
@@ -122,6 +123,7 @@ export const Layout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Group accordion state
@@ -537,6 +539,34 @@ export const Layout: React.FC = () => {
                   </div>
 
                   <div style={{ padding: '0.25rem 0' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        setAccountSettingsOpen(true);
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.55rem 0.65rem',
+                        fontSize: '0.82rem',
+                        color: 'var(--text-main)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        borderRadius: 'var(--radius-sm)',
+                        textAlign: 'right',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+                    >
+                      <User size={15} color="#60a5fa" />
+                      <span>إعدادات الحساب والأمان</span>
+                    </button>
+
                     <Link
                       to="/settings"
                       onClick={() => setUserMenuOpen(false)}
@@ -544,16 +574,21 @@ export const Layout: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        padding: '0.5rem',
-                        fontSize: '0.85rem',
+                        padding: '0.55rem 0.65rem',
+                        fontSize: '0.82rem',
                         color: 'var(--text-main)',
                         textDecoration: 'none',
                         borderRadius: 'var(--radius-sm)',
+                        transition: 'background var(--transition-fast)',
                       }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
                     >
-                      <Shield size={15} color="#60a5fa" />
-                      <span>الملف التعريفي</span>
+                      <Settings size={15} color="#94a3b8" />
+                      <span>إعدادات المنظومة</span>
                     </Link>
+
+                    <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.25rem 0' }} />
 
                     <button
                       type="button"
@@ -563,8 +598,8 @@ export const Layout: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        padding: '0.5rem',
-                        fontSize: '0.85rem',
+                        padding: '0.55rem 0.65rem',
+                        fontSize: '0.82rem',
                         color: '#f87171',
                         background: 'none',
                         border: 'none',
@@ -595,6 +630,13 @@ export const Layout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Account Settings & Password Modal */}
+      <AccountSettingsModal
+        isOpen={accountSettingsOpen}
+        onClose={() => setAccountSettingsOpen(false)}
+      />
     </div>
   );
 };
+

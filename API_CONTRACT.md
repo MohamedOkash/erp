@@ -78,7 +78,60 @@
   - `200 OK`: استرجاع البيانات بنجاح.
   - `401 Unauthorized`: الـ Token غير موجود أو منتهي الصلاحية (`UNAUTHORIZED`).
 
-### 3) تسجيل الخروج (Logout)
+### 3) تعديل الملف الشخصي للمستخدم الحالي (Update Current User Profile)
+- **المسار:** `PATCH /api/v1/auth/me`
+- **الوصف:** تعديل الاسم الكامل، اسم المستخدم، البريد الإلكتروني، ورقم الهاتف للمستخدم صاحب الجلسة الحالية مع التحقق من عدم تكرار اسم المستخدم.
+- **المصادقة:** إلزامي (`Bearer <TOKEN>`)
+- **الـ Request Body:**
+  ```json
+  {
+    "username": "string (optional, min 3 chars)",
+    "fullName": "string (optional, min 2 chars)",
+    "email": "string (optional)",
+    "phone": "string (optional)"
+  }
+  ```
+- **الـ Response الناجح (200 OK):**
+  ```json
+  {
+    "user": {
+      "id": "00000000-0000-0000-0003-000000000001",
+      "username": "fahad_eng",
+      "fullName": "م. فهد العتيبي",
+      "email": "fahad@company.com",
+      "phone": "0501234567"
+    }
+  }
+  ```
+- **رموز الاستجابة والأخطاء:**
+  - `200 OK`: تم تحديث الملف الشخصي بنجاح.
+  - `400 Bad Request`: اسم المستخدم مكرر (`USERNAME_ALREADY_EXISTS`) أو بيانات غير صالحة.
+  - `401 Unauthorized`: الجلسة غير صالحة.
+
+### 4) تغيير كلمة المرور (Change Password)
+- **المسار:** `POST /api/v1/auth/change-password`
+- **الوصف:** تغيير كلمة مرور المستخدم الحالي بعد التحقق من صحة كلمة المرور الحالية واستيفاء كلمة المرور الجديدة لشرط القوة (8 أحرف على الأقل).
+- **المصادقة:** إلزامي (`Bearer <TOKEN>`)
+- **الـ Request Body:**
+  ```json
+  {
+    "currentPassword": "string (required)",
+    "newPassword": "string (required, min 8 chars)"
+  }
+  ```
+- **الـ Response الناجح (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "تم تغيير كلمة المرور بنجاح"
+  }
+  ```
+- **رموز الاستجابة والأخطاء:**
+  - `200 OK`: تم تغيير كلمة المرور بنجاح.
+  - `401 Unauthorized`: كلمة المرور الحالية غير صحيحة (`WRONG_CURRENT_PASSWORD`).
+  - `400 Bad Request`: كلمة المرور الجديدة أقل من 8 أحرف (`PASSWORD_TOO_SHORT`).
+
+### 5) تسجيل الخروج (Logout)
 - **المسار:** `POST /api/v1/auth/logout`
 - **الوصف:** إلغاء وحذف جلسة العمل الحالية من قاعدة البيانات فورًا.
 - **المصادقة:** إلزامي (`Bearer <TOKEN>`)

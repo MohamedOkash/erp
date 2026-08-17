@@ -191,5 +191,104 @@ describe('Auth Login & Profile (Task 10)', () => {
 
     expect(response.body.code).toBe('INVALID_OR_EXPIRED_TOKEN');
   });
+
+  // Test 7: PATCH /api/v1/auth/me -> Update username, fullName, and email
+  it('test 7: should update user profile via PATCH /api/v1/auth/me', async () => {
+    const validToken = 'valid-profile-token-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [validToken],
+    );
+
+    const res = await request(app.getHttpServer())
+      .patch('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({
+        fullName: 'المدير العام المحدث',
+        email: 'admin_updated@company.com',
+      })
+      .expect(200);
+
+    expect(res.body.user).toBeDefined();
+    expect(res.body.user.fullName).toBe('المدير العام المحدث');
+    expect(res.body.user.email).toBe('admin_updated@company.com');
+  });
+
+  // Test 8: POST /api/v1/auth/change-password with wrong current password -> 401 WRONG_CURRENT_PASSWORD
+  it('test 8: should reject change-password with 401 WRONG_CURRENT_PASSWORD on wrong current password', async () => {
+    const validToken = 'valid-pass-token-1-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [validToken],
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/api/v1/auth/change-password')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({
+        currentPassword: 'wrong_old_password',
+        newPassword: 'newValidPassword2026',
+      })
+      .expect(401);
+
+    expect(res.body.code).toBe('WRONG_CURRENT_PASSWORD');
+  });
+
+  // Test 9: POST /api/v1/auth/change-password with short new password -> 400 Bad Request
+  it('test 9: should reject change-password when new password is shorter than 8 characters', async () => {
+    const validToken = 'valid-pass-token-2-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [validToken],
+    );
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/change-password')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({
+        currentPassword: 'password123',
+        newPassword: 'short',
+      })
+      .expect(400);
+  });
+
+  // Test 10: POST /api/v1/auth/change-password with valid passwords -> 200 OK & verify new login
+  it('test 10: should change password successfully and allow subsequent login with new password', async () => {
+    const passHash = await bcrypt.hash('CurrentPass123', 10);
+    await pglite.query("UPDATE users SET password_hash = $1 WHERE username = 'admin'", [passHash]);
+
+    const validToken = 'valid-pass-token-3-' + Date.now();
+    await pglite.query(
+      `INSERT INTO sessions (user_id, token, expires_at)
+       VALUES ('00000000-0000-0000-0003-000000000001', $1, CURRENT_TIMESTAMP + interval '24 hours')`,
+      [validToken],
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/api/v1/auth/change-password')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({
+        currentPassword: 'CurrentPass123',
+        newPassword: 'SuperSecretPass2026',
+      })
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+
+    // Verify login with new password
+    const loginRes = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({
+        username: 'admin',
+        password: 'SuperSecretPass2026',
+      })
+      .expect(200);
+
+    expect(loginRes.body.token).toBeDefined();
+  });
 });
+
 

@@ -9,6 +9,7 @@ import {
 } from '../../api/company-settings.api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../../components/Modal';
+import { AccountSettingsModal } from '../../components/AccountSettingsModal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
 import { WheelDatePicker } from '../../components/WheelPicker';
@@ -78,6 +79,9 @@ export const SettingsPage: React.FC = () => {
   });
   const [isLoadingCalc, setIsLoadingCalc] = useState(false);
   const [isSavingCalc, setIsSavingCalc] = useState(false);
+
+  // Account Settings Modal
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   // Alerts State
   const [error, setError] = useState<string | null>(null);
@@ -324,6 +328,16 @@ export const SettingsPage: React.FC = () => {
             بيانات الشركة، تسعير ومعدلات أجور العمالة، وإدارة المستخدمين ومصفوفة الصلاحيات
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowAccountModal(true)}
+          className="btn btn-secondary"
+          style={{ gap: '0.5rem', color: '#60a5fa', borderColor: 'rgba(59, 130, 246, 0.3)' }}
+        >
+          <Users size={16} />
+          <span>إعدادات حسابي وتغيير كلمة المرور</span>
+        </button>
       </div>
 
       {/* Stats Summary Strip */}
@@ -1230,6 +1244,12 @@ export const SettingsPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Account Settings Modal */}
+      <AccountSettingsModal
+        isOpen={showAccountModal}
+        onClose={() => setShowAccountModal(false)}
+      />
     </div>
   );
 };

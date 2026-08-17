@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
@@ -272,4 +272,116 @@ export class AuthService {
   async revokeSession(token: string): Promise<void> {
     await this.db.query(`DELETE FROM sessions WHERE token = $1`, [token]);
   }
+
+  /**
+   * Update current user profile info
+   */
+  async updateProfile(
+    companyId: string,
+    userId: string,
+    dto: { username?: string; fullName?: string; email?: string; phone?: string },
+  ) {
+    if (dto.username) {
+      const cleanUsername = dto.username.trim();
+      const existingUserRes = await this.db.query(
+        `SELECT id FROM users WHERE username = $1 AND id != $2`,
+        [cleanUsername, userId],
+      );
+      if (existingUserRes.rows.length > 0) {
+        throw new BadRequestException({
+          code: 'USERNAME_ALREADY_EXISTS',
+          message: 'اسم المستخدم مستخدم بالفعل في حساب آخر',
+        });
+      }
+    }
+
+    const res = await this.db.query(
+      `UPDATE users
+       SET username = COALESCE($1, username),
+           full_name = COALESCE($2, full_name),
+           email = COALESCE($3, email),
+           phone = COALESCE($4, phone),
+           updated_at = NOW()
+       WHERE id = $5 AND company_id = $6
+       RETURNING id, username, full_name, email, phone, company_id, employee_id`,
+      [
+        dto.username?.trim() || null,
+        dto.fullName?.trim() || null,
+        dto.email?.trim() || null,
+        dto.phone?.trim() || null,
+        userId,
+        companyId,
+      ],
+    );
+
+    if (res.rows.length === 0) {
+      throw new NotFoundException('User not found');
+    }
+
+    const row = res.rows[0];
+    return {
+      user: {
+        id: row.id,
+        username: row.username,
+        fullName: row.full_name,
+        email: row.email,
+        phone: row.phone,
+        companyId: row.company_id,
+        employeeId: row.employee_id,
+      },
+    };
+  }
+
+  /**
+   * Change current user password with current password check and 8+ char rule
+   */
+  async changePassword(
+    companyId: string,
+    userId: string,
+    dto: { currentPassword?: string; newPassword?: string },
+  ) {
+    if (!dto.currentPassword) {
+      throw new BadRequestException({
+        code: 'CURRENT_PASSWORD_REQUIRED',
+        message: 'كلمة المرور الحالية مطلوبة',
+      });
+    }
+
+    if (!dto.newPassword || dto.newPassword.length < 8) {
+      throw new BadRequestException({
+        code: 'PASSWORD_TOO_SHORT',
+        message: 'كلمة المرور الجديدة يجب أن لا تقل عن 8 أحرف',
+      });
+    }
+
+    const userRes = await this.db.query(
+      `SELECT id, password_hash FROM users WHERE id = $1 AND company_id = $2`,
+      [userId, companyId],
+    );
+
+    if (userRes.rows.length === 0) {
+      throw new NotFoundException('User not found');
+    }
+
+    const user = userRes.rows[0];
+    const isMatch = await this.comparePassword(dto.currentPassword, user.password_hash);
+    if (!isMatch) {
+      throw new UnauthorizedException({
+        code: 'WRONG_CURRENT_PASSWORD',
+        message: 'كلمة المرور الحالية غير صحيحة',
+      });
+    }
+
+    const newHash = await this.hashPassword(dto.newPassword);
+    await this.db.query(
+      `UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2 AND company_id = $3`,
+      [newHash, userId, companyId],
+    );
+
+    return {
+      success: true,
+      message: 'تم تغيير كلمة المرور بنجاح',
+    };
+  }
 }
+
