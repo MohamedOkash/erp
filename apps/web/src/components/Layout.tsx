@@ -240,6 +240,32 @@ export const Layout: React.FC = () => {
                 شركة البناء المتقدمة للتطوير والمقاولات
               </span>
             </div>
+
+            {/* Project Scope Badge if scoped user */}
+            {user?.scopes && user.scopes.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(139, 92, 246, 0.15)',
+                  border: '1px solid rgba(139, 92, 246, 0.35)',
+                  color: '#c084fc',
+                  padding: '4px 12px',
+                  borderRadius: '20px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                }}
+              >
+                <FolderKanban size={13} />
+                <span>
+                  نطاق العمل الميداني:{' '}
+                  {user.scopes.length === 1
+                    ? user.scopes[0].projectName || user.scopes[0].projectCode || 'مشروع محدد'
+                    : `${user.scopes.length} مشاريع مخصصة`}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Right User Area & Notifications */}

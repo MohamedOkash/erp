@@ -8,6 +8,7 @@ import type { Branch } from '../../api/branches.api';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   DollarSign,
   Plus,
@@ -21,9 +22,11 @@ import {
   HardHat,
   Truck,
   User,
+  Lock,
 } from 'lucide-react';
 
 export const CostsPage: React.FC = () => {
+  const { user } = useAuth();
   const [costs, setCosts] = useState<CostEntry[]>([]);
   const [summary, setSummary] = useState<CostSummaryResponse | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -40,6 +43,28 @@ export const CostsPage: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+
+  const isSingleScoped = Boolean(user?.scopes && user.scopes.length === 1);
+
+  // Set default project if single scoped
+  useEffect(() => {
+    if (user?.scopes && user.scopes.length === 1 && !selectedProject) {
+      setSelectedProject(user.scopes[0].projectId);
+    }
+  }, [user?.scopes]);
+
+  // Scoped projects list
+  const scopedProjects = React.useMemo(() => {
+    let list = projects;
+    if (user?.scopes && user.scopes.length > 0) {
+      const allowedIds = new Set(user.scopes.map((s) => s.projectId));
+      list = list.filter((p) => allowedIds.has(p.id));
+    }
+    if (selectedBranch) {
+      list = list.filter((p) => p.branchId === selectedBranch);
+    }
+    return list;
+  }, [projects, user?.scopes, selectedBranch]);
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -323,20 +348,29 @@ export const CostsPage: React.FC = () => {
         }}
       >
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">
-            <Filter size={14} />
-            <span>المشروع</span>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Filter size={14} />
+              <span>المشروع</span>
+            </div>
+            {isSingleScoped && (
+              <span style={{ fontSize: '10px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <Lock size={11} /> نطاق مخصص
+              </span>
+            )}
           </label>
           <select
             className="input-field"
             value={selectedProject}
+            disabled={isSingleScoped}
             onChange={(e) => {
               setSelectedProject(e.target.value);
               setPage(1);
             }}
+            style={isSingleScoped ? { opacity: 0.85, cursor: 'not-allowed', borderColor: 'rgba(139, 92, 246, 0.4)' } : {}}
           >
-            <option value="">كافة المشاريع</option>
-            {projects.map((p) => (
+            {!isSingleScoped && <option value="">كافة المشاريع</option>}
+            {scopedProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>

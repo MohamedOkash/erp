@@ -44,9 +44,20 @@ export const LoginPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await login(username.trim(), password);
-      const from = (location.state as any)?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      const response = await login(username.trim(), password);
+      const loggedUser = response?.user;
+      let target = (location.state as any)?.from?.pathname;
+      if (!target || target === '/' || target === '/dashboard') {
+        const isAdmin = loggedUser?.roles?.some((r: any) =>
+          ['company_admin', 'super_admin', 'program_manager'].includes(typeof r === 'string' ? r : r.code || r.roleCode),
+        );
+        if (!isAdmin && loggedUser?.scopes && loggedUser.scopes.length === 1) {
+          target = `/production?projectId=${loggedUser.scopes[0].projectId}`;
+        } else {
+          target = '/dashboard';
+        }
+      }
+      navigate(target, { replace: true });
     } catch (err: any) {
       setError(err.message || 'فشل تسجيل الدخول، تأكد من صحة البيانات');
     } finally {

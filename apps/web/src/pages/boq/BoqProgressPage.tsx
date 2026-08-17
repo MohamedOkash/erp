@@ -5,6 +5,7 @@ import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   FileSpreadsheet,
   TrendingUp,
@@ -13,9 +14,11 @@ import {
   AlertCircle,
   Layers,
   CheckCheck,
+  Lock,
 } from 'lucide-react';
 
 export const BoqProgressPage: React.FC = () => {
+  const { user } = useAuth();
   const [boqItems, setBoqItems] = useState<BoqItemProgress[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState(0);
@@ -26,6 +29,25 @@ export const BoqProgressPage: React.FC = () => {
 
   // Filters
   const [selectedProject, setSelectedProject] = useState('');
+
+  const isSingleScoped = Boolean(user?.scopes && user.scopes.length === 1);
+
+  // Set default project if single scoped
+  useEffect(() => {
+    if (user?.scopes && user.scopes.length === 1 && !selectedProject) {
+      setSelectedProject(user.scopes[0].projectId);
+    }
+  }, [user?.scopes]);
+
+  // Scoped projects list
+  const scopedProjects = React.useMemo(() => {
+    let list = projects;
+    if (user?.scopes && user.scopes.length > 0) {
+      const allowedIds = new Set(user.scopes.map((s) => s.projectId));
+      list = list.filter((p) => allowedIds.has(p.id));
+    }
+    return list;
+  }, [projects, user?.scopes]);
 
   const loadProjects = async () => {
     try {
@@ -167,20 +189,29 @@ export const BoqProgressPage: React.FC = () => {
         }}
       >
         <div className="form-group" style={{ margin: 0, flex: 1, maxWidth: '360px' }}>
-          <label className="form-label">
-            <Filter size={14} />
-            <span>تصفية بحسب المشروع</span>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Filter size={14} />
+              <span>تصفية بحسب المشروع</span>
+            </div>
+            {isSingleScoped && (
+              <span style={{ fontSize: '10px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <Lock size={11} /> نطاق مخصص
+              </span>
+            )}
           </label>
           <select
             className="input-field"
             value={selectedProject}
+            disabled={isSingleScoped}
             onChange={(e) => {
               setSelectedProject(e.target.value);
               setPage(1);
             }}
+            style={isSingleScoped ? { opacity: 0.85, cursor: 'not-allowed', borderColor: 'rgba(139, 92, 246, 0.4)' } : {}}
           >
-            <option value="">كافة المشاريع</option>
-            {projects.map((p) => (
+            {!isSingleScoped && <option value="">كافة المشاريع</option>}
+            {scopedProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} ({p.code || 'بدون كود'})
               </option>

@@ -12,6 +12,7 @@ import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
 import { DeviceAttendanceImportModal } from '../../components/DeviceAttendanceImportModal';
 import { AttendancePolicyModal } from '../../components/AttendancePolicyModal';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   CalendarCheck,
   Plus,
@@ -27,9 +28,11 @@ import {
   Edit3,
   FileSpreadsheet,
   Sliders,
+  Lock,
 } from 'lucide-react';
 
 export const AttendancePage: React.FC = () => {
+  const { user } = useAuth();
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -47,6 +50,28 @@ export const AttendancePage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+
+  const isSingleScoped = Boolean(user?.scopes && user.scopes.length === 1);
+
+  // Set default project if user is scoped to a single project
+  useEffect(() => {
+    if (user?.scopes && user.scopes.length === 1 && !selectedProject) {
+      setSelectedProject(user.scopes[0].projectId);
+    }
+  }, [user?.scopes]);
+
+  // Scoped project list
+  const scopedProjects = React.useMemo(() => {
+    let list = projects;
+    if (user?.scopes && user.scopes.length > 0) {
+      const allowedIds = new Set(user.scopes.map((s) => s.projectId));
+      list = list.filter((p) => allowedIds.has(p.id));
+    }
+    if (selectedBranch) {
+      list = list.filter((p) => p.branchId === selectedBranch);
+    }
+    return list;
+  }, [projects, user?.scopes, selectedBranch]);
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -390,20 +415,29 @@ export const AttendancePage: React.FC = () => {
         }}
       >
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">
-            <Filter size={14} />
-            <span>المشروع</span>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Filter size={14} />
+              <span>المشروع</span>
+            </div>
+            {isSingleScoped && (
+              <span style={{ fontSize: '10px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <Lock size={11} /> نطاق مخصص
+              </span>
+            )}
           </label>
           <select
             className="input-field"
             value={selectedProject}
+            disabled={isSingleScoped}
             onChange={(e) => {
               setSelectedProject(e.target.value);
               setPage(1);
             }}
+            style={isSingleScoped ? { opacity: 0.85, cursor: 'not-allowed', borderColor: 'rgba(139, 92, 246, 0.4)' } : {}}
           >
-            <option value="">كافة المشاريع</option>
-            {projects.map((p) => (
+            {!isSingleScoped && <option value="">كافة المشاريع</option>}
+            {scopedProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
