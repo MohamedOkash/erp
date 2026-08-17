@@ -21,6 +21,10 @@ export class UpdateWorkItemDto {
 
   @IsString()
   @IsOptional()
+  categoryId?: string;
+
+  @IsString()
+  @IsOptional()
   category?: string;
 
   @IsString()

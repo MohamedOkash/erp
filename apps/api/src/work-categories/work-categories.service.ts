@@ -10,10 +10,13 @@ export class WorkCategoriesService {
   async listCategories(companyId: string) {
     return this.db.withTenantClient(companyId, async (client) => {
       const res = await client.query(
-        `SELECT id, company_id, parent_id, level, name, code, description, sort_order, is_active, created_at, updated_at
-         FROM work_categories
-         WHERE company_id = $1
-         ORDER BY sort_order ASC, name ASC`,
+        `SELECT c.id, c.company_id, c.parent_id, c.level, c.name, c.code, c.description, c.sort_order, c.is_active, c.created_at, c.updated_at,
+                COUNT(w.id)::int AS items_count
+         FROM work_categories c
+         LEFT JOIN work_items w ON (w.category_id = c.id OR (w.category_id IS NULL AND (w.category = c.name OR w.category ILIKE c.name))) AND w.is_active = true
+         WHERE c.company_id = $1
+         GROUP BY c.id
+         ORDER BY c.sort_order ASC, c.name ASC`,
         [companyId],
       );
       return res.rows;

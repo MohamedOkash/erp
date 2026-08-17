@@ -10,6 +10,7 @@ export interface WorkCategory {
   description?: string;
   sort_order: number;
   is_active: boolean;
+  items_count?: number;
 }
 
 export interface WorkItemStage {

@@ -8,6 +8,10 @@ export class QueryWorkItemDto {
 
   @IsString()
   @IsOptional()
+  categoryId?: string;
+
+  @IsString()
+  @IsOptional()
   category?: string;
 
   @IsString()

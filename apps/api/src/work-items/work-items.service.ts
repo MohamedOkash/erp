@@ -13,7 +13,7 @@ export class WorkItemsService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
-   * List work items with filters, branch rate overrides and pagination
+   * List work items with filters, branch rate overrides, stages aggregation and pagination
    */
   async findWorkItems(companyId: string, query: QueryWorkItemDto) {
     return this.db.withTenantClient(companyId, async (client) => {
@@ -32,39 +32,71 @@ export class WorkItemsService {
         branchSelect = `, w.default_unit_rate AS unit_rate, w.default_daily_target AS daily_target`;
       }
 
+      if (query.categoryId) {
+        conditions.push(`w.category_id = $${paramIdx++}`);
+        params.push(query.categoryId);
+      }
+
       if (query.category) {
-        conditions.push(`w.category ILIKE $${paramIdx++}`);
-        params.push(query.category);
+        conditions.push(`(w.category ILIKE $${paramIdx} OR wc.name ILIKE $${paramIdx})`);
+        params.push(`%${query.category}%`);
+        paramIdx++;
       }
 
       if (query.search) {
-        conditions.push(`(w.name ILIKE $${paramIdx} OR w.code ILIKE $${paramIdx} OR w.category ILIKE $${paramIdx})`);
+        conditions.push(`(w.name ILIKE $${paramIdx} OR w.code ILIKE $${paramIdx} OR w.category ILIKE $${paramIdx} OR wc.name ILIKE $${paramIdx})`);
         params.push(`%${query.search}%`);
         paramIdx++;
       }
 
       const whereClause = conditions.join(' AND ');
-      const limit = query.limit || 20;
+      const limit = query.limit || 50;
       const page = query.page || 1;
       const offset = (page - 1) * limit;
 
       const countRes = await client.query(
-        `SELECT COUNT(*)::int AS total FROM work_items w ${branchJoin} WHERE ${whereClause}`,
+        `SELECT COUNT(*)::int AS total 
+         FROM work_items w 
+         LEFT JOIN work_categories wc ON w.category_id = wc.id AND w.company_id = wc.company_id
+         ${branchJoin} 
+         WHERE ${whereClause}`,
         params,
       );
       const total = countRes.rows[0]?.total || 0;
 
       const dataSql = `
         SELECT 
-          w.id, w.company_id, w.unit_id, w.name, w.code, w.category, w.description,
+          w.id, w.company_id, w.unit_id, w.name, w.code, 
+          COALESCE(wc.name, w.category) AS category,
+          w.category_id, wc.code AS category_code,
+          w.description,
           w.default_unit_rate, w.default_daily_target, w.is_active, w.created_at, w.updated_at,
-          u.name AS unit_name, u.symbol AS unit_symbol
+          u.name AS unit_name, u.symbol AS unit_symbol,
+          COALESCE(
+            (
+              SELECT json_agg(
+                json_build_object(
+                  'id', s.id,
+                  'name', s.name,
+                  'code', s.code,
+                  'percentage', s.percentage,
+                  'standard_productivity', s.standard_productivity,
+                  'sort_order', s.sort_order
+                ) ORDER BY s.sort_order ASC
+              )
+              FROM work_item_stages s
+              WHERE s.work_item_id = w.id
+            ),
+            '[]'::json
+          ) AS stages,
+          (SELECT COUNT(*)::int FROM work_item_stages s WHERE s.work_item_id = w.id) AS stages_count
           ${branchSelect}
         FROM work_items w
+        LEFT JOIN work_categories wc ON w.category_id = wc.id AND w.company_id = wc.company_id
         LEFT JOIN units u ON w.unit_id = u.id AND w.company_id = u.company_id
         ${branchJoin}
         WHERE ${whereClause}
-        ORDER BY w.created_at ASC
+        ORDER BY wc.sort_order ASC NULLS LAST, w.name ASC
         LIMIT $${paramIdx++} OFFSET $${paramIdx++}
       `;
 
@@ -87,10 +119,32 @@ export class WorkItemsService {
     return this.db.withTenantClient(companyId, async (client) => {
       const res = await client.query(
         `SELECT 
-           w.id, w.company_id, w.unit_id, w.name, w.code, w.category, w.description,
+           w.id, w.company_id, w.unit_id, w.name, w.code, 
+           COALESCE(wc.name, w.category) AS category,
+           w.category_id, wc.code AS category_code,
+           w.description,
            w.default_unit_rate, w.default_daily_target, w.is_active, w.created_at, w.updated_at,
-           u.name AS unit_name, u.symbol AS unit_symbol
+           u.name AS unit_name, u.symbol AS unit_symbol,
+           COALESCE(
+             (
+               SELECT json_agg(
+                 json_build_object(
+                   'id', s.id,
+                   'name', s.name,
+                   'code', s.code,
+                   'percentage', s.percentage,
+                   'standard_productivity', s.standard_productivity,
+                   'sort_order', s.sort_order
+                 ) ORDER BY s.sort_order ASC
+               )
+               FROM work_item_stages s
+               WHERE s.work_item_id = w.id
+             ),
+             '[]'::json
+           ) AS stages,
+           (SELECT COUNT(*)::int FROM work_item_stages s WHERE s.work_item_id = w.id) AS stages_count
          FROM work_items w
+         LEFT JOIN work_categories wc ON w.category_id = wc.id AND w.company_id = wc.company_id
          LEFT JOIN units u ON w.unit_id = u.id AND w.company_id = u.company_id
          WHERE w.company_id = $1 AND w.id = $2`,
         [companyId, id],
@@ -143,19 +197,40 @@ export class WorkItemsService {
         }
       }
 
+      let categoryId = dto.categoryId || null;
+      let categoryName = dto.category || null;
+      if (!categoryId && categoryName) {
+        const catRes = await client.query(
+          `SELECT id FROM work_categories WHERE company_id = $1 AND name ILIKE $2 LIMIT 1`,
+          [companyId, categoryName],
+        );
+        if (catRes.rows.length > 0) {
+          categoryId = catRes.rows[0].id;
+        }
+      } else if (categoryId && !categoryName) {
+        const catRes = await client.query(
+          `SELECT name FROM work_categories WHERE company_id = $1 AND id = $2 LIMIT 1`,
+          [companyId, categoryId],
+        );
+        if (catRes.rows.length > 0) {
+          categoryName = catRes.rows[0].name;
+        }
+      }
+
       const isActive = dto.isActive !== undefined ? dto.isActive : true;
 
       const insertRes = await client.query(
         `INSERT INTO work_items (
-           company_id, unit_id, name, code, category, description, default_unit_rate, default_daily_target, is_active
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-         RETURNING id, company_id, unit_id, name, code, category, description, default_unit_rate, default_daily_target, is_active, created_at, updated_at`,
+           company_id, unit_id, category_id, name, code, category, description, default_unit_rate, default_daily_target, is_active
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING id, company_id, unit_id, category_id, name, code, category, description, default_unit_rate, default_daily_target, is_active, created_at, updated_at`,
         [
           companyId,
           unitId,
+          categoryId,
           dto.name,
           dto.code || null,
-          dto.category || null,
+          categoryName,
           dto.description || null,
           dto.defaultUnitRate !== undefined ? dto.defaultUnitRate : 0,
           dto.defaultDailyTarget !== undefined ? dto.defaultDailyTarget : 0,
@@ -215,26 +290,38 @@ export class WorkItemsService {
         }
       }
 
+      let categoryId = dto.categoryId !== undefined ? dto.categoryId : curRes.rows[0].category_id;
+      let categoryName = dto.category !== undefined ? dto.category : curRes.rows[0].category;
+      if (dto.categoryId && !dto.category) {
+        const catRes = await client.query(
+          `SELECT name FROM work_categories WHERE company_id = $1 AND id = $2 LIMIT 1`,
+          [companyId, dto.categoryId],
+        );
+        if (catRes.rows.length > 0) categoryName = catRes.rows[0].name;
+      }
+
       const updateRes = await client.query(
         `UPDATE work_items
          SET unit_id = COALESCE($3, unit_id),
-             name = COALESCE($4, name),
-             code = COALESCE($5, code),
-             category = COALESCE($6, category),
-             description = COALESCE($7, description),
-             default_unit_rate = COALESCE($8, default_unit_rate),
-             default_daily_target = COALESCE($9, default_daily_target),
-             is_active = COALESCE($10, is_active),
+             category_id = $4,
+             name = COALESCE($5, name),
+             code = COALESCE($6, code),
+             category = COALESCE($7, category),
+             description = COALESCE($8, description),
+             default_unit_rate = COALESCE($9, default_unit_rate),
+             default_daily_target = COALESCE($10, default_daily_target),
+             is_active = COALESCE($11, is_active),
              updated_at = CURRENT_TIMESTAMP
          WHERE company_id = $1 AND id = $2
-         RETURNING id, company_id, unit_id, name, code, category, description, default_unit_rate, default_daily_target, is_active, created_at, updated_at`,
+         RETURNING id, company_id, unit_id, category_id, name, code, category, description, default_unit_rate, default_daily_target, is_active, created_at, updated_at`,
         [
           companyId,
           id,
           dto.unitId || null,
+          categoryId || null,
           dto.name || null,
           dto.code || null,
-          dto.category !== undefined ? dto.category : null,
+          categoryName,
           dto.description !== undefined ? dto.description : null,
           dto.defaultUnitRate !== undefined ? dto.defaultUnitRate : null,
           dto.defaultDailyTarget !== undefined ? dto.defaultDailyTarget : null,

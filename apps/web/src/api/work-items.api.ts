@@ -1,18 +1,37 @@
 import { apiClient } from './client';
 
+export interface WorkItemStageItem {
+  id: string;
+  name: string;
+  code?: string | null;
+  percentage: number;
+  standard_productivity?: number | null;
+  stage_order?: number;
+  sort_order?: number;
+  unit_name?: string | null;
+}
+
 export interface WorkItem {
   id: string;
   companyId: string;
   name: string;
   code?: string | null;
   category?: string | null;
+  categoryId?: string | null;
+  category_id?: string | null;
+  description?: string | null;
   unitId?: string | null;
   unitName?: string | null;
   unitSymbol?: string | null;
   defaultUnitRate?: number | null;
   default_unit_rate?: number | null;
   defaultDailyTarget?: number | null;
+  default_daily_target?: number | null;
+  branchRate?: number | null;
+  branchDailyTarget?: number | null;
+  stages?: WorkItemStageItem[];
   isActive: boolean;
+  is_active?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -20,6 +39,7 @@ export interface WorkItem {
 export interface WorkItemQuery {
   search?: string;
   category?: string;
+  categoryId?: string;
   branchId?: string;
   isActive?: boolean;
   page?: number;
@@ -37,16 +57,26 @@ export interface WorkItemListResponse {
 export interface CreateWorkItemPayload {
   name: string;
   code?: string;
+  categoryId?: string;
+  category?: string;
+  description?: string;
   unitId?: string;
+  defaultUnitRate?: number;
   defaultDailyTarget?: number;
+  branchId?: string;
   isActive?: boolean;
 }
 
 export interface UpdateWorkItemPayload {
   name?: string;
   code?: string;
+  categoryId?: string;
+  category?: string;
+  description?: string;
   unitId?: string;
+  defaultUnitRate?: number;
   defaultDailyTarget?: number;
+  branchId?: string;
   isActive?: boolean;
 }
 
@@ -54,6 +84,9 @@ export const workItemsApi = {
   async list(query: WorkItemQuery = {}): Promise<WorkItemListResponse> {
     const params = new URLSearchParams();
     if (query.search) params.append('search', query.search);
+    if (query.categoryId) params.append('categoryId', query.categoryId);
+    if (query.category) params.append('category', query.category);
+    if (query.branchId) params.append('branchId', query.branchId);
     if (query.isActive !== undefined) params.append('isActive', String(query.isActive));
     if (query.page) params.append('page', String(query.page));
     if (query.limit) params.append('limit', String(query.limit));
