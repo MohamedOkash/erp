@@ -157,6 +157,14 @@
     "reports_title": "Daily & Analytical Reports",
     "alerts_title": "Alerts & Site Supervision Rules"
   },
+  "system": {
+    "users_title": "User Management & Account Access",
+    "rbac_title": "Roles & Permissions Matrix (RBAC)",
+    "settings_title": "System Settings & Preferences",
+    "notifications_title": "Live Notifications & Alerts Hub",
+    "add_user": "Add New User",
+    "mark_all_read": "Mark All as Read"
+  },
   "account_modal": {
     "title": "Personal Account & Security Settings",
     "tab_profile": "Profile & Basic Info",

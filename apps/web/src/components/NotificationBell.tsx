@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { notificationsApi, type NotificationItem } from '../api/notifications.api';
+import { useI18n } from '../i18n/I18nContext';
 import {
   Bell,
   CheckCircle2,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export const NotificationBell: React.FC = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -240,10 +242,10 @@ export const NotificationBell: React.FC = () => {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Bell size={16} color="#60a5fa" />
-              <strong style={{ fontSize: '0.9rem', color: '#ffffff' }}>الإشعارات والتنبيهات</strong>
+              <strong style={{ fontSize: '0.9rem', color: '#ffffff' }}>{t('system.notifications_title')}</strong>
               {unreadCount > 0 && (
                 <span className="badge badge-accent" style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem' }}>
-                  {unreadCount} جديد
+                  {unreadCount}
                 </span>
               )}
             </div>
@@ -259,14 +261,10 @@ export const NotificationBell: React.FC = () => {
                   color: '#60a5fa',
                   fontSize: '0.75rem',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.2rem',
                   fontWeight: 600,
                 }}
               >
-                {isMarkingAll ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
-                <span>قراءة الكل</span>
+                {t('system.mark_all_read')}
               </button>
             )}
           </div>

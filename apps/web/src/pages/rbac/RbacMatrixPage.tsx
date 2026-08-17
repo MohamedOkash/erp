@@ -24,6 +24,7 @@ import {
   Award,
 } from 'lucide-react';
 import { rolesApi, type Permission, type Role } from '../../api/roles.api';
+import { useI18n } from '../../i18n/I18nContext';
 
 // Module metadata & icons configuration
 const MODULE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
@@ -52,6 +53,7 @@ const CRITICAL_PERMISSIONS = [
 ];
 
 export const RbacMatrixPage: React.FC = () => {
+  const { t } = useI18n();
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
@@ -288,10 +290,10 @@ export const RbacMatrixPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Shield size={26} color="#a855f7" />
-            <span>إدارة مصفوفة الصلاحيات والأدوار (Role-Focused RBAC)</span>
+            <span>{t('system.rbac_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.3rem' }}>
-            تخصيص وتعيين صلاحيات الوصول والعمليات لكل دور وظيفي في المنظومة بكل سهولة وبدون تعقيد
+            {t('nav.links.rbac')}
           </p>
         </div>
 

@@ -13,6 +13,7 @@ import { AccountSettingsModal } from '../../components/AccountSettingsModal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
 import { WheelDatePicker } from '../../components/WheelPicker';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   Settings,
   Building,
@@ -38,6 +39,7 @@ import {
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
+  const { t } = useI18n();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'company' | 'rates' | 'roles' | 'calculations'>('company');
 
@@ -322,10 +324,10 @@ export const SettingsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Settings size={26} color="#60a5fa" />
-            <span>إعدادات النظام والمنشأة</span>
+            <span>{t('system.settings_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            بيانات الشركة، تسعير ومعدلات أجور العمالة، وإدارة المستخدمين ومصفوفة الصلاحيات
+            {t('nav.links.settings')}
           </p>
         </div>
 
@@ -336,7 +338,7 @@ export const SettingsPage: React.FC = () => {
           style={{ gap: '0.5rem', color: '#60a5fa', borderColor: 'rgba(59, 130, 246, 0.3)' }}
         >
           <Users size={16} />
-          <span>إعدادات حسابي وتغيير كلمة المرور</span>
+          <span>{t('header.account_settings')}</span>
         </button>
       </div>
 

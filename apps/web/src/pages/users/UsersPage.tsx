@@ -23,8 +23,10 @@ import { rolesApi, type Role, type Permission } from '../../api/roles.api';
 import { employeesApi, type Employee } from '../../api/employees.api';
 import { projectsApi, type Project } from '../../api/projects.api';
 import { branchesApi, type Branch } from '../../api/branches.api';
+import { useI18n } from '../../i18n/I18nContext';
 
 export const UsersPage: React.FC = () => {
+  const { t } = useI18n();
   // Data states
   const [usersList, setUsersList] = useState<UserAccount[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -447,10 +449,10 @@ export const UsersPage: React.FC = () => {
             </div>
             <div>
               <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-                إدارة المستخدمين والحسابات (User Accounts)
+                {t('system.users_title')}
               </h1>
               <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--text-muted)' }}>
-                إنشاء وإدارة حسابات الدخول، تعيين الأدوار الوظيفية، وتقييد النطاقات الجغرافية للمشاريع
+                {t('nav.links.users')}
               </p>
             </div>
           </div>
@@ -478,7 +480,7 @@ export const UsersPage: React.FC = () => {
             }}
           >
             <UserPlus size={18} />
-            إنشاء حساب مستخدم جديد
+            {t('system.add_user')}
           </button>
         </div>
       </div>

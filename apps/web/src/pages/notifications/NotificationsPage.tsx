@@ -7,6 +7,7 @@ import {
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
 import { Modal } from '../../components/Modal';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   Bell,
   CheckCircle2,
@@ -23,6 +24,7 @@ import {
 } from 'lucide-react';
 
 export const NotificationsPage: React.FC = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -242,10 +244,10 @@ export const NotificationsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Bell size={26} color="#60a5fa" />
-            <span>مركز الإشعارات والتنبيهات الميدانية</span>
+            <span>{t('system.notifications_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            سجل كامل لكافة التنبيهات، طلبات الاعتماد، والرسائل النظامية الخاصة بالمستخدم مع التوجيه الذكي
+            {t('nav.links.notifications')}
           </p>
         </div>
 
@@ -261,8 +263,8 @@ export const NotificationsPage: React.FC = () => {
             cursor: unreadCount > 0 ? 'pointer' : 'not-allowed',
           }}
         >
-          {isMarkingAll ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-          <span>تحديد الكل كمقروء {unreadCount > 0 ? `(${unreadCount})` : ''}</span>
+          {isMarkingAll ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+          <span>{t('system.mark_all_read')} {unreadCount > 0 ? `(${unreadCount})` : ''}</span>
         </button>
       </div>
 
