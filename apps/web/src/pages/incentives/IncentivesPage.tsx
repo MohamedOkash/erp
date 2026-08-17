@@ -918,8 +918,24 @@ export const IncentivesPage: React.FC = () => {
         title={editingRule ? 'تعديل قاعدة الحوافز' : 'إضافة قاعدة حوافز جديدة'}
         icon={<Award size={22} color="#f59e0b" />}
         maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setShowRuleModal(false)}
+              className="btn btn-secondary"
+              disabled={isSavingRule}
+            >
+              إلغاء
+            </button>
+            <button type="submit" form="incentive-rule-form" className="btn btn-primary" disabled={isSavingRule}>
+              {isSavingRule ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{editingRule ? 'حفظ التعديلات' : 'إنشاء القاعدة'}</span>
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleSaveRule}>
+        <form id="incentive-rule-form" onSubmit={handleSaveRule}>
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
@@ -999,30 +1015,6 @@ export const IncentivesPage: React.FC = () => {
                 تفعيل القاعدة في محرك الاحتساب التلقائي
               </label>
             </div>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.75rem',
-              marginTop: '1.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '1rem',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setShowRuleModal(false)}
-              className="btn btn-secondary"
-              disabled={isSavingRule}
-            >
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSavingRule}>
-              {isSavingRule ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingRule ? 'حفظ التعديلات' : 'إنشاء القاعدة'}</span>
-            </button>
           </div>
         </form>
       </Modal>

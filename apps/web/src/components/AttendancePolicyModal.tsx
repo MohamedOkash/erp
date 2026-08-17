@@ -158,14 +158,37 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
       icon={<Clock size={22} color="#38bdf8" />}
       maxWidth="xl"
       footer={
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            * سياسات الحضور تحدد مواعيد الدخول، دقائق السماح، واحتساب الإضافي آلياً وبشكل مرن
-          </span>
-          <button type="button" onClick={onClose} className="btn btn-secondary">
-            إغلاق
-          </button>
-        </div>
+        !isFormOpen ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              * سياسات الحضور تحدد مواعيد الدخول، دقائق السماح، واحتساب الإضافي آلياً وبشكل مرن
+            </span>
+            <button type="button" onClick={onClose} className="btn btn-secondary">
+              إغلاق
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="btn btn-secondary"
+              disabled={isSaving}
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              form="attendance-policy-form"
+              className="btn btn-primary"
+              disabled={isSaving}
+              style={{ gap: '0.4rem' }}
+            >
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+              <span>{editingPolicy ? 'حفظ تعديلات السياسة' : 'حفظ وإنشاء السياسة'}</span>
+            </button>
+          </div>
+        )
       }
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -327,7 +350,7 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
           </div>
         ) : (
           /* Create / Edit Form */
-          <form onSubmit={handleSavePolicy} className="animate-fade-in">
+          <form id="attendance-policy-form" onSubmit={handleSavePolicy} className="animate-fade-in">
             <div
               style={{
                 background: 'rgba(30, 41, 59, 0.6)',
@@ -506,21 +529,6 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
                   تفعيل هذه السياسة فوراً للاستخدام في حسابات الحضور واستيراد البصمات
                 </label>
               </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="btn btn-secondary"
-                disabled={isSaving}
-              >
-                إلغاء
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={isSaving} style={{ gap: '0.4rem' }}>
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                <span>{editingPolicy ? 'حفظ تعديلات السياسة' : 'حفظ وإنشاء السياسة'}</span>
-              </button>
             </div>
           </form>
         )}

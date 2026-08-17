@@ -523,8 +523,24 @@ export const SavedReportsPage: React.FC = () => {
         title={editingReport ? 'تعديل قالب التقرير' : 'إنشاء وحفظ قالب تقرير جديد'}
         icon={<FileSpreadsheet size={22} color="#60a5fa" />}
         maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setShowReportModal(false)}
+              className="btn btn-secondary"
+              disabled={isSaving}
+            >
+              إلغاء
+            </button>
+            <button type="submit" form="saved-report-form" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{editingReport ? 'حفظ التعديلات' : 'حفظ التقرير'}</span>
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleSaveReport}>
+        <form id="saved-report-form" onSubmit={handleSaveReport}>
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
@@ -592,30 +608,6 @@ export const SavedReportsPage: React.FC = () => {
               </label>
             </div>
           </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.75rem',
-              marginTop: '1.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '1rem',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setShowReportModal(false)}
-              className="btn btn-secondary"
-              disabled={isSaving}
-            >
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSaving}>
-              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingReport ? 'حفظ التعديلات' : 'حفظ التقرير'}</span>
-            </button>
-          </div>
         </form>
       </Modal>
 
@@ -629,6 +621,20 @@ export const SavedReportsPage: React.FC = () => {
         title={`نتائج تشغيل: ${runningReport?.name}`}
         icon={<Play size={22} color="#34d399" />}
         maxWidth="lg"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setRunningReport(null);
+                setRunResult(null);
+              }}
+              className="btn btn-secondary"
+            >
+              إغلاق
+            </button>
+          </div>
+        }
       >
         <div>
           {isRunning ? (
@@ -701,8 +707,24 @@ export const SavedReportsPage: React.FC = () => {
         title={`مشاركة التقرير: ${sharingReport?.name}`}
         icon={<Share2 size={22} color="#a78bfa" />}
         maxWidth="sm"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setSharingReport(null)}
+              className="btn btn-secondary"
+              disabled={isSharing}
+            >
+              إلغاء
+            </button>
+            <button type="submit" form="share-report-form" className="btn btn-primary" disabled={isSharing}>
+              {isSharing ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>حفظ المشاركة</span>
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleShareSubmit}>
+        <form id="share-report-form" onSubmit={handleShareSubmit}>
           <div className="form-group">
             <label className="form-label">معرفات المستخدمين المصرح لهم (مفصولة بفواصل)</label>
             <textarea
@@ -715,30 +737,6 @@ export const SavedReportsPage: React.FC = () => {
             <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.3rem', display: 'block' }}>
               اترك الحقل فارغاً إذا كان التقرير متاحاً للعامة
             </span>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.75rem',
-              marginTop: '1.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '1rem',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setSharingReport(null)}
-              className="btn btn-secondary"
-              disabled={isSharing}
-            >
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSharing}>
-              {isSharing ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>حفظ المشاركة</span>
-            </button>
           </div>
         </form>
       </Modal>

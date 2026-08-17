@@ -581,8 +581,24 @@ export const DocumentsPage: React.FC = () => {
         title="رفع مستند جديد إلى الأرشيف"
         icon={<Upload size={22} color="#60a5fa" />}
         maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setShowUploadModal(false)}
+              className="btn btn-secondary"
+              disabled={isUploading}
+            >
+              إلغاء
+            </button>
+            <button type="submit" form="upload-doc-form" className="btn btn-primary" disabled={isUploading}>
+              {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+              <span>بدء الرفع والأرشفة</span>
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleUploadSubmit}>
+        <form id="upload-doc-form" onSubmit={handleUploadSubmit}>
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
@@ -676,30 +692,6 @@ export const DocumentsPage: React.FC = () => {
               />
             </div>
           </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.75rem',
-              marginTop: '1.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '1rem',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setShowUploadModal(false)}
-              className="btn btn-secondary"
-              disabled={isUploading}
-            >
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isUploading}>
-              {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              <span>بدء الرفع والأرشفة</span>
-            </button>
-          </div>
         </form>
       </Modal>
 
@@ -710,6 +702,13 @@ export const DocumentsPage: React.FC = () => {
         title={`سجل إصدارات: ${selectedDocForVersions?.title}`}
         icon={<History size={22} color="#60a5fa" />}
         maxWidth="lg"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <button type="button" onClick={() => setSelectedDocForVersions(null)} className="btn btn-secondary">
+              إغلاق
+            </button>
+          </div>
+        }
       >
         <div style={{ display: 'grid', gap: '1rem' }}>
           <div
@@ -819,8 +818,24 @@ export const DocumentsPage: React.FC = () => {
         title={`رفع إصدار جديد (v${(newVersionDoc?.version || 0) + 1}): ${newVersionDoc?.title}`}
         icon={<Plus size={22} color="#f59e0b" />}
         maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setShowNewVersionModal(false)}
+              className="btn btn-secondary"
+              disabled={isUploadingNewVersion}
+            >
+              إلغاء
+            </button>
+            <button type="submit" form="new-version-doc-form" className="btn btn-primary" disabled={isUploadingNewVersion}>
+              {isUploadingNewVersion ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+              <span>اعتماد ورفع الإصدار v{(newVersionDoc?.version || 0) + 1}</span>
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleUploadNewVersionSubmit}>
+        <form id="new-version-doc-form" onSubmit={handleUploadNewVersionSubmit}>
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
@@ -849,30 +864,6 @@ export const DocumentsPage: React.FC = () => {
                 onChange={(e) => setNewVersionNotes(e.target.value)}
               />
             </div>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.75rem',
-              marginTop: '1.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '1rem',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setShowNewVersionModal(false)}
-              className="btn btn-secondary"
-              disabled={isUploadingNewVersion}
-            >
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isUploadingNewVersion}>
-              {isUploadingNewVersion ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              <span>اعتماد ورفع الإصدار v{(newVersionDoc?.version || 0) + 1}</span>
-            </button>
           </div>
         </form>
       </Modal>

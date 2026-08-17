@@ -725,8 +725,24 @@ export const SettingsPage: React.FC = () => {
         title={editingRate ? 'تعديل معدل الأجر' : 'إضافة معدل أجر جديد'}
         icon={<DollarSign size={22} color="#34d399" />}
         maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setShowRateModal(false)}
+              className="btn btn-secondary"
+              disabled={isSavingRate}
+            >
+              إلغاء
+            </button>
+            <button type="submit" form="labor-rate-form" className="btn btn-primary" disabled={isSavingRate}>
+              {isSavingRate ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{editingRate ? 'حفظ التعديل' : 'إضافة المعدل'}</span>
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleSaveRate}>
+        <form id="labor-rate-form" onSubmit={handleSaveRate}>
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
@@ -790,30 +806,6 @@ export const SettingsPage: React.FC = () => {
                 onChange={(e) => setRateFormData({ ...rateFormData, effectiveFrom: e.target.value })}
               />
             </div>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.75rem',
-              marginTop: '1.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '1rem',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setShowRateModal(false)}
-              className="btn btn-secondary"
-              disabled={isSavingRate}
-            >
-              إلغاء
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSavingRate}>
-              {isSavingRate ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingRate ? 'حفظ التعديل' : 'إضافة المعدل'}</span>
-            </button>
           </div>
         </form>
       </Modal>

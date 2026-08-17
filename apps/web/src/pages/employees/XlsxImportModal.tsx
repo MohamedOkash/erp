@@ -92,6 +92,54 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
       title="استيراد بيانات الموظفين من ملف Excel (.xlsx)"
       icon={<FileSpreadsheet size={22} color="#10b981" />}
       maxWidth="2xl"
+      footer={
+        !importResult ? (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isUploading}>
+              إلغاء
+            </button>
+            <button
+              type="button"
+              onClick={handleUpload}
+              className="btn btn-primary"
+              disabled={!file || isUploading}
+              style={{ gap: '0.5rem' }}
+            >
+              {isUploading ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
+              <span>رفع وتحليل الملف</span>
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <button
+              type="button"
+              onClick={resetAll}
+              className="btn btn-secondary"
+              style={{ gap: '0.4rem', fontSize: '0.85rem' }}
+              disabled={isCommitting}
+            >
+              <RefreshCw size={14} />
+              <span>رفع ملف آخر</span>
+            </button>
+
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isCommitting}>
+                إغلاق
+              </button>
+              <button
+                type="button"
+                onClick={handleCommit}
+                className="btn btn-primary"
+                disabled={importResult.summary.valid === 0 || isCommitting}
+                style={{ gap: '0.5rem', background: '#059669' }}
+              >
+                {isCommitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                <span>اعتماد السجلات الصالحة ({importResult.summary.valid})</span>
+              </button>
+            </div>
+          </div>
+        )
+      }
     >
         {/* Error Alert */}
         {error && (
@@ -163,21 +211,6 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
               />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button type="button" onClick={onClose} className="btn btn-secondary">
-                إلغاء
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={!file || isUploading}
-                style={{ gap: '0.5rem' }}
-              >
-                {isUploading ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
-                <span>رفع وفحص البيانات</span>
-              </button>
             </div>
           </form>
         ) : (
@@ -296,36 +329,6 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Commit Actions */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button
-                type="button"
-                onClick={resetAll}
-                className="btn btn-secondary"
-                style={{ gap: '0.4rem', fontSize: '0.85rem' }}
-                disabled={isCommitting}
-              >
-                <RefreshCw size={14} />
-                <span>رفع ملف آخر</span>
-              </button>
-
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isCommitting}>
-                  إغلاق
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCommit}
-                  className="btn btn-primary"
-                  disabled={importResult.summary.valid === 0 || isCommitting}
-                  style={{ gap: '0.5rem', background: '#059669' }}
-                >
-                  {isCommitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                  <span>اعتماد السجلات الصالحة ({importResult.summary.valid})</span>
-                </button>
-              </div>
             </div>
           </div>
         )}
