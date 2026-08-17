@@ -502,10 +502,10 @@ export const Layout: React.FC = () => {
               >
                 <FolderKanban size={13} />
                 <span>
-                  نطاق العمل الميداني:{' '}
+                  {t('header.field_scope')}:{' '}
                   {user.scopes.length === 1
                     ? user.scopes[0].projectName || user.scopes[0].projectCode || 'مشروع محدد'
-                    : `${user.scopes.length} مشاريع مخصصة`}
+                    : `${user.scopes.length} مشاريع`}
                 </span>
               </div>
             )}

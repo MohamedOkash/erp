@@ -93,3 +93,11 @@ R12 زمن تقديري للبند = متبقي ÷ متوسط يومي معتم�
    - شاشة بنود الأعمال المحدثة مع تصفية الأقسام ونوافذ إدارة المراحل والأسعار (`WorkItemsPage.tsx`, `StagesManagementModal.tsx`, `PricesManagementModal.tsx`).
    - نافذة إدخال الإنتاج المرحلي مع إضافي وحوافز العمال (`ProductionFormModal.tsx`).
    - شاشة ونافذة طلبات النقل والاعتماد والتنفيذ الفعلي (`TransfersPage.tsx`, `TransferRequestModal.tsx`).
+
+## 12) بروتوكول التحقق الحتمي وحظر المتصفح الآلي نهائيًا (Deterministic Verification & Strict Browser Ban)
+- **قاعدة دائمة ملزمة:** يُحظر نهائيًا استخدام أي Browser tasks أو محاكاة متصفح آلي في التحقق من أي مهمة قادمة.
+- **معايير التحقق الحتمية (Deterministic Standards):**
+  1. `npm run build` في `apps/web` $\rightarrow$ أخضر بدون أي خطأ (Exit Code 0).
+  2. `npm test` في `apps/api` $\rightarrow$ أخضر بدون أي خطأ (Exit Code 0).
+  3. `node scripts/check-i18n.js` أو `npm run i18n:check` $\rightarrow$ صفر مفاتيح ناقصة في القواميس الثلاثة (`ar`, `en`, `ur`).
+  4. `grep` موجه للتأكد من انعدام النصوص الحرفية خارج منظومة الترجمة `t()`.

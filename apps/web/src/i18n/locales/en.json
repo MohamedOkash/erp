@@ -248,7 +248,10 @@
     "account_settings": "Account Settings",
     "system_settings": "System Settings",
     "logout": "Sign Out",
-    "user_default": "System User"
+    "user_default": "System User",
+    "light_mode": "Switch to Light Theme",
+    "dark_mode": "Switch to Dark Theme",
+    "field_scope": "Field Work Scope"
   },
   "nav": {
     "groups": {
@@ -256,6 +259,7 @@
       "operations": "Site Operations",
       "resources": "Resources & Masters",
       "finance": "Finance & Compliance",
+      "documents": "Documents & Reports",
       "reports": "Documents & Reports",
       "system": "Administration & Security"
     },
@@ -275,8 +279,10 @@
       "costs": "Costs & Expense Reconciliation",
       "incentives": "Field Incentives",
       "documents": "Drawings & Documents Archive",
+      "reports": "Reports & Analytics",
       "saved_reports": "Custom Reports Center",
       "alerts": "Alerts & Inspection Rules",
+      "notifications": "Notifications & Alerts Hub",
       "users": "User Management",
       "rbac": "RBAC Permissions Matrix",
       "settings": "System Settings"
