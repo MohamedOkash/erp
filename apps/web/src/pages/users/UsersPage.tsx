@@ -199,7 +199,11 @@ export const UsersPage: React.FC = () => {
       return;
     }
     if (formRoleCodes.length === 0) {
-      setErrorMsg('يرجى اختيار دور وظيفي واحد على الأقل');
+      setErrorMsg('يرجى اختيار دور وظيفي واحد على الأقل للمستخدم');
+      return;
+    }
+    if (!isUnrestrictedFormRole && formSelectedProjectIds.length === 0) {
+      setErrorMsg('يجب تحديد نطاق مشروع واحد على الأقل للمستخدم الميداني / غير الشامل');
       return;
     }
 
@@ -245,7 +249,11 @@ export const UsersPage: React.FC = () => {
       return;
     }
     if (formRoleCodes.length === 0) {
-      setErrorMsg('يرجى اختيار دور وظيفي واحد على الأقل');
+      setErrorMsg('يرجى اختيار دور وظيفي واحد على الأقل للمستخدم');
+      return;
+    }
+    if (!isUnrestrictedFormRole && formSelectedProjectIds.length === 0) {
+      setErrorMsg('يجب تحديد نطاق مشروع واحد على الأقل للمستخدم الميداني / غير الشامل');
       return;
     }
 
@@ -1470,53 +1478,84 @@ export const UsersPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Role Selection (Multi-select checkboxes) */}
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
-                  الأدوار الوظيفية (Roles) *
-                </label>
+              {/* Role Selection (Visible Checkbox Chips) */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, margin: 0 }}>
+                    <Shield size={16} color="#60a5fa" />
+                    <span>الأدوار الوظيفية المعتمدة (Roles) *</span>
+                  </label>
+                  <span style={{ fontSize: '11px', color: formRoleCodes.length > 0 ? '#93c5fd' : '#f87171', fontWeight: 600 }}>
+                    {formRoleCodes.length > 0 ? `تم اختيار ${formRoleCodes.length} أدوار` : 'مطلوب دور واحد على الأقل'}
+                  </span>
+                </div>
+
                 <div
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                    gap: '10px',
-                    background: 'rgba(0, 0, 0, 0.25)',
-                    padding: '14px',
+                    gap: '8px',
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    padding: '12px',
                     borderRadius: '10px',
                     border: '1px solid var(--border-subtle)',
                   }}
                 >
                   {roles.map((r) => {
                     const isSelected = formRoleCodes.includes(r.code);
+                    const isAdmin = ['company_admin', 'super_admin', 'admin'].includes(r.code);
                     return (
                       <label
                         key={r.code}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
+                          justifyContent: 'space-between',
                           gap: '8px',
                           cursor: 'pointer',
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          background: isSelected ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                          border: isSelected ? '1px solid #3b82f6' : '1px solid transparent',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          background: isSelected
+                            ? isAdmin
+                              ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%)'
+                              : 'linear-gradient(135deg, rgba(59, 130, 246, 0.22) 0%, rgba(37, 99, 235, 0.1) 100%)'
+                            : 'rgba(255, 255, 255, 0.03)',
+                          border: isSelected
+                            ? isAdmin
+                              ? '1px solid rgba(245, 158, 11, 0.6)'
+                              : '1px solid rgba(59, 130, 246, 0.6)'
+                            : '1px solid var(--border-subtle)',
                           transition: 'all 0.15s ease',
                         }}
                       >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => {
-                            if (isSelected) {
-                              setFormRoleCodes(formRoleCodes.filter((c) => c !== r.code));
-                            } else {
-                              setFormRoleCodes([...formRoleCodes, r.code]);
-                            }
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              if (isSelected) {
+                                setFormRoleCodes(formRoleCodes.filter((c) => c !== r.code));
+                              } else {
+                                setFormRoleCodes([...formRoleCodes, r.code]);
+                              }
+                            }}
+                            style={{ accentColor: isAdmin ? '#f59e0b' : '#3b82f6' }}
+                          />
+                          <span style={{ fontSize: '12px', fontWeight: isSelected ? 800 : 600, color: isSelected ? '#fff' : 'var(--text-muted)' }}>
+                            {r.name}
+                          </span>
+                        </div>
+                        <span
+                          style={{
+                            fontFamily: 'monospace',
+                            fontSize: '10px',
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            background: 'rgba(0, 0, 0, 0.3)',
+                            color: isSelected ? (isAdmin ? '#fbbf24' : '#93c5fd') : 'var(--text-dim)',
                           }}
-                          style={{ accentColor: '#3b82f6' }}
-                        />
-                        <span style={{ fontSize: '12px', fontWeight: isSelected ? 700 : 500 }}>
-                          {r.name}
+                        >
+                          {r.code}
                         </span>
                       </label>
                     );
@@ -1524,11 +1563,50 @@ export const UsersPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Project Scope Selection */}
+              {/* Project Scope Selection (Visible Checklist & Global Toggle) */}
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
-                  نطاق المشاريع المعزول (Project Isolation)
-                </label>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, margin: 0 }}>
+                    <FolderKanban size={16} color="#c084fc" />
+                    <span>نطاق المشاريع المعزول (Project Scope Checklist)</span>
+                  </label>
+
+                  {!isUnrestrictedFormRole && projects.length > 0 && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setFormSelectedProjectIds(projects.map((p) => p.id))}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#60a5fa',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          padding: 0,
+                        }}
+                      >
+                        تحديد كافة المشاريع
+                      </button>
+                      <span style={{ color: 'var(--text-dim)', fontSize: '11px' }}>|</span>
+                      <button
+                        type="button"
+                        onClick={() => setFormSelectedProjectIds([])}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#f87171',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          padding: 0,
+                        }}
+                      >
+                        إلغاء التحديد
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 {isUnrestrictedFormRole ? (
                   <div
@@ -1536,9 +1614,9 @@ export const UsersPage: React.FC = () => {
                       background: 'rgba(16, 185, 129, 0.1)',
                       border: '1px solid rgba(16, 185, 129, 0.3)',
                       borderRadius: '10px',
-                      padding: '14px',
+                      padding: '12px 16px',
                       color: '#34d399',
-                      fontSize: '13px',
+                      fontSize: '12.5px',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '10px',
@@ -1546,61 +1624,77 @@ export const UsersPage: React.FC = () => {
                   >
                     <Building size={18} />
                     <span>
-                      الأدوار المحددة (Admin / Program Manager) تمنح وصولاً شاملاً لكافة المشاريع دون قيود نطاق.
+                      الأدوار الإدارية العليا المحددة (Admin / Program Manager) تمنح وصولاً شاملاً لكافة مشاريع وفروع المنشأة تلقائياً.
                     </span>
                   </div>
                 ) : (
                   <div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 10px' }}>
-                      اختر المشاريع التي يحق لهذا المستخدم الوصول إليها. لن يتمكن المستخدم من استعراض أو إدخال بيانات خارج نطاقه.
-                    </p>
                     <div
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                        gap: '10px',
-                        background: 'rgba(0, 0, 0, 0.25)',
-                        padding: '14px',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                        gap: '8px',
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        padding: '12px',
                         borderRadius: '10px',
                         border: '1px solid var(--border-subtle)',
-                        maxHeight: '160px',
+                        maxHeight: '180px',
                         overflowY: 'auto',
                       }}
+                      className="sidebar-scroll"
                     >
                       {projects.map((p) => {
                         const isProjSelected = formSelectedProjectIds.includes(p.id);
+                        const branch = branches.find((b) => b.id === p.branchId);
                         return (
                           <label
                             key={p.id}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'space-between',
                               gap: '8px',
                               cursor: 'pointer',
-                              padding: '6px 10px',
-                              borderRadius: '6px',
-                              background: isProjSelected ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
-                              border: isProjSelected ? '1px solid #8b5cf6' : '1px solid transparent',
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              background: isProjSelected ? 'rgba(139, 92, 246, 0.18)' : 'rgba(255, 255, 255, 0.03)',
+                              border: isProjSelected ? '1px solid rgba(139, 92, 246, 0.6)' : '1px solid var(--border-subtle)',
+                              transition: 'all 0.15s ease',
                             }}
                           >
-                            <input
-                              type="checkbox"
-                              checked={isProjSelected}
-                              onChange={() => {
-                                if (isProjSelected) {
-                                  setFormSelectedProjectIds(formSelectedProjectIds.filter((id) => id !== p.id));
-                                } else {
-                                  setFormSelectedProjectIds([...formSelectedProjectIds, p.id]);
-                                }
-                              }}
-                              style={{ accentColor: '#8b5cf6' }}
-                            />
-                            <span style={{ fontSize: '12px', fontWeight: isProjSelected ? 700 : 500 }}>
-                              {p.name}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                              <input
+                                type="checkbox"
+                                checked={isProjSelected}
+                                onChange={() => {
+                                  if (isProjSelected) {
+                                    setFormSelectedProjectIds(formSelectedProjectIds.filter((id) => id !== p.id));
+                                  } else {
+                                    setFormSelectedProjectIds([...formSelectedProjectIds, p.id]);
+                                  }
+                                }}
+                                style={{ accentColor: '#8b5cf6' }}
+                              />
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '12px', fontWeight: isProjSelected ? 700 : 500, color: isProjSelected ? '#fff' : 'var(--text-muted)' }}>
+                                  {p.name}
+                                </span>
+                                {branch && (
+                                  <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
+                                    فرع: {branch.name}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#c084fc' }}>
+                              {p.code}
                             </span>
                           </label>
                         );
                       })}
+                    </div>
+                    <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-dim)' }}>
+                      المشاريع المحددة: {formSelectedProjectIds.length} من {projects.length}
                     </div>
                   </div>
                 )}
