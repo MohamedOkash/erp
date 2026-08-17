@@ -139,6 +139,16 @@
     "pending": "Pending",
     "rejected": "Rejected"
   },
+  "resources": {
+    "employees_title": "Employees & Workers Directory",
+    "add_employee": "Add Employee / Worker",
+    "branches_title": "Branches & Warehouses",
+    "add_branch": "Add New Branch",
+    "projects_title": "Projects & Contracts Management",
+    "add_project": "Add New Project",
+    "work_items_title": "Work Items & Catalog (BOQ Items)",
+    "add_item": "Add Work Item"
+  },
   "account_modal": {
     "title": "Personal Account & Security Settings",
     "tab_profile": "Profile & Basic Info",

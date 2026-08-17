@@ -8,6 +8,7 @@ import { workCategoriesApi } from '../../api/work-categories.api';
 import { StagesManagementModal } from './StagesManagementModal';
 import { PricesManagementModal } from './PricesManagementModal';
 import { Modal } from '../../components/Modal';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   CheckSquare,
   Plus,
@@ -58,6 +59,7 @@ function getDepartmentIcon(code?: string, name?: string) {
 }
 
 export const WorkItemsPage: React.FC = () => {
+  const { t } = useI18n();
   const [items, setItems] = useState<WorkItem[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [categories, setCategories] = useState<WorkCategory[]>([]);
@@ -294,11 +296,11 @@ export const WorkItemsPage: React.FC = () => {
               <CheckSquare size={24} />
             </div>
             <div>
-              <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f8fafc', margin: 0 }}>
-                كتالوج بنود ومراحل التشطيبات (Master BOQ & Stages)
+              <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-heading)', margin: 0 }}>
+                {t('resources.work_items_title')}
               </h1>
               <span style={{ fontSize: '0.85rem', color: '#93c5fd' }}>
-                شامل أقسام التشطيبات الـ 15، تفكيك المراحل ونسب الإنجاز والمستهدفات اليومية
+                {t('nav.links.work_items')}
               </span>
             </div>
           </div>
@@ -317,7 +319,7 @@ export const WorkItemsPage: React.FC = () => {
             }}
           >
             <Plus size={19} />
-            <span>إضافة بند عمل جديد</span>
+            <span>{t('resources.add_item')}</span>
           </button>
         </div>
       </div>

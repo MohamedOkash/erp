@@ -7,6 +7,7 @@ import { ProjectFormModal } from './ProjectFormModal';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   FolderKanban,
   Plus,
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export const ProjectsPage: React.FC = () => {
+  const { t } = useI18n();
   const [projects, setProjects] = useState<Project[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [total, setTotal] = useState(0);
@@ -202,16 +204,16 @@ export const ProjectsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <FolderKanban size={26} color="#60a5fa" />
-            <span>إدارة المشاريع الإنشائية</span>
+            <span>{t('resources.projects_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            متابعة مشاريع المقاولات، قيم العقود، الجداول الزمنية والربط مع الفروع
+            {t('nav.links.projects')}
           </p>
         </div>
 
         <button onClick={handleOpenCreate} className="btn btn-primary" style={{ gap: '0.5rem' }}>
           <Plus size={18} />
-          <span>إضافة مشروع جديد</span>
+          <span>{t('resources.add_project')}</span>
         </button>
       </div>
 

@@ -139,6 +139,16 @@
     "pending": "زیر التواء",
     "rejected": "مسترد شدہ"
   },
+  "resources": {
+    "employees_title": "ملازمین اور مزدوروں کی فہرست",
+    "add_employee": "ملازم / مزدور شامل کریں",
+    "branches_title": "شاخیں اور گودام",
+    "add_branch": "نئی شاخ شامل کریں",
+    "projects_title": "منصوبوں اور معاہدوں کا انتظام",
+    "add_project": "نیا منصوبہ شامل کریں",
+    "work_items_title": "کام کی اشیاء کی کیٹلاگ (BOQ Items)",
+    "add_item": "کام کا آئٹم شامل کریں"
+  },
   "account_modal": {
     "title": "ذاتی اکاؤنٹ اور سیکیورٹی ترتیبات",
     "tab_profile": "ذاتی معلومات اور پروفائل",

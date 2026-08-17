@@ -139,6 +139,16 @@
     "pending": "قيد الانتظار",
     "rejected": "مرفوض"
   },
+  "resources": {
+    "employees_title": "دليل وسجل الموظفين والعمال",
+    "add_employee": "إضافة موظف / عامل",
+    "branches_title": "الفروع ومواقع المستودعات",
+    "add_branch": "إضافة فرع جديد",
+    "projects_title": "إدارة المشاريع والعقود",
+    "add_project": "إضافة مشروع جديد",
+    "work_items_title": "دليل وتوصيف بنود الأعمال (BOQ Items)",
+    "add_item": "إضافة بند عمل"
+  },
   "account_modal": {
     "title": "إعدادات الحساب الشخصي والأمان",
     "tab_profile": "البيانات الشخصية والملف",

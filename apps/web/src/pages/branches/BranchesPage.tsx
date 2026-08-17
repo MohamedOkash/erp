@@ -5,6 +5,7 @@ import { BranchFormModal } from './BranchFormModal';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   Building,
   Plus,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 
 export const BranchesPage: React.FC = () => {
+  const { t } = useI18n();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -158,16 +160,16 @@ export const BranchesPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Building size={26} color="#60a5fa" />
-            <span>إدارة الفروع والمواقع الإدارية</span>
+            <span>{t('resources.branches_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            هيكلية الفروع الإقليمية للشركة، ربط المشاريع والكوادر بكل فرع
+            {t('nav.links.branches')}
           </p>
         </div>
 
         <button onClick={handleOpenCreate} className="btn btn-primary" style={{ gap: '0.5rem' }}>
           <Plus size={18} />
-          <span>إضافة فرع جديد</span>
+          <span>{t('resources.add_branch')}</span>
         </button>
       </div>
 

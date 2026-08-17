@@ -8,6 +8,7 @@ import { XlsxImportModal } from './XlsxImportModal';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   Users,
   Plus,
@@ -30,6 +31,7 @@ import {
 } from 'lucide-react';
 
 export const EmployeesPage: React.FC = () => {
+  const { t } = useI18n();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [total, setTotal] = useState(0);
@@ -279,10 +281,10 @@ export const EmployeesPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Users size={26} color="#60a5fa" />
-            <span>إدارة الموظفين والعمالة</span>
+            <span>{t('resources.employees_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            سجلات العمال والمشرفين، الأجور اليومية، وثائق الهوية والتعيينات الميدانية
+            {t('nav.links.employees')}
           </p>
         </div>
 
@@ -295,7 +297,7 @@ export const EmployeesPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            <span>تصدير إكسيل</span>
+            <span>{t('common.export_excel')}</span>
           </button>
 
           <button
@@ -305,7 +307,7 @@ export const EmployeesPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             <UploadCloud size={16} />
-            <span>استيراد إكسيل</span>
+            <span>{t('operations.import_excel')}</span>
           </button>
 
           <button
@@ -315,7 +317,7 @@ export const EmployeesPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             <Plus size={16} />
-            <span>إضافة موظف / عامل</span>
+            <span>{t('resources.add_employee')}</span>
           </button>
         </div>
       </div>
