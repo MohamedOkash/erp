@@ -17,6 +17,7 @@ import { CorrectionFormModal } from './CorrectionFormModal';
 import { XlsxProductionImportModal } from './XlsxProductionImportModal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   Layers,
@@ -397,12 +398,11 @@ export const ProductionPage: React.FC = () => {
             <Calendar size={14} />
             <span>من تاريخ</span>
           </label>
-          <input
-            type="date"
-            className="input-field"
+          <WheelDatePicker
+            placeholder="من تاريخ..."
             value={fromDate}
-            onChange={(e) => {
-              setFromDate(e.target.value);
+            onChange={(val) => {
+              setFromDate(val);
               setPage(1);
             }}
           />
@@ -413,12 +413,11 @@ export const ProductionPage: React.FC = () => {
             <Calendar size={14} />
             <span>إلى تاريخ</span>
           </label>
-          <input
-            type="date"
-            className="input-field"
+          <WheelDatePicker
+            placeholder="إلى تاريخ..."
             value={toDate}
-            onChange={(e) => {
-              setToDate(e.target.value);
+            onChange={(val) => {
+              setToDate(val);
               setPage(1);
             }}
           />

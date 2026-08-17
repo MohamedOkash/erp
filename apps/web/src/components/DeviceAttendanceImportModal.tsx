@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Modal } from './Modal';
+import { WheelTimePicker } from './WheelPicker';
 import { importsApi } from '../api/imports.api';
 import type {
   BiometricImportUploadResponse,
@@ -486,38 +487,22 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                           </td>
 
                           {/* CheckIn */}
-                          <td style={{ padding: '0.6rem 0.8rem' }}>
-                            <input
-                              type="time"
+                          <td style={{ padding: '0.6rem 0.8rem', minWidth: '110px' }}>
+                            <WheelTimePicker
                               value={row.checkIn || ''}
-                              onChange={(e) => handleRowChange(row.rowIndex, 'checkIn', e.target.value || null)}
-                              style={{
-                                background: 'rgba(15, 23, 42, 0.7)',
-                                border: '1px solid var(--border-subtle)',
-                                color: '#ffffff',
-                                borderRadius: 'var(--radius-sm)',
-                                padding: '0.2rem 0.4rem',
-                                fontSize: '0.8rem',
-                                width: '90px',
-                              }}
+                              onChange={(val) => handleRowChange(row.rowIndex, 'checkIn', val || null)}
+                              placeholder="--:--"
+                              style={{ width: '100%' }}
                             />
                           </td>
 
                           {/* CheckOut */}
-                          <td style={{ padding: '0.6rem 0.8rem' }}>
-                            <input
-                              type="time"
+                          <td style={{ padding: '0.6rem 0.8rem', minWidth: '110px' }}>
+                            <WheelTimePicker
                               value={row.checkOut || ''}
-                              onChange={(e) => handleRowChange(row.rowIndex, 'checkOut', e.target.value || null)}
-                              style={{
-                                background: 'rgba(15, 23, 42, 0.7)',
-                                border: '1px solid var(--border-subtle)',
-                                color: '#ffffff',
-                                borderRadius: 'var(--radius-sm)',
-                                padding: '0.2rem 0.4rem',
-                                fontSize: '0.8rem',
-                                width: '90px',
-                              }}
+                              onChange={(val) => handleRowChange(row.rowIndex, 'checkOut', val || null)}
+                              placeholder="--:--"
+                              style={{ width: '100%' }}
                             />
                           </td>
 

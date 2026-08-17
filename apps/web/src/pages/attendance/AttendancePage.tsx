@@ -10,6 +10,7 @@ import type { Employee } from '../../api/employees.api';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { WheelDatePicker, WheelTimePicker } from '../../components/WheelPicker';
 import { DeviceAttendanceImportModal } from '../../components/DeviceAttendanceImportModal';
 import { AttendancePolicyModal } from '../../components/AttendancePolicyModal';
 import { useAuth } from '../../contexts/AuthContext';
@@ -466,12 +467,11 @@ export const AttendancePage: React.FC = () => {
 
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">من تاريخ</label>
-          <input
-            type="date"
-            className="input-field"
+          <WheelDatePicker
+            placeholder="من تاريخ..."
             value={fromDate}
-            onChange={(e) => {
-              setFromDate(e.target.value);
+            onChange={(val) => {
+              setFromDate(val);
               setPage(1);
             }}
           />
@@ -479,12 +479,11 @@ export const AttendancePage: React.FC = () => {
 
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">إلى تاريخ</label>
-          <input
-            type="date"
-            className="input-field"
+          <WheelDatePicker
+            placeholder="إلى تاريخ..."
             value={toDate}
-            onChange={(e) => {
-              setToDate(e.target.value);
+            onChange={(val) => {
+              setToDate(val);
               setPage(1);
             }}
           />
@@ -680,12 +679,10 @@ export const AttendancePage: React.FC = () => {
 
             <div className="form-group">
               <label className="form-label">التاريخ *</label>
-              <input
-                type="date"
+              <WheelDatePicker
                 required
-                className="input-field"
                 value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                onChange={(val) => setFormData({ ...formData, date: val })}
               />
             </div>
 
@@ -718,21 +715,17 @@ export const AttendancePage: React.FC = () => {
 
             <div className="form-group">
               <label className="form-label">وقت الحضور</label>
-              <input
-                type="time"
-                className="input-field"
+              <WheelTimePicker
                 value={formData.checkInTime || ''}
-                onChange={(e) => setFormData({ ...formData, checkInTime: e.target.value })}
+                onChange={(val) => setFormData({ ...formData, checkInTime: val })}
               />
             </div>
 
             <div className="form-group">
               <label className="form-label">وقت الانصراف</label>
-              <input
-                type="time"
-                className="input-field"
+              <WheelTimePicker
                 value={formData.checkOutTime || ''}
-                onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })}
+                onChange={(val) => setFormData({ ...formData, checkOutTime: val })}
               />
             </div>
           </div>

@@ -6,6 +6,7 @@ import { employeesApi } from '../../api/employees.api';
 import type { Project } from '../../api/projects.api';
 import { projectsApi } from '../../api/projects.api';
 import { Modal } from '../../components/Modal';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import {
   Loader2,
   ArrowLeftRight,
@@ -199,12 +200,10 @@ export const TransferRequestModal: React.FC<TransferRequestModalProps> = ({
 
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">تاريخ التنفيذ المطلوب *</label>
-              <input
-                type="date"
+              <WheelDatePicker
                 required
-                className="input-field"
                 value={transferDate}
-                onChange={(e) => setTransferDate(e.target.value)}
+                onChange={(val) => setTransferDate(val)}
               />
             </div>
 

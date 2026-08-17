@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Project, CreateProjectPayload, UpdateProjectPayload } from '../../api/projects.api';
 import type { Branch } from '../../api/branches.api';
 import { Modal } from '../../components/Modal';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import { Loader2, FolderKanban, Building, Hash, Calendar, Banknote, CheckSquare } from 'lucide-react';
 
 interface ProjectFormModalProps {
@@ -174,11 +175,10 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 <Calendar size={14} />
                 <span>تاريخ البدء</span>
               </label>
-              <input
-                type="date"
-                className="input-field"
+              <WheelDatePicker
+                placeholder="تاريخ البدء..."
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(val) => setStartDate(val)}
               />
             </div>
 
@@ -187,11 +187,10 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 <Calendar size={14} />
                 <span>تاريخ الانتهاء المتوقع</span>
               </label>
-              <input
-                type="date"
-                className="input-field"
+              <WheelDatePicker
+                placeholder="تاريخ الانتهاء..."
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(val) => setEndDate(val)}
               />
             </div>
 

@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import {
   Settings,
   Building,
@@ -799,11 +800,9 @@ export const SettingsPage: React.FC = () => {
 
             <div className="form-group">
               <label className="form-label">تاريخ بدء السريان</label>
-              <input
-                type="date"
-                className="input-field"
+              <WheelDatePicker
                 value={rateFormData.effectiveFrom || ''}
-                onChange={(e) => setRateFormData({ ...rateFormData, effectiveFrom: e.target.value })}
+                onChange={(val) => setRateFormData({ ...rateFormData, effectiveFrom: val })}
               />
             </div>
           </div>

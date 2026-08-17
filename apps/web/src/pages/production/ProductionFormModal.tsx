@@ -9,6 +9,7 @@ import type { Employee } from '../../api/employees.api';
 import type { WorkItemStage } from '../../api/work-categories.api';
 import { workItemStagesApi } from '../../api/work-categories.api';
 import { Modal } from '../../components/Modal';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import {
   Loader2,
   Layers,
@@ -282,12 +283,10 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 <Calendar size={14} />
                 <span>تاريخ التنفيذ *</span>
               </label>
-              <input
-                type="date"
+              <WheelDatePicker
                 required
-                className="input-field"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(val) => setDate(val)}
               />
             </div>
 

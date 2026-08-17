@@ -9,6 +9,7 @@ import {
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import {
   Award,
   Plus,
@@ -658,21 +659,19 @@ export const IncentivesPage: React.FC = () => {
             >
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">من تاريخ</label>
-                <input
-                  type="date"
-                  className="input-field"
+                <WheelDatePicker
+                  placeholder="من تاريخ..."
                   value={calcFromDate}
-                  onChange={(e) => setCalcFromDate(e.target.value)}
+                  onChange={(val) => setCalcFromDate(val)}
                 />
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">إلى تاريخ</label>
-                <input
-                  type="date"
-                  className="input-field"
+                <WheelDatePicker
+                  placeholder="إلى تاريخ..."
                   value={calcToDate}
-                  onChange={(e) => setCalcToDate(e.target.value)}
+                  onChange={(val) => setCalcToDate(val)}
                 />
               </div>
 

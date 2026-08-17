@@ -8,6 +8,7 @@ import type { Branch } from '../../api/branches.api';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   DollarSign,
@@ -578,12 +579,10 @@ export const CostsPage: React.FC = () => {
 
             <div className="form-group">
               <label className="form-label">التاريخ *</label>
-              <input
-                type="date"
+              <WheelDatePicker
                 required
-                className="input-field"
                 value={formData.costDate}
-                onChange={(e) => setFormData({ ...formData, costDate: e.target.value })}
+                onChange={(val) => setFormData({ ...formData, costDate: val })}
               />
             </div>
 
@@ -686,23 +685,19 @@ export const CostsPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">من تاريخ *</label>
-              <input
-                type="date"
+              <WheelDatePicker
                 required
-                className="input-field"
                 value={calcFromDate}
-                onChange={(e) => setCalcFromDate(e.target.value)}
+                onChange={(val) => setCalcFromDate(val)}
               />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">إلى تاريخ *</label>
-              <input
-                type="date"
+              <WheelDatePicker
                 required
-                className="input-field"
                 value={calcToDate}
-                onChange={(e) => setCalcToDate(e.target.value)}
+                onChange={(val) => setCalcToDate(val)}
               />
             </div>
 

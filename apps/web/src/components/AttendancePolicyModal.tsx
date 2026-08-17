@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
+import { WheelDatePicker, WheelTimePicker } from './WheelPicker';
 import { attendancePoliciesApi } from '../api/attendance-policies.api';
 import type { AttendancePolicy, CreateAttendancePolicyPayload } from '../api/attendance-policies.api';
 import type { Project } from '../api/projects.api';
@@ -402,12 +403,10 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
                     <Calendar size={14} />
                     <span>تاريخ بدء سريان السياسة *</span>
                   </label>
-                  <input
-                    type="date"
+                  <WheelDatePicker
                     required
-                    className="input-field"
                     value={formData.effectiveFrom}
-                    onChange={(e) => setFormData({ ...formData, effectiveFrom: e.target.value })}
+                    onChange={(val) => setFormData({ ...formData, effectiveFrom: val })}
                   />
                 </div>
 
@@ -417,12 +416,10 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
                     <Clock size={14} />
                     <span>ميعاد بداية الدوام (Shift Start) *</span>
                   </label>
-                  <input
-                    type="time"
+                  <WheelTimePicker
                     required
-                    className="input-field"
                     value={formData.shiftStartTime}
-                    onChange={(e) => setFormData({ ...formData, shiftStartTime: e.target.value })}
+                    onChange={(val) => setFormData({ ...formData, shiftStartTime: val })}
                   />
                 </div>
 
@@ -432,12 +429,10 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
                     <Clock size={14} />
                     <span>ميعاد نهاية الدوام (Shift End) *</span>
                   </label>
-                  <input
-                    type="time"
+                  <WheelTimePicker
                     required
-                    className="input-field"
                     value={formData.shiftEndTime}
-                    onChange={(e) => setFormData({ ...formData, shiftEndTime: e.target.value })}
+                    onChange={(val) => setFormData({ ...formData, shiftEndTime: val })}
                   />
                 </div>
 

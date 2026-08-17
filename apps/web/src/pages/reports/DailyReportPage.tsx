@@ -3,6 +3,7 @@ import { controlCardsApi } from '../../api/control-cards.api';
 import type { DailyReportRow } from '../../api/control-cards.api';
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import {
   FolderKanban,
   Calendar,
@@ -183,11 +184,9 @@ export const DailyReportPage: React.FC = () => {
           <label className="form-label">
             <Calendar size={14} /> <span>تاريخ العمل اليومي</span>
           </label>
-          <input
-            type="date"
-            className="input-field"
+          <WheelDatePicker
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(val) => setSelectedDate(val)}
           />
         </div>
       </div>

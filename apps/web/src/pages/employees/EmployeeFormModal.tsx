@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Employee, CreateEmployeePayload, UpdateEmployeePayload } from '../../api/employees.api';
 import type { Branch } from '../../api/branches.api';
 import { Modal } from '../../components/Modal';
+import { WheelDatePicker } from '../../components/WheelPicker';
 import {
   Loader2,
   User,
@@ -173,11 +174,10 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
                   <Calendar size={14} />
                   <span>تاريخ انتهاء الإقامة / الجواز *</span>
                 </label>
-                <input
-                  type="date"
-                  className="input-field"
+                <WheelDatePicker
+                  placeholder="تاريخ الانتهاء..."
                   value={identityExpiryDate}
-                  onChange={(e) => setIdentityExpiryDate(e.target.value)}
+                  onChange={(val) => setIdentityExpiryDate(val)}
                 />
               </div>
             )}
