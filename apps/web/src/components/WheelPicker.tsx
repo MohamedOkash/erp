@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, Clock, X, Check, RotateCcw } from 'lucide-react';
 
 const ARABIC_MONTHS = [
@@ -98,8 +99,36 @@ function WheelColumn<T extends string | number>({
         flex: 1,
         overflow: 'hidden',
       }}
+      role="listbox"
       aria-label={ariaLabel}
     >
+      {/* Top & Bottom Dark Gradient Masks for 3D Roller Look */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: `${PADDING_OFFSET}px`,
+          background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, transparent 100%)',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: `${PADDING_OFFSET}px`,
+          background: 'linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, transparent 100%)',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      />
+
+      {/* Scrollable Snap Container */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
@@ -126,25 +155,27 @@ function WheelColumn<T extends string | number>({
           }
         }}
       >
-        {items.map((item, idx) => {
+        {items.map((item, index) => {
           const isSelected = item.value === selectedValue;
           return (
             <div
               key={String(item.value)}
-              onClick={() => handleItemClick(idx)}
+              onClick={() => handleItemClick(index)}
+              role="option"
+              aria-selected={isSelected}
               style={{
                 height: `${ITEM_HEIGHT}px`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                lineHeight: `${ITEM_HEIGHT}px`,
                 scrollSnapAlign: 'center',
+                textAlign: 'center',
                 cursor: 'pointer',
-                fontSize: isSelected ? '15px' : '13px',
-                fontWeight: isSelected ? 800 : 500,
-                color: isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.4)',
-                transform: isSelected ? 'scale(1.08)' : 'scale(0.95)',
-                transition: 'all 0.15s ease',
                 userSelect: 'none',
+                transition: 'all 0.15s ease',
+                fontSize: isSelected ? '1.05rem' : '0.85rem',
+                fontWeight: isSelected ? 800 : 500,
+                color: isSelected ? '#60a5fa' : 'rgba(148, 163, 184, 0.55)',
+                transform: isSelected ? 'scale(1.08)' : 'scale(0.95)',
+                textShadow: isSelected ? '0 0 12px rgba(96, 165, 250, 0.5)' : 'none',
               }}
             >
               {item.label}
@@ -186,7 +217,9 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
   name,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   // Parse initial date
   const parseDate = (dateStr?: string | null) => {
@@ -224,10 +257,55 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
     }
   }, [value]);
 
+  // Update fixed position relative to trigger
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const POPUP_WIDTH = 340;
+    const POPUP_HEIGHT = 380;
+
+    let left = rect.right - POPUP_WIDTH;
+    if (left < 10) {
+      left = Math.max(10, rect.left);
+    }
+    if (left + POPUP_WIDTH > window.innerWidth - 10) {
+      left = window.innerWidth - POPUP_WIDTH - 10;
+    }
+
+    let top = rect.bottom + 6;
+    if (top + POPUP_HEIGHT > window.innerHeight && rect.top > POPUP_HEIGHT) {
+      top = rect.top - POPUP_HEIGHT - 6;
+    }
+
+    setCoords({ top, left });
+  }, []);
+
+  // Listen to scroll / resize while open
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      const handleScrollOrResize = () => {
+        updatePosition();
+      };
+      window.addEventListener('scroll', handleScrollOrResize, true);
+      window.addEventListener('resize', handleScrollOrResize);
+      return () => {
+        window.removeEventListener('scroll', handleScrollOrResize, true);
+        window.removeEventListener('resize', handleScrollOrResize);
+      };
+    }
+  }, [isOpen, updatePosition]);
+
   // Click outside to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(target) &&
+        popupRef.current &&
+        !popupRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -295,7 +373,6 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
 
   return (
     <div
-      ref={wrapperRef}
       style={{
         position: 'relative',
         display: 'inline-block',
@@ -319,6 +396,7 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
 
       {/* Styled Input Trigger */}
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -350,202 +428,204 @@ export const WheelDatePicker: React.FC<WheelDatePickerProps> = ({
         <Calendar size={16} style={{ color: isOpen ? 'var(--accent-primary, #3b82f6)' : 'var(--text-muted, #94a3b8)' }} />
       </button>
 
-      {/* Popover Wheel Dropdown */}
-      {isOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            right: 0,
-            zIndex: 9999,
-            minWidth: '320px',
-            maxWidth: '380px',
-            width: '100%',
-            background: 'rgba(15, 23, 42, 0.96)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            borderRadius: '14px',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-            padding: '16px',
-            direction: 'rtl',
-            animation: 'fadeInScale 0.15s ease',
-          }}
-        >
-          {/* Header */}
+      {/* Popover Wheel Dropdown via Portal */}
+      {isOpen &&
+        createPortal(
           <div
+            ref={popupRef}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '12px',
-              paddingBottom: '10px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+              position: 'fixed',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+              zIndex: 9999999,
+              width: '340px',
+              maxWidth: '92vw',
+              background: 'rgba(15, 23, 42, 0.98)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(59, 130, 246, 0.4)',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              padding: '16px',
+              direction: 'rtl',
+              animation: 'fadeInScale 0.15s ease',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Calendar size={16} color="#60a5fa" />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>تحديد التاريخ</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-              }}
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          {/* Wheel Columns Container with Center Highlight Strip */}
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              gap: '6px',
-              background: 'rgba(0, 0, 0, 0.4)',
-              borderRadius: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.04)',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Center Selection Indicator Strip */}
+            {/* Header */}
             <div
-              style={{
-                position: 'absolute',
-                top: `${PADDING_OFFSET}px`,
-                left: '6px',
-                right: '6px',
-                height: `${ITEM_HEIGHT}px`,
-                background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(59, 130, 246, 0.15) 100%)',
-                borderTop: '1px solid rgba(96, 165, 250, 0.5)',
-                borderBottom: '1px solid rgba(96, 165, 250, 0.5)',
-                borderRadius: '6px',
-                pointerEvents: 'none',
-                zIndex: 1,
-              }}
-            />
-
-            {/* Day Column */}
-            <WheelColumn
-              items={days}
-              selectedValue={adjustedDay}
-              onSelect={setTempDay}
-              ariaLabel="اليوم"
-            />
-
-            {/* Month Column */}
-            <WheelColumn
-              items={months}
-              selectedValue={tempMonth}
-              onSelect={setTempMonth}
-              ariaLabel="الشهر"
-            />
-
-            {/* Year Column */}
-            <WheelColumn
-              items={years}
-              selectedValue={tempYear}
-              onSelect={setTempYear}
-              ariaLabel="السنة"
-            />
-          </div>
-
-          {/* Column Header Titles (RTL: Day | Month | Year) */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-around',
-              marginTop: '6px',
-              fontSize: '11px',
-              color: 'var(--text-muted)',
-              fontWeight: 600,
-            }}
-          >
-            <span>اليوم</span>
-            <span>الشهر</span>
-            <span>السنة</span>
-          </div>
-
-          {/* Quick Action Footer */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginTop: '14px',
-              paddingTop: '12px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-              gap: '8px',
-            }}
-          >
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button
-                type="button"
-                onClick={handleToday}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  background: 'rgba(59, 130, 246, 0.15)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                  color: '#93c5fd',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                <RotateCcw size={12} />
-                اليوم
-              </button>
-              <button
-                type="button"
-                onClick={handleClear}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.25)',
-                  color: '#f87171',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                مسح
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handleApply()}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '7px 18px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                border: 'none',
-                color: '#ffffff',
-                fontSize: '12px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+                justifyContent: 'space-between',
+                marginBottom: '12px',
+                paddingBottom: '10px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Check size={14} />
-              تأكيد
-            </button>
-          </div>
-        </div>
-      )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Calendar size={16} color="#60a5fa" />
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>تحديد التاريخ</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Wheel Columns Container with Center Highlight Strip */}
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                gap: '6px',
+                background: 'rgba(0, 0, 0, 0.4)',
+                borderRadius: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.04)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Center Selection Indicator Strip */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: `${PADDING_OFFSET}px`,
+                  left: '6px',
+                  right: '6px',
+                  height: `${ITEM_HEIGHT}px`,
+                  background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(59, 130, 246, 0.15) 100%)',
+                  borderTop: '1px solid rgba(96, 165, 250, 0.5)',
+                  borderBottom: '1px solid rgba(96, 165, 250, 0.5)',
+                  borderRadius: '6px',
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                }}
+              />
+
+              {/* Day Column */}
+              <WheelColumn
+                items={days}
+                selectedValue={adjustedDay}
+                onSelect={setTempDay}
+                ariaLabel="اليوم"
+              />
+
+              {/* Month Column */}
+              <WheelColumn
+                items={months}
+                selectedValue={tempMonth}
+                onSelect={setTempMonth}
+                ariaLabel="الشهر"
+              />
+
+              {/* Year Column */}
+              <WheelColumn
+                items={years}
+                selectedValue={tempYear}
+                onSelect={setTempYear}
+                ariaLabel="السنة"
+              />
+            </div>
+
+            {/* Column Header Titles (RTL: Day | Month | Year) */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+                marginTop: '6px',
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                fontWeight: 600,
+              }}
+            >
+              <span>اليوم</span>
+              <span>الشهر</span>
+              <span>السنة</span>
+            </div>
+
+            {/* Quick Action Footer */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: '14px',
+                paddingTop: '12px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                gap: '8px',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={handleToday}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    color: '#93c5fd',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <RotateCcw size={12} />
+                  اليوم
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#f87171',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  مسح
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleApply()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 18px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+                }}
+              >
+                <Check size={14} />
+                تأكيد
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
@@ -578,7 +658,9 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
   name,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   const parseTime = (timeStr?: string | null) => {
     if (!timeStr) {
@@ -602,9 +684,52 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
     }
   }, [value]);
 
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const POPUP_WIDTH = 300;
+    const POPUP_HEIGHT = 380;
+
+    let left = rect.right - POPUP_WIDTH;
+    if (left < 10) {
+      left = Math.max(10, rect.left);
+    }
+    if (left + POPUP_WIDTH > window.innerWidth - 10) {
+      left = window.innerWidth - POPUP_WIDTH - 10;
+    }
+
+    let top = rect.bottom + 6;
+    if (top + POPUP_HEIGHT > window.innerHeight && rect.top > POPUP_HEIGHT) {
+      top = rect.top - POPUP_HEIGHT - 6;
+    }
+
+    setCoords({ top, left });
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      const handleScrollOrResize = () => {
+        updatePosition();
+      };
+      window.addEventListener('scroll', handleScrollOrResize, true);
+      window.addEventListener('resize', handleScrollOrResize);
+      return () => {
+        window.removeEventListener('scroll', handleScrollOrResize, true);
+        window.removeEventListener('resize', handleScrollOrResize);
+      };
+    }
+  }, [isOpen, updatePosition]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(target) &&
+        popupRef.current &&
+        !popupRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -630,7 +755,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
   }));
 
   const minutes = Array.from({ length: Math.ceil(60 / minuteStep) }, (_, i) => {
-    const m = i * minuteStep;
+    const m = (i * minuteStep) % 60;
     return {
       value: m,
       label: String(m).padStart(2, '0') + ' دقيقة',
@@ -647,7 +772,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
     const now = new Date();
     const h = now.getHours();
     const rawM = now.getMinutes();
-    const m = Math.round(rawM / minuteStep) * minuteStep % 60;
+    const m = (Math.round(rawM / minuteStep) * minuteStep) % 60;
     setTempHour(h);
     setTempMinute(m);
     handleApply(h, m);
@@ -662,7 +787,6 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
 
   return (
     <div
-      ref={wrapperRef}
       style={{
         position: 'relative',
         display: 'inline-block',
@@ -684,6 +808,7 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
       )}
 
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -715,185 +840,187 @@ export const WheelTimePicker: React.FC<WheelTimePickerProps> = ({
         <Clock size={16} style={{ color: isOpen ? 'var(--accent-primary, #3b82f6)' : 'var(--text-muted, #94a3b8)' }} />
       </button>
 
-      {isOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            right: 0,
-            zIndex: 9999,
-            minWidth: '280px',
-            maxWidth: '340px',
-            width: '100%',
-            background: 'rgba(15, 23, 42, 0.96)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            borderRadius: '14px',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-            padding: '16px',
-            direction: 'rtl',
-            animation: 'fadeInScale 0.15s ease',
-          }}
-        >
+      {isOpen &&
+        createPortal(
           <div
+            ref={popupRef}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '12px',
-              paddingBottom: '10px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Clock size={16} color="#60a5fa" />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>تحديد الوقت</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-              }}
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              gap: '6px',
-              background: 'rgba(0, 0, 0, 0.4)',
-              borderRadius: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.04)',
-              overflow: 'hidden',
+              position: 'fixed',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+              zIndex: 9999999,
+              width: '300px',
+              maxWidth: '92vw',
+              background: 'rgba(15, 23, 42, 0.98)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(59, 130, 246, 0.4)',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              padding: '16px',
+              direction: 'rtl',
+              animation: 'fadeInScale 0.15s ease',
             }}
           >
             <div
               style={{
-                position: 'absolute',
-                top: `${PADDING_OFFSET}px`,
-                left: '6px',
-                right: '6px',
-                height: `${ITEM_HEIGHT}px`,
-                background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(59, 130, 246, 0.15) 100%)',
-                borderTop: '1px solid rgba(96, 165, 250, 0.5)',
-                borderBottom: '1px solid rgba(96, 165, 250, 0.5)',
-                borderRadius: '6px',
-                pointerEvents: 'none',
-                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '12px',
+                paddingBottom: '10px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               }}
-            />
-
-            <WheelColumn
-              items={hours}
-              selectedValue={tempHour}
-              onSelect={setTempHour}
-              ariaLabel="الساعة"
-            />
-
-            <WheelColumn
-              items={minutes}
-              selectedValue={tempMinute}
-              onSelect={setTempMinute}
-              ariaLabel="الدقيقة"
-            />
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-around',
-              marginTop: '6px',
-              fontSize: '11px',
-              color: 'var(--text-muted)',
-              fontWeight: 600,
-            }}
-          >
-            <span>الساعة</span>
-            <span>الدقيقة</span>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginTop: '14px',
-              paddingTop: '12px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-              gap: '8px',
-            }}
-          >
-            <div style={{ display: 'flex', gap: '6px' }}>
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Clock size={16} color="#60a5fa" />
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>تحديد الوقت</span>
+              </div>
               <button
                 type="button"
-                onClick={handleNow}
+                onClick={() => setIsOpen(false)}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  background: 'rgba(59, 130, 246, 0.15)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                  color: '#93c5fd',
-                  fontSize: '11px',
-                  fontWeight: 700,
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
                   cursor: 'pointer',
+                  padding: '4px',
                 }}
               >
-                <RotateCcw size={12} />
-                الآن
-              </button>
-              <button
-                type="button"
-                onClick={handleClear}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.25)',
-                  color: '#f87171',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                مسح
+                <X size={16} />
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleApply()}
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                gap: '6px',
+                background: 'rgba(0, 0, 0, 0.4)',
+                borderRadius: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.04)',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: `${PADDING_OFFSET}px`,
+                  left: '6px',
+                  right: '6px',
+                  height: `${ITEM_HEIGHT}px`,
+                  background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(59, 130, 246, 0.15) 100%)',
+                  borderTop: '1px solid rgba(96, 165, 250, 0.5)',
+                  borderBottom: '1px solid rgba(96, 165, 250, 0.5)',
+                  borderRadius: '6px',
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                }}
+              />
+
+              <WheelColumn
+                items={hours}
+                selectedValue={tempHour}
+                onSelect={setTempHour}
+                ariaLabel="الساعة"
+              />
+
+              <WheelColumn
+                items={minutes}
+                selectedValue={tempMinute}
+                onSelect={setTempMinute}
+                ariaLabel="الدقيقة"
+              />
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+                marginTop: '6px',
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                fontWeight: 600,
+              }}
+            >
+              <span>الساعة</span>
+              <span>الدقيقة</span>
+            </div>
+
+            <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '7px 18px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                border: 'none',
-                color: '#ffffff',
-                fontSize: '12px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+                justifyContent: 'space-between',
+                marginTop: '14px',
+                paddingTop: '12px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                gap: '8px',
               }}
             >
-              <Check size={14} />
-              تأكيد
-            </button>
-          </div>
-        </div>
-      )}
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={handleNow}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    color: '#93c5fd',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <RotateCcw size={12} />
+                  الآن
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#f87171',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  مسح
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleApply()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 18px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+                }}
+              >
+                <Check size={14} />
+                تأكيد
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
