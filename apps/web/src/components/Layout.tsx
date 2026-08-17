@@ -208,8 +208,12 @@ export const Layout: React.FC = () => {
           zIndex: 40,
           overflow: 'hidden',
           flexShrink: 0,
+          boxShadow: 'var(--shadow-md)',
         }}
       >
+        {/* Top Contracting Brand Hazard Accent Strip */}
+        <div className="hazard-stripe" style={{ height: '3px', flexShrink: 0 }} />
+
         {/* Brand Section */}
         <div
           style={{
@@ -220,6 +224,7 @@ export const Layout: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             flexShrink: 0,
+            background: 'var(--bg-surface-elevated, rgba(30, 41, 59, 0.3))',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -236,16 +241,17 @@ export const Layout: React.FC = () => {
                 color: '#ffffff',
                 fontWeight: 800,
                 fontSize: '1.1rem',
+                border: '1px solid rgba(245, 163, 0, 0.4)',
               }}
             >
               ERP
             </div>
             <div>
-              <h2 style={{ fontSize: '0.95rem', fontWeight: 800, whiteSpace: 'nowrap', margin: 0 }}>
-                منظومة المقاولات
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 800, whiteSpace: 'nowrap', margin: 0, color: 'var(--text-heading, #ffffff)' }}>
+                {t('header.system_edition') || 'منظومة المقاولات'}
               </h2>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
-                Saudi Edition 🇸🇦
+              <span style={{ fontSize: '0.7rem', color: 'var(--brand-accent, #f59e0b)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                {t('header.saudi_edition') || 'Saudi Edition 🇸🇦'}
               </span>
             </div>
           </div>
@@ -275,8 +281,8 @@ export const Layout: React.FC = () => {
                 key={group.id}
                 style={{
                   borderRadius: 'var(--radius-md)',
-                  background: hasActiveChild ? 'rgba(30, 41, 59, 0.5)' : 'transparent',
-                  border: hasActiveChild ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid transparent',
+                  background: hasActiveChild ? 'var(--bg-surface-elevated, rgba(37, 99, 235, 0.08))' : 'transparent',
+                  border: hasActiveChild ? '1px solid var(--border-glow, rgba(59, 130, 246, 0.25))' : '1px solid transparent',
                   overflow: 'hidden',
                   transition: 'all 0.2s ease',
                 }}
@@ -290,16 +296,16 @@ export const Layout: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '0.55rem 0.75rem',
+                    padding: '0.6rem 0.75rem',
                     background: 'transparent',
                     border: 'none',
                     borderRadius: 'var(--radius-md)',
-                    color: hasActiveChild ? '#ffffff' : 'var(--text-muted)',
+                    color: hasActiveChild ? 'var(--brand-primary, #2563eb)' : 'var(--text-main, #0e2a47)',
                     cursor: 'pointer',
-                    fontSize: '0.82rem',
+                    fontSize: '0.84rem',
                     fontWeight: 700,
                     transition: 'all var(--transition-fast)',
-                    textAlign: 'right',
+                    textAlign: direction === 'rtl' ? 'right' : 'left',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -310,11 +316,12 @@ export const Layout: React.FC = () => {
                     <span
                       style={{
                         fontSize: '0.68rem',
-                        padding: '1px 6px',
+                        padding: '1px 7px',
                         borderRadius: '10px',
-                        background: hasActiveChild ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                        color: hasActiveChild ? '#93c5fd' : 'var(--text-dim)',
-                        fontWeight: 600,
+                        background: hasActiveChild ? 'rgba(37, 99, 235, 0.2)' : 'var(--bg-input, rgba(0, 0, 0, 0.05))',
+                        color: hasActiveChild ? 'var(--brand-primary, #2563eb)' : 'var(--text-dim)',
+                        fontWeight: 700,
+                        border: '1px solid var(--border-subtle)',
                       }}
                     >
                       {group.links.length}
@@ -337,8 +344,8 @@ export const Layout: React.FC = () => {
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '0.2rem',
-                      padding: '0.25rem 0.4rem 0.4rem 0.4rem',
+                      gap: '0.25rem',
+                      padding: '0.25rem 0.4rem 0.45rem 0.4rem',
                     }}
                   >
                     {group.links.map((link) => (
@@ -350,19 +357,19 @@ export const Layout: React.FC = () => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           gap: '0.65rem',
-                          padding: '0.5rem 0.75rem',
+                          padding: '0.55rem 0.75rem',
                           borderRadius: 'var(--radius-sm)',
-                          color: isActive ? '#ffffff' : 'rgba(203, 213, 225, 0.85)',
+                          color: isActive ? '#ffffff' : 'var(--text-main, #0e2a47)',
                           background: isActive
-                            ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.4) 0%, rgba(30, 64, 175, 0.2) 100%)'
+                            ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
                             : 'transparent',
-                          border: isActive ? '1px solid rgba(96, 165, 250, 0.4)' : '1px solid transparent',
-                          fontWeight: isActive ? 700 : 500,
+                          border: isActive ? '1px solid rgba(245, 163, 0, 0.4)' : '1px solid transparent',
+                          fontWeight: isActive ? 700 : 600,
                           fontSize: '0.82rem',
                           textDecoration: 'none',
                           transition: 'all var(--transition-fast)',
                           whiteSpace: 'nowrap',
-                          boxShadow: isActive ? '0 2px 8px rgba(37, 99, 250, 0.25)' : 'none',
+                          boxShadow: isActive ? '0 3px 10px rgba(37, 99, 235, 0.35)' : 'none',
                         })}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
@@ -377,8 +384,9 @@ export const Layout: React.FC = () => {
                               fontSize: '0.62rem',
                               padding: '1px 5px',
                               borderRadius: '4px',
-                              background: 'rgba(255, 255, 255, 0.08)',
-                              color: 'var(--text-dim)',
+                              background: 'rgba(245, 163, 0, 0.2)',
+                              color: 'var(--brand-accent, #f59e0b)',
+                              fontWeight: 700,
                             }}
                           >
                             قريبًا
@@ -393,21 +401,50 @@ export const Layout: React.FC = () => {
           })}
         </nav>
 
-        {/* Sidebar Footer */}
+        {/* Sidebar Bottom Footer: Live Online & Currency Bar */}
         <div
           style={{
             padding: '0.75rem 1rem',
             borderTop: '1px solid var(--border-subtle)',
             fontSize: '0.75rem',
-            color: 'var(--text-dim)',
+            color: 'var(--text-muted)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            background: 'var(--bg-surface-elevated, rgba(30, 41, 59, 0.4))',
             flexShrink: 0,
           }}
         >
-          <span>العملة: SAR</span>
-          <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>متصل</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span style={{ color: 'var(--text-dim)' }}>{t('header.currency_label') || 'العملة'}:</span>
+            <span style={{ fontWeight: 800, color: 'var(--brand-accent, #f59e0b)', fontFamily: 'monospace' }}>SAR 🇸🇦</span>
+          </div>
+
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.2rem 0.55rem',
+              borderRadius: '9999px',
+              background: 'var(--status-success-bg, rgba(16, 185, 129, 0.15))',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              color: 'var(--status-success, #10b981)',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+            }}
+          >
+            <span
+              className="animate-pulse-soft"
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: '#10b981',
+              }}
+            />
+            <span>{t('header.online_status') || 'متصل'}</span>
+          </div>
         </div>
       </aside>
 

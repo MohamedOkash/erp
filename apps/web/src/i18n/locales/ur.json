@@ -235,5 +235,51 @@
     "password_hint": "سسٹم سیکیورٹی برقرار رکھنے کے لیے پاس ورڈ کم از کم 8 حروف کا ہونا ضروری ہے۔",
     "save_profile": "تبدیلیاں محفوظ کریں",
     "change_password": "پاس ورڈ تبدیل کریں"
+  },
+  "header": {
+    "company_label": "کمپنی",
+    "company_name": "ایڈوانسڈ کنسٹرکشن اینڈ کنٹریکٹنگ کمپنی",
+    "currency_label": "کرنسی",
+    "online_status": "منسلک",
+    "offline_status": "غیر متصل",
+    "system_edition": "تعمیراتی نظام",
+    "saudi_edition": "Saudi Edition 🇸🇦",
+    "toggle_sidebar": "سائیڈ بار تبدیل کریں",
+    "account_settings": "اکاؤنٹ کی ترتیبات",
+    "system_settings": "سسٹم کی ترتیبات",
+    "logout": "لاگ آؤٹ",
+    "user_default": "سسٹم صارف"
+  },
+  "nav": {
+    "groups": {
+      "overview": "جائزہ اور قیادت",
+      "operations": "سائٹ آپریشنز",
+      "resources": "وسائل اور ڈیٹا",
+      "finance": "مالیات اور معائنہ",
+      "reports": "دستاویزات اور رپورٹس",
+      "system": "انتظام اور سیکیورٹی"
+    },
+    "links": {
+      "dashboard": "ڈیش بورڈ اور کنٹرول",
+      "control_cards": "کنٹرول کارڈز اور منافع",
+      "daily_report": "متحدہ روزانہ رپورٹ",
+      "production": "روزانہ پیداوار اور مراحل",
+      "boq": "پیمائش اور پیشرفت",
+      "work_areas": "کام کے علاقے اور عمارات",
+      "attendance": "حاضری اور اوقات کار",
+      "transfers": "اسٹاف کی منتقلی",
+      "projects": "فیلڈ پراجیکٹس",
+      "branches": "شاخیں اور سیکٹرز",
+      "work_items": "فنشنگ آئٹمز کیٹلاگ",
+      "employees": "افرادی قوت اور عملہ",
+      "costs": "لاگت اور اخراجات کا تصفیہ",
+      "incentives": "فیلڈ مراعات",
+      "documents": "نقشے اور دستاویزات آرکائیو",
+      "saved_reports": "حسب ضرورت رپورٹس سنٹر",
+      "alerts": "انتباہات اور قواعد",
+      "users": "صارفین کا انتظام",
+      "rbac": "صلاحیتوں کا میٹرکس",
+      "settings": "سسٹم کی ترتیبات"
+    }
   }
 }

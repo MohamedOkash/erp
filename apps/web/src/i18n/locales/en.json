@@ -235,5 +235,51 @@
     "password_hint": "Password must be at least 8 characters long to maintain system security.",
     "save_profile": "Save Profile Changes",
     "change_password": "Change Password"
+  },
+  "header": {
+    "company_label": "Company",
+    "company_name": "Advanced Construction & Contracting Co.",
+    "currency_label": "Currency",
+    "online_status": "Connected",
+    "offline_status": "Offline",
+    "system_edition": "Contracting ERP",
+    "saudi_edition": "Saudi Edition 🇸🇦",
+    "toggle_sidebar": "Toggle Sidebar",
+    "account_settings": "Account Settings",
+    "system_settings": "System Settings",
+    "logout": "Sign Out",
+    "user_default": "System User"
+  },
+  "nav": {
+    "groups": {
+      "overview": "Overview & Executive",
+      "operations": "Site Operations",
+      "resources": "Resources & Masters",
+      "finance": "Finance & Compliance",
+      "reports": "Documents & Reports",
+      "system": "Administration & Security"
+    },
+    "links": {
+      "dashboard": "Dashboard & Control",
+      "control_cards": "Control Cards & Margin",
+      "daily_report": "Unified Daily Report",
+      "production": "Daily Production & Stages",
+      "boq": "BOQ & Work Progress",
+      "work_areas": "Work Areas & Buildings",
+      "attendance": "Attendance & Shifts",
+      "transfers": "Staff Transfers",
+      "projects": "Field Projects",
+      "branches": "Branches & Sectors",
+      "work_items": "Finishing Items Catalog",
+      "employees": "Workforce & Labor",
+      "costs": "Costs & Expense Reconciliation",
+      "incentives": "Field Incentives",
+      "documents": "Drawings & Documents Archive",
+      "saved_reports": "Custom Reports Center",
+      "alerts": "Alerts & Inspection Rules",
+      "users": "User Management",
+      "rbac": "RBAC Permissions Matrix",
+      "settings": "System Settings"
+    }
   }
 }
