@@ -31,7 +31,7 @@ const StatValueDisplay: React.FC<{ value: string | number }> = ({ value }) => {
 export const StatsStrip: React.FC<StatsStripProps> = ({
   items,
   isLoading = false,
-  minWidth = '200px',
+  minWidth = '150px',
 }) => {
   if (isLoading) {
     return <StatsStripSkeleton count={items.length || 4} />;

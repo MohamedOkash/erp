@@ -129,10 +129,37 @@ export const Layout: React.FC = () => {
   const { t, direction } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth <= 1024 : false,
+  );
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth > 1024 : true,
+  );
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Responsive window resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 1024;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname, isMobile]);
 
   // Group accordion state
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -159,7 +186,7 @@ export const Layout: React.FC = () => {
     setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
   };
 
-  // Close user dropdown when clicking outside or pressing Escape
+  // Close user dropdown or drawer when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -170,18 +197,19 @@ export const Layout: React.FC = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setUserMenuOpen(false);
+        if (isMobile && sidebarOpen) {
+          setSidebarOpen(false);
+        }
       }
     };
 
-    if (userMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [userMenuOpen]);
+  }, [userMenuOpen, isMobile, sidebarOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -189,26 +217,38 @@ export const Layout: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', background: 'var(--bg-main)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', background: 'var(--bg-main)', position: 'relative' }}>
       <div className="app-bg-glow" />
 
-      {/* Right Fixed Sidebar (RTL) */}
+      {/* Backdrop for Mobile Off-Canvas Drawer */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="sidebar-drawer-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar (Desktop Sticky / Mobile Off-canvas Drawer) */}
       <aside
+        className={isMobile ? 'sidebar-offcanvas' : ''}
         style={{
-          width: sidebarOpen ? '270px' : '0px',
+          width: isMobile ? '275px' : (sidebarOpen ? '270px' : '0px'),
           minHeight: '100vh',
           background: 'var(--bg-sidebar, #0f172a)',
           backdropFilter: 'blur(20px)',
-          borderLeft: sidebarOpen ? '1px solid var(--border-subtle)' : 'none',
+          borderLeft: !isMobile && sidebarOpen ? '1px solid var(--border-subtle)' : 'none',
           display: 'flex',
           flexDirection: 'column',
-          transition: 'all var(--transition-normal)',
-          position: 'sticky',
+          transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s ease',
+          position: isMobile ? 'fixed' : 'sticky',
           top: 0,
-          zIndex: 40,
+          bottom: isMobile ? 0 : undefined,
+          [direction === 'rtl' ? 'right' : 'left']: isMobile ? (sidebarOpen ? 0 : '-290px') : undefined,
+          zIndex: isMobile ? 95 : 40,
           overflow: 'hidden',
           flexShrink: 0,
-          boxShadow: 'var(--shadow-md)',
+          boxShadow: isMobile && sidebarOpen ? '0 0 35px rgba(0,0,0,0.6)' : 'var(--shadow-md)',
         }}
       >
         {/* Top Contracting Brand Hazard Accent Strip */}
@@ -452,6 +492,7 @@ export const Layout: React.FC = () => {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden' }}>
         {/* Top Header (64px) */}
         <header
+          className="header-compact"
           style={{
             height: '64px',
             borderBottom: '1px solid var(--border-subtle)',
@@ -460,24 +501,25 @@ export const Layout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 1.5rem',
+            padding: '0 1.25rem',
             zIndex: 45,
             flexShrink: 0,
           }}
         >
           {/* Left Controls & Company Name */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <button
               type="button"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="btn btn-secondary"
               style={{ padding: '0.45rem', borderRadius: 'var(--radius-sm)' }}
               title={t('header.toggle_sidebar') || 'تبديل القائمة الجانبية'}
+              aria-label="Toggle Navigation"
             >
-              {sidebarOpen ? <Menu size={18} /> : <X size={18} />}
+              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{t('header.company_label') || 'الشركة'}:</span>
               <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-heading, #ffffff)' }}>
                 {t('header.company_name') || 'شركة البناء المتقدمة للتطوير والمقاولات'}
@@ -700,7 +742,7 @@ export const Layout: React.FC = () => {
           onClick={() => userMenuOpen && setUserMenuOpen(false)}
           style={{
             flex: 1,
-            padding: '1.5rem',
+            padding: 'clamp(0.85rem, 2.5vw, 1.75rem)',
             overflowY: 'auto',
           }}
         >

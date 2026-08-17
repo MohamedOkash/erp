@@ -673,5 +673,93 @@ input[type="time"]::-webkit-datetime-edit {
   }
 }
 
+/* ============================================================
+   Responsive Table & Layout Architecture
+   ============================================================ */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  min-width: 680px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mobile-record-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.15rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.mobile-record-card:hover {
+  border-color: var(--border-focus);
+}
+
+/* Off-Canvas Mobile Drawer */
+.sidebar-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 85;
+  transition: opacity 0.25s ease;
+}
+
+@media (max-width: 1024px) {
+  .sidebar-offcanvas {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    z-index: 95 !important;
+    height: 100vh !important;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.75) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .form-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  .desktop-table-view {
+    display: none !important;
+  }
+
+  .mobile-cards-view {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.85rem !important;
+  }
+
+  .header-compact {
+    padding: 0 0.85rem !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-cards-view {
+    display: none !important;
+  }
+
+  .desktop-table-view {
+    display: block !important;
+  }
+}
+
+
 
 

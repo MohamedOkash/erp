@@ -504,7 +504,8 @@ export const ProductionPage: React.FC = () => {
           className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
           style={{ overflow: 'hidden' }}
         >
-          <div style={{ overflowX: 'auto' }}>
+          {/* Desktop Table View */}
+          <div className="desktop-table-view table-responsive">
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -591,6 +592,53 @@ export const ProductionPage: React.FC = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards View (<=768px) */}
+          <div className="mobile-cards-view" style={{ padding: '0.75rem' }}>
+            {paginatedRecords.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                لا توجد سجلات إنتاجية مطابقة لمعايير البحث
+              </div>
+            ) : (
+              paginatedRecords.map((rec) => (
+                <div key={rec.id} className="mobile-record-card">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', fontWeight: 700 }}>
+                      <Calendar size={14} color="#60a5fa" />
+                      <span>{rec.date ? rec.date.split('T')[0] : '—'}</span>
+                    </div>
+                    <div>{getStatusBadge(rec.status)}</div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-heading)' }}>{rec.projectName}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{rec.workItemName} {rec.stageName ? `• ${rec.stageName}` : ''}</div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', background: 'var(--bg-surface-elevated)', padding: '0.6rem', borderRadius: 'var(--radius-md)' }}>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>الفعلي / المستهدف</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--brand-primary)' }}>{rec.actualQuantity} / {rec.targetQuantity}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>نسبة الإنجاز</div>
+                      <div>{getRatioBadge(Number(rec.actualQuantity), Number(rec.targetQuantity))}</div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setViewingRecord(rec)}
+                    className="btn btn-secondary"
+                    style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem', gap: '0.4rem', justifyContent: 'center' }}
+                  >
+                    <Eye size={15} color="#60a5fa" />
+                    <span>عرض التفاصيل والاعتماد</span>
+                  </button>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Pagination */}
