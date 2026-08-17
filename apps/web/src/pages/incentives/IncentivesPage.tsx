@@ -10,6 +10,7 @@ import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
 import { WheelDatePicker } from '../../components/WheelPicker';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   Award,
   Plus,
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react';
 
 export const IncentivesPage: React.FC = () => {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<'ledger' | 'calculate' | 'rules'>('ledger');
 
   // Rules State
@@ -325,10 +327,10 @@ export const IncentivesPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Award size={26} color="#f59e0b" />
-            <span>الحوافز والمكافآت التشغيلية</span>
+            <span>{t('finance_reports.incentives_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            محرك احتساب مكافآت الإنجاز وتجاوز المعدلات، ترحيل الاستحقاقات وإدارة سجل الصرف الميداني
+            {t('nav.links.incentives')}
           </p>
         </div>
 

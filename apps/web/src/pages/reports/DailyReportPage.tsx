@@ -4,6 +4,7 @@ import type { DailyReportRow } from '../../api/control-cards.api';
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
 import { WheelDatePicker } from '../../components/WheelPicker';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   FolderKanban,
   Calendar,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 
 export const DailyReportPage: React.FC = () => {
+  const { t } = useI18n();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -120,7 +122,7 @@ export const DailyReportPage: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1440px', margin: '0 auto' }} dir="rtl">
+    <div className="animate-fade-in" style={{ maxWidth: '1440px', margin: '0 auto' }}>
       {/* Header */}
       <div
         style={{
@@ -135,10 +137,10 @@ export const DailyReportPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Activity size={28} color="#34d399" />
-            <span>التقرير اليومي للإنتاجية والعمالة الموزونة (Daily Control Report)</span>
+            <span>{t('finance_reports.reports_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            متابعة فورية للكميات المنفذة ميدانيًا، والمكافئ الموزون للبنود، وتكلفة العمالة اليومية المحسوبة.
+            {t('nav.links.daily_report')}
           </p>
         </div>
 

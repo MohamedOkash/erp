@@ -149,6 +149,14 @@
     "work_items_title": "دليل وتوصيف بنود الأعمال (BOQ Items)",
     "add_item": "إضافة بند عمل"
   },
+  "finance_reports": {
+    "costs_title": "تكاليف الإنتاج ومطابقة المصاريف",
+    "incentives_title": "الحوافز والمكافآت الميدانية",
+    "control_cards_title": "بطاقات التحكم والربحية (Control Cards)",
+    "documents_title": "أرشيف المستندات والملفات",
+    "reports_title": "التقارير اليومية والتحليلية",
+    "alerts_title": "إدارة التنبيهات وقواعد الرقابة"
+  },
   "account_modal": {
     "title": "إعدادات الحساب الشخصي والأمان",
     "tab_profile": "البيانات الشخصية والملف",

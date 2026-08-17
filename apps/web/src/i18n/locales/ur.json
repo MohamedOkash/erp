@@ -149,6 +149,14 @@
     "work_items_title": "کام کی اشیاء کی کیٹلاگ (BOQ Items)",
     "add_item": "کام کا آئٹم شامل کریں"
   },
+  "finance_reports": {
+    "costs_title": "پیداواری لاگت اور اخراجات",
+    "incentives_title": "فیلڈ مراعات اور بونس",
+    "control_cards_title": "کنٹرول کارڈز اور منافع کا تجزیہ",
+    "documents_title": "دستاویزات اور فائلز آرکائیو",
+    "reports_title": "روزانہ اور تجزیاتی رپورٹس",
+    "alerts_title": "انتباہات اور نگرانی کے قواعد"
+  },
   "account_modal": {
     "title": "ذاتی اکاؤنٹ اور سیکیورٹی ترتیبات",
     "tab_profile": "ذاتی معلومات اور پروفائل",

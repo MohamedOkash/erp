@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { alertsApi } from '../../api/alerts.api';
 import type { AlertRule, NotificationItem } from '../../api/alerts.api';
 import { Modal } from '../../components/Modal';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   BellRing,
   Plus,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export const AlertsPage: React.FC = () => {
+  const { t } = useI18n();
   const [rules, setRules] = useState<AlertRule[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -144,10 +146,10 @@ export const AlertsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <BellRing size={28} color="#60a5fa" />
-            <span>التنبيهات المجدولة ومركز الإشعارات</span>
+            <span>{t('finance_reports.alerts_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            محرك الفحص الآلي وقواعد التحذير المبكر (انخفاض الإنتاجية، انتهاء الإقامات، والغياب).
+            {t('nav.links.alerts')}
           </p>
         </div>
 

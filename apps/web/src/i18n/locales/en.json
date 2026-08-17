@@ -149,6 +149,14 @@
     "work_items_title": "Work Items & Catalog (BOQ Items)",
     "add_item": "Add Work Item"
   },
+  "finance_reports": {
+    "costs_title": "Production Costs & Expense Reconciliation",
+    "incentives_title": "Field Incentives & Bonuses",
+    "control_cards_title": "Control Cards & Margin Analysis",
+    "documents_title": "Documents Archive & Files",
+    "reports_title": "Daily & Analytical Reports",
+    "alerts_title": "Alerts & Site Supervision Rules"
+  },
   "account_modal": {
     "title": "Personal Account & Security Settings",
     "tab_profile": "Profile & Basic Info",

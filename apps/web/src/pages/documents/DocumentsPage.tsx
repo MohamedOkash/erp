@@ -8,6 +8,7 @@ import { projectsApi, type Project } from '../../api/projects.api';
 import { Modal } from '../../components/Modal';
 import { StatsStrip } from '../../components/StatsStrip';
 import { TableSkeleton } from '../../components/skeletons';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   FileText,
   Plus,
@@ -27,6 +28,7 @@ import {
 } from 'lucide-react';
 
 export const DocumentsPage: React.FC = () => {
+  const { t } = useI18n();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState(0);
@@ -295,10 +297,10 @@ export const DocumentsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <FileText size={26} color="#60a5fa" />
-            <span>الأرشيف والمستندات الهندسية</span>
+            <span>{t('finance_reports.documents_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            إدارة وتخزين عقود المشاريع، المخططات التنفيذية، المستخلصات مع تتبع كامل للإصدارات السابقة
+            {t('nav.links.documents')}
           </p>
         </div>
 

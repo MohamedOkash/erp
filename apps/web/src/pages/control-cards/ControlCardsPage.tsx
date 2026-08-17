@@ -6,6 +6,7 @@ import type { WorkCategory } from '../../api/work-categories.api';
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
 import { ControlCardDetailModal } from './ControlCardDetailModal';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   FileSpreadsheet,
   Search,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 
 export const ControlCardsPage: React.FC = () => {
+  const { t } = useI18n();
   const [cards, setCards] = useState<ControlCardSummary[]>([]);
   const [categories, setCategories] = useState<WorkCategory[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -85,10 +87,10 @@ export const ControlCardsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <FileSpreadsheet size={28} color="#60a5fa" />
-            <span>بطاقات التحكم الحية (Live Control Cards)</span>
+            <span>{t('finance_reports.control_cards_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            النسخة الرقمية الحية لشيتات الإكسيل الأصلية — تربط معدلات الإنتاجية، الأوزان، تكلفة العمالة، وهوامش الربح مباشرة مع تنفيذ الموقع.
+            {t('nav.links.control_cards')}
           </p>
         </div>
 
