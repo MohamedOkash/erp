@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export const NotificationsPage: React.FC = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -180,12 +180,14 @@ export const NotificationsPage: React.FC = () => {
     try {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return '—';
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      const hh = String(d.getHours()).padStart(2, '0');
-      const min = String(d.getMinutes()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+      const localeCode = language === 'en' ? 'en-US' : language === 'ur' ? 'ur-PK' : 'ar-SA';
+      return d.toLocaleDateString(localeCode, {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     } catch {
       return '—';
     }
