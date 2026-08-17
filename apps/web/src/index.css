@@ -63,44 +63,44 @@
 }
 
 [data-theme="light"] {
-  /* Light Theme Color Palette */
-  --bg-main: #f1f5f9;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #f8fafc;
-  --bg-card: rgba(255, 255, 255, 0.95);
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --bg-header: rgba(255, 255, 255, 0.94);
-  --bg-sidebar: #ffffff;
-  --bg-input: #ffffff;
-  --bg-dropdown: #ffffff;
+  /* Light Theme Color Palette - Contracting Brand Identity */
+  --bg-main: #F4F6F9;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.92);
+  --bg-header: #FFFFFF;
+  --bg-sidebar: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --bg-dropdown: #FFFFFF;
   
-  --border-subtle: rgba(203, 213, 225, 0.85);
-  --border-focus: #2563eb;
-  --border-glow: rgba(37, 99, 235, 0.2);
+  --border-subtle: #E2E8F0;
+  --border-focus: #2563EB;
+  --border-glow: rgba(37, 99, 235, 0.25);
 
-  --text-main: #0f172a;
-  --text-heading: #0f172a;
-  --text-muted: #475569;
-  --text-dim: #64748b;
+  --text-main: #0E2A47;
+  --text-heading: #0B2238;
+  --text-muted: #64748B;
+  --text-dim: #94A3B8;
 
-  --brand-primary: #2563eb;
-  --brand-primary-hover: #1d4ed8;
-  --brand-accent: #d97706;
-  --brand-accent-hover: #b45309;
+  --brand-primary: #2563EB;
+  --brand-primary-hover: #1D4ED8;
+  --brand-accent: #F5A300;
+  --brand-accent-hover: #D97706;
 
   --status-success: #059669;
-  --status-success-bg: rgba(16, 185, 129, 0.12);
-  --status-warning: #d97706;
-  --status-warning-bg: rgba(245, 158, 11, 0.12);
-  --status-danger: #dc2626;
-  --status-danger-bg: rgba(239, 68, 68, 0.12);
-  --status-info: #0284c7;
-  --status-info-bg: rgba(14, 165, 233, 0.12);
+  --status-success-bg: rgba(5, 150, 105, 0.12);
+  --status-warning: #D97706;
+  --status-warning-bg: rgba(245, 163, 0, 0.14);
+  --status-danger: #DC2626;
+  --status-danger-bg: rgba(220, 38, 38, 0.12);
+  --status-info: #0284C7;
+  --status-info-bg: rgba(2, 132, 199, 0.12);
 
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(14, 42, 71, 0.06), 0 2px 4px -1px rgba(14, 42, 71, 0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(14, 42, 71, 0.08), 0 8px 10px -6px rgba(14, 42, 71, 0.04);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.12);
 
   color-scheme: light;
 }
@@ -188,7 +188,7 @@ body {
   filter: blur(50px);
 }
 
-/* Glassmorphism Styles */
+/* Glassmorphism & Card Styles */
 .glass-card {
   background: var(--bg-card);
   backdrop-filter: blur(16px);
@@ -196,6 +196,12 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.16), 0 0 0 1px var(--border-glow);
 }
 
 .glass-panel {
@@ -204,6 +210,7 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Typography & Badges */
@@ -593,5 +600,78 @@ input[type="time"]::-webkit-datetime-edit {
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(59, 130, 246, 0.5);
 }
+
+/* ============================================================
+   Contracting Brand Hazard Stripes
+   ============================================================ */
+.hazard-stripe {
+  height: 3px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #F5A300,
+    #F5A300 10px,
+    #0E2A47 10px,
+    #0E2A47 20px
+  );
+}
+
+.hazard-stripe-subtle {
+  height: 3px;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(245, 163, 0, 0.75),
+    rgba(245, 163, 0, 0.75) 10px,
+    rgba(14, 42, 71, 0.75) 10px,
+    rgba(14, 42, 71, 0.75) 20px
+  );
+}
+
+/* ============================================================
+   Pure CSS Animations
+   ============================================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulseSoft {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.03);
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulseSoft 2.5s ease-in-out infinite;
+}
+
+/* ============================================================
+   Accessibility: Prefers-Reduced-Motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 
 

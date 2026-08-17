@@ -94,15 +94,19 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div
-        className="glass-card animate-fade-in"
+        className="glass-card animate-fade-in-up"
         style={{
           width: '100%',
           maxWidth: '480px',
           padding: '2.5rem',
           position: 'relative',
           zIndex: 10,
+          overflow: 'hidden',
         }}
       >
+        {/* Contracting Brand Hazard Stripe */}
+        <div className="hazard-stripe" style={{ position: 'absolute', top: 0, left: 0, right: 0 }} />
+
         {/* Header / Brand Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div

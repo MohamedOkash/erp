@@ -1,5 +1,6 @@
 import React from 'react';
 import { StatsStripSkeleton } from './skeletons';
+import { useCountUp } from '../hooks/useCountUp';
 
 export interface StatItem {
   label: string;
@@ -19,6 +20,14 @@ interface StatsStripProps {
   minWidth?: string;
 }
 
+const StatValueDisplay: React.FC<{ value: string | number }> = ({ value }) => {
+  if (typeof value === 'number') {
+    const animated = useCountUp(value, 700);
+    return <span>{animated.toLocaleString()}</span>;
+  }
+  return <span>{value}</span>;
+};
+
 export const StatsStrip: React.FC<StatsStripProps> = ({
   items,
   isLoading = false,
@@ -30,7 +39,7 @@ export const StatsStrip: React.FC<StatsStripProps> = ({
 
   return (
     <div
-      className="animate-fade-in"
+      className="animate-fade-in-up"
       style={{
         display: 'grid',
         gridTemplateColumns: `repeat(auto-fit, minmax(${minWidth}, 1fr))`,
@@ -39,7 +48,7 @@ export const StatsStrip: React.FC<StatsStripProps> = ({
       }}
     >
       {items.map((item, idx) => {
-        const accentColor = item.color || '#3b82f6';
+        const accentColor = item.color || 'var(--brand-primary, #3b82f6)';
         return (
           <div
             key={idx}
@@ -53,10 +62,9 @@ export const StatsStrip: React.FC<StatsStripProps> = ({
               position: 'relative',
               overflow: 'hidden',
               border: '1px solid var(--border-subtle)',
-              transition: 'transform var(--transition-fast), border-color var(--transition-fast)',
             }}
           >
-            {/* Left Accent Glow Line */}
+            {/* Right Accent Glow Line */}
             <div
               style={{
                 position: 'absolute',
@@ -87,12 +95,12 @@ export const StatsStrip: React.FC<StatsStripProps> = ({
                 style={{
                   fontSize: '1.45rem',
                   fontWeight: 800,
-                  color: '#ffffff',
+                  color: 'var(--text-heading, #ffffff)',
                   lineHeight: 1.2,
                   letterSpacing: '-0.02em',
                 }}
               >
-                {item.value}
+                <StatValueDisplay value={item.value} />
               </div>
 
               {item.helper && (

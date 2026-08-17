@@ -197,7 +197,7 @@ export const Layout: React.FC = () => {
         style={{
           width: sidebarOpen ? '270px' : '0px',
           minHeight: '100vh',
-          background: 'rgba(15, 23, 42, 0.98)',
+          background: 'var(--bg-sidebar, #0f172a)',
           backdropFilter: 'blur(20px)',
           borderLeft: sidebarOpen ? '1px solid var(--border-subtle)' : 'none',
           display: 'flex',
@@ -418,7 +418,7 @@ export const Layout: React.FC = () => {
           style={{
             height: '64px',
             borderBottom: '1px solid var(--border-subtle)',
-            background: 'rgba(11, 19, 41, 0.88)',
+            background: 'var(--bg-header, rgba(11, 19, 41, 0.88))',
             backdropFilter: 'blur(12px)',
             display: 'flex',
             alignItems: 'center',
@@ -435,15 +435,15 @@ export const Layout: React.FC = () => {
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="btn btn-secondary"
               style={{ padding: '0.45rem', borderRadius: 'var(--radius-sm)' }}
-              title="تبديل القائمة الجانبية"
+              title={t('header.toggle_sidebar') || 'تبديل القائمة الجانبية'}
             >
               {sidebarOpen ? <Menu size={18} /> : <X size={18} />}
             </button>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>الشركة:</span>
-              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
-                شركة البناء المتقدمة للتطوير والمقاولات
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{t('header.company_label') || 'الشركة'}:</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-heading, #ffffff)' }}>
+                {t('header.company_name') || 'شركة البناء المتقدمة للتطوير والمقاولات'}
               </span>
             </div>
 
@@ -654,6 +654,9 @@ export const Layout: React.FC = () => {
             </div>
           </div>
         </header>
+
+        {/* Construction Hazard Accent Stripe */}
+        <div className="hazard-stripe-subtle" style={{ flexShrink: 0 }} />
 
         {/* Scrollable Main Content */}
         <main
