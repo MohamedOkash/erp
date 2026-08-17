@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { NotificationBell } from './NotificationBell';
 import {
@@ -25,14 +25,129 @@ import {
   X,
   User,
   Shield,
+  HardHat,
+  ChevronDown,
 } from 'lucide-react';
+
+interface SidebarLink {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  comingSoon?: boolean;
+}
+
+interface SidebarGroup {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  color: string;
+  links: SidebarLink[];
+}
+
+const SIDEBAR_GROUPS: SidebarGroup[] = [
+  {
+    id: 'overview',
+    title: 'نظرة عامة',
+    icon: <LayoutDashboard size={16} />,
+    color: '#60a5fa',
+    links: [
+      { to: '/dashboard', label: 'لوحة التحكم', icon: <LayoutDashboard size={16} /> },
+      { to: '/control-cards', label: 'بطاقات التحكم', icon: <FileSpreadsheet size={16} /> },
+      { to: '/daily-report', label: 'التقرير اليومي', icon: <BarChart3 size={16} /> },
+    ],
+  },
+  {
+    id: 'operations',
+    title: 'عمليات الموقع',
+    icon: <HardHat size={16} />,
+    color: '#f59e0b',
+    links: [
+      { to: '/production', label: 'الإنتاجية اليومية', icon: <Layers size={16} /> },
+      { to: '/boq', label: 'المقايسة وتقدم التنفيذ', icon: <FileSpreadsheet size={16} /> },
+      { to: '/work-areas', label: 'مناطق العمل (الهيكل)', icon: <Network size={16} /> },
+      { to: '/attendance', label: 'الحضور والانصراف', icon: <CalendarCheck size={16} /> },
+      { to: '/transfers', label: 'نقل الكوادر والمشرفين', icon: <ArrowLeftRight size={16} /> },
+    ],
+  },
+  {
+    id: 'resources',
+    title: 'الموارد والبيانات',
+    icon: <Building size={16} />,
+    color: '#34d399',
+    links: [
+      { to: '/employees', label: 'الموظفون والعمال', icon: <Users size={16} /> },
+      { to: '/branches', label: 'الفروع', icon: <Building size={16} /> },
+      { to: '/projects', label: 'المشاريع', icon: <FolderKanban size={16} /> },
+      { to: '/work-items', label: 'بنود الأعمال (BOQ)', icon: <CheckSquare size={16} /> },
+    ],
+  },
+  {
+    id: 'finance',
+    title: 'المالية',
+    icon: <DollarSign size={16} />,
+    color: '#a78bfa',
+    links: [
+      { to: '/costs', label: 'التكاليف والمصروفات', icon: <DollarSign size={16} /> },
+      { to: '/incentives', label: 'الحوافز والمكافآت', icon: <Award size={16} /> },
+    ],
+  },
+  {
+    id: 'documents',
+    title: 'المستندات والتقارير',
+    icon: <FileText size={16} />,
+    color: '#38bdf8',
+    links: [
+      { to: '/documents', label: 'المستندات والأرشيف', icon: <FileText size={16} /> },
+      { to: '/reports', label: 'التقارير والمؤشرات', icon: <BarChart3 size={16} /> },
+      { to: '/alerts', label: 'قواعد التنبيهات الميدانية', icon: <BellRing size={16} /> },
+    ],
+  },
+  {
+    id: 'system',
+    title: 'النظام والأمان',
+    icon: <Shield size={16} />,
+    color: '#f87171',
+    links: [
+      { to: '/notifications', label: 'مركز الإشعارات والتنبيهات', icon: <Bell size={16} /> },
+      { to: '/users', label: 'إدارة الحسابات والمستخدمين', icon: <Users size={16} /> },
+      { to: '/rbac', label: 'الصلاحيات (RBAC)', icon: <Shield size={16} /> },
+      { to: '/settings', label: 'الإعدادات', icon: <Settings size={16} /> },
+    ],
+  },
+];
 
 export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Group accordion state
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    overview: true,
+    operations: true,
+    resources: false,
+    finance: false,
+    documents: false,
+    system: false,
+  });
+
+  // Auto-expand group containing current active route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const activeGroup = SIDEBAR_GROUPS.find((group) =>
+      group.links.some((link) => link.to === currentPath || currentPath.startsWith(link.to + '/')),
+    );
+    if (activeGroup) {
+      setOpenGroups((prev) => ({ ...prev, [activeGroup.id]: true }));
+    }
+  }, [location.pathname]);
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
 
   // Close user dropdown when clicking outside or pressing Escape
   useEffect(() => {
@@ -63,30 +178,6 @@ export const Layout: React.FC = () => {
     navigate('/login');
   };
 
-  const navLinks = [
-    { to: '/dashboard', label: 'لوحة التحكم', icon: <LayoutDashboard size={19} /> },
-    { to: '/control-cards', label: 'بطاقات التحكم', icon: <FileSpreadsheet size={19} /> },
-    { to: '/daily-report', label: 'التقرير اليومي', icon: <BarChart3 size={19} /> },
-    { to: '/branches', label: 'الفروع', icon: <Building size={19} /> },
-    { to: '/projects', label: 'المشاريع', icon: <FolderKanban size={19} /> },
-    { to: '/work-items', label: 'بنود الأعمال (BOQ)', icon: <CheckSquare size={19} /> },
-    { to: '/work-areas', label: 'مناطق العمل (الهيكل)', icon: <Network size={19} /> },
-    { to: '/employees', label: 'الموظفون والعمال', icon: <Users size={19} /> },
-    { to: '/transfers', label: 'نقل الكوادر والمشرفين', icon: <ArrowLeftRight size={19} /> },
-    { to: '/production', label: 'الإنتاجية اليومية', icon: <Layers size={19} /> },
-    { to: '/boq', label: 'المقايسة وتقدم التنفيذ', icon: <FileSpreadsheet size={19} /> },
-    { to: '/attendance', label: 'الحضور والانصراف', icon: <CalendarCheck size={19} /> },
-    { to: '/costs', label: 'التكاليف والمصروفات', icon: <DollarSign size={19} /> },
-    { to: '/incentives', label: 'الحوافز والمكافآت', icon: <Award size={19} /> },
-    { to: '/documents', label: 'المستندات والأرشيف', icon: <FileText size={19} /> },
-    { to: '/reports', label: 'التقارير والمؤشرات', icon: <BarChart3 size={19} /> },
-    { to: '/alerts', label: 'قواعد التنبيهات الميدانية', icon: <BellRing size={19} /> },
-    { to: '/notifications', label: 'مركز الإشعارات والتنبيهات', icon: <Bell size={19} /> },
-    { to: '/users', label: 'إدارة الحسابات والمستخدمين', icon: <Users size={19} /> },
-    { to: '/rbac', label: 'مصفوفة الصلاحيات والأدوار', icon: <Shield size={19} /> },
-    { to: '/settings', label: 'الإعدادات', icon: <Settings size={19} /> },
-  ];
-
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', background: 'var(--bg-main)' }}>
       <div className="app-bg-glow" />
@@ -94,10 +185,10 @@ export const Layout: React.FC = () => {
       {/* Right Fixed Sidebar (RTL) */}
       <aside
         style={{
-          width: sidebarOpen ? '260px' : '0px',
+          width: sidebarOpen ? '270px' : '0px',
           minHeight: '100vh',
-          background: 'rgba(17, 29, 56, 0.96)',
-          backdropFilter: 'blur(16px)',
+          background: 'rgba(15, 23, 42, 0.98)',
+          backdropFilter: 'blur(20px)',
           borderLeft: sidebarOpen ? '1px solid var(--border-subtle)' : 'none',
           display: 'flex',
           flexDirection: 'column',
@@ -118,6 +209,7 @@ export const Layout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            flexShrink: 0,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -139,7 +231,7 @@ export const Layout: React.FC = () => {
               ERP
             </div>
             <div>
-              <h2 style={{ fontSize: '0.95rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 800, whiteSpace: 'nowrap', margin: 0 }}>
                 منظومة المقاولات
               </h2>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
@@ -149,55 +241,157 @@ export const Layout: React.FC = () => {
           </div>
         </div>
 
-        {/* Navigation Links */}
+        {/* Grouped Accordion Navigation */}
         <nav
+          className="sidebar-scroll"
           style={{
             flex: 1,
-            padding: '1rem 0.75rem',
+            padding: '0.85rem 0.65rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.25rem',
+            gap: '0.5rem',
             overflowY: 'auto',
+            overflowX: 'hidden',
           }}
         >
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.65rem 0.9rem',
-                borderRadius: 'var(--radius-md)',
-                color: isActive ? '#ffffff' : 'var(--text-muted)',
-                background: isActive
-                  ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(30, 64, 175, 0.15) 100%)'
-                  : 'transparent',
-                border: isActive ? '1px solid rgba(59, 130, 246, 0.35)' : '1px solid transparent',
-                fontWeight: isActive ? 600 : 500,
-                fontSize: '0.875rem',
-                textDecoration: 'none',
-                transition: 'all var(--transition-fast)',
-                whiteSpace: 'nowrap',
-              })}
-            >
-              {link.icon}
-              <span>{link.label}</span>
-            </NavLink>
-          ))}
+          {SIDEBAR_GROUPS.map((group) => {
+            const isOpen = !!openGroups[group.id];
+            const hasActiveChild = group.links.some(
+              (l) => l.to === location.pathname || location.pathname.startsWith(l.to + '/'),
+            );
+
+            return (
+              <div
+                key={group.id}
+                style={{
+                  borderRadius: 'var(--radius-md)',
+                  background: hasActiveChild ? 'rgba(30, 41, 59, 0.5)' : 'transparent',
+                  border: hasActiveChild ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid transparent',
+                  overflow: 'hidden',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {/* Group Accordion Header */}
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.55rem 0.75rem',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    color: hasActiveChild ? '#ffffff' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    transition: 'all var(--transition-fast)',
+                    textAlign: 'right',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <span style={{ color: group.color, display: 'flex', alignItems: 'center' }}>
+                      {group.icon}
+                    </span>
+                    <span>{group.title}</span>
+                    <span
+                      style={{
+                        fontSize: '0.68rem',
+                        padding: '1px 6px',
+                        borderRadius: '10px',
+                        background: hasActiveChild ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                        color: hasActiveChild ? '#93c5fd' : 'var(--text-dim)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {group.links.length}
+                    </span>
+                  </div>
+
+                  <ChevronDown
+                    size={14}
+                    style={{
+                      color: 'var(--text-dim)',
+                      transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease',
+                    }}
+                  />
+                </button>
+
+                {/* Sub Links */}
+                {isOpen && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.2rem',
+                      padding: '0.25rem 0.4rem 0.4rem 0.4rem',
+                    }}
+                  >
+                    {group.links.map((link) => (
+                      <NavLink
+                        key={link.to}
+                        to={link.to}
+                        style={({ isActive }) => ({
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.65rem',
+                          padding: '0.5rem 0.75rem',
+                          borderRadius: 'var(--radius-sm)',
+                          color: isActive ? '#ffffff' : 'rgba(203, 213, 225, 0.85)',
+                          background: isActive
+                            ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.4) 0%, rgba(30, 64, 175, 0.2) 100%)'
+                            : 'transparent',
+                          border: isActive ? '1px solid rgba(96, 165, 250, 0.4)' : '1px solid transparent',
+                          fontWeight: isActive ? 700 : 500,
+                          fontSize: '0.82rem',
+                          textDecoration: 'none',
+                          transition: 'all var(--transition-fast)',
+                          whiteSpace: 'nowrap',
+                          boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.25)' : 'none',
+                        })}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
+                          <span style={{ opacity: 0.9 }}>{link.icon}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{link.label}</span>
+                        </div>
+                        {link.comingSoon && (
+                          <span
+                            style={{
+                              fontSize: '0.62rem',
+                              padding: '1px 5px',
+                              borderRadius: '4px',
+                              background: 'rgba(255, 255, 255, 0.08)',
+                              color: 'var(--text-dim)',
+                            }}
+                          >
+                            قريبًا
+                          </span>
+                        )}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* Sidebar Footer */}
         <div
           style={{
-            padding: '0.85rem 1rem',
+            padding: '0.75rem 1rem',
             borderTop: '1px solid var(--border-subtle)',
             fontSize: '0.75rem',
             color: 'var(--text-dim)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            flexShrink: 0,
           }}
         >
           <span>العملة: SAR</span>
