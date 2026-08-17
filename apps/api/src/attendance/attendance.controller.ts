@@ -37,6 +37,7 @@ export class AttendanceController {
       user.companyId,
       user.userId,
       dto,
+      user,
     );
   }
 
@@ -49,7 +50,7 @@ export class AttendanceController {
     @Query() query: QueryAttendanceDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.attendanceService.findAttendance(user.companyId, query);
+    return this.attendanceService.findAttendance(user.companyId, query, user);
   }
 
   /**

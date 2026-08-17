@@ -6,6 +6,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { ScopeService } from '../common/services/scope.service';
+import { AuthenticatedUser } from '../auth/auth.service';
 import { ApproveProductionDto } from './dto/approve-production.dto';
 import { CreateProductionDto } from './dto/create-production.dto';
 import { CreateCorrectionDto } from './dto/create-correction.dto';
@@ -13,12 +15,22 @@ import { QueryProductionDto } from './dto/query-production.dto';
 
 @Injectable()
 export class ProductionService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly scopeService: ScopeService,
+  ) {}
 
   /**
    * Create production record with R5 worker sum verification (Section 3 & 4 & 9 of HANDOFF.md)
    */
-  async createProductionRecord(companyId: string, dto: CreateProductionDto) {
+  async createProductionRecord(
+    companyId: string,
+    dto: CreateProductionDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user) {
+      await this.scopeService.assertProjectInScope(user, dto.projectId);
+    }
     // R5 validation: For individual production, sum of worker quantities must equal actual quantity
     if (dto.productionType === 'individual') {
       const workerSum = (dto.workers || []).reduce(
@@ -125,11 +137,29 @@ export class ProductionService {
   /**
    * Query production records with filters (Section 9 of HANDOFF.md)
    */
-  async findProductionRecords(companyId: string, query: QueryProductionDto) {
+  async findProductionRecords(
+    companyId: string,
+    query: QueryProductionDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user && query.projectId) {
+      await this.scopeService.assertProjectInScope(user, query.projectId);
+    }
+
+    const projectScope = user ? await this.scopeService.getProjectScope(user) : null;
+
     return this.db.withTenantTransaction(companyId, async (client) => {
       const conditions: string[] = ['pr.company_id = $1'];
       const params: any[] = [companyId];
       let paramIdx = 2;
+
+      if (projectScope !== null) {
+        if (projectScope.length === 0) {
+          return [];
+        }
+        conditions.push(`pr.project_id = ANY($${paramIdx++}::uuid[])`);
+        params.push(projectScope);
+      }
 
       if (query.fromDate) {
         conditions.push(`pr.date >= $${paramIdx++}`);
@@ -213,13 +243,25 @@ export class ProductionService {
   /**
    * Get weighted progress from view v_boq_progress_weighted
    */
-  async getWeightedProgress(companyId: string, projectId?: string) {
+  async getWeightedProgress(companyId: string, projectId?: string, user?: AuthenticatedUser) {
+    if (user && projectId) {
+      await this.scopeService.assertProjectInScope(user, projectId);
+    }
+    const projectScope = user ? await this.scopeService.getProjectScope(user) : null;
+
     return this.db.withTenantClient(companyId, async (client) => {
       let sql = `SELECT * FROM v_boq_progress_weighted WHERE company_id = $1`;
       const params: any[] = [companyId];
+      let pIdx = 2;
       if (projectId) {
-        sql += ` AND project_id = $2`;
+        sql += ` AND project_id = $${pIdx++}`;
         params.push(projectId);
+      } else if (projectScope !== null) {
+        if (projectScope.length === 0) {
+          return [];
+        }
+        sql += ` AND project_id = ANY($${pIdx++}::uuid[])`;
+        params.push(projectScope);
       }
       const res = await client.query(sql, params);
       return res.rows;

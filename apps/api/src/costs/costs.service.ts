@@ -3,18 +3,31 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { ScopeService } from '../common/services/scope.service';
+import { AuthenticatedUser } from '../auth/auth.service';
 import { CreateCostDto } from './dto/create-cost.dto';
 import { UpdateCostDto } from './dto/update-cost.dto';
 import { QueryCostDto } from './dto/query-cost.dto';
 
 @Injectable()
 export class CostsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly scopeService: ScopeService,
+  ) {}
 
   /**
    * Create a new cost entry
    */
-  async createCost(companyId: string, userId: string, dto: CreateCostDto) {
+  async createCost(
+    companyId: string,
+    userId: string,
+    dto: CreateCostDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user && dto.projectId) {
+      await this.scopeService.assertProjectInScope(user, dto.projectId);
+    }
     return this.db.withTenantTransaction(companyId, async (client) => {
       // Validate project
       const projRes = await client.query(
@@ -76,11 +89,35 @@ export class CostsService {
   /**
    * List cost entries with filters, pagination and summary totals
    */
-  async findCosts(companyId: string, query: QueryCostDto) {
+  async findCosts(
+    companyId: string,
+    query: QueryCostDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user && query.projectId) {
+      await this.scopeService.assertProjectInScope(user, query.projectId);
+    }
+    const projectScope = user ? await this.scopeService.getProjectScope(user) : null;
+
     return this.db.withTenantClient(companyId, async (client) => {
       const conditions: string[] = ['c.company_id = $1'];
       const params: any[] = [companyId];
       let paramIdx = 2;
+
+      if (projectScope !== null) {
+        if (projectScope.length === 0) {
+          return {
+            data: [],
+            total: 0,
+            page: 1,
+            limit: query.limit || 20,
+            totalPages: 0,
+            summary: { totalLabor: 0, totalMaterial: 0, grandTotal: 0 },
+          };
+        }
+        conditions.push(`c.project_id = ANY($${paramIdx++}::uuid[])`);
+        params.push(projectScope);
+      }
 
       if (query.fromDate) {
         conditions.push(`c.date >= $${paramIdx++}`);

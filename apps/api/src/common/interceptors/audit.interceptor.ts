@@ -28,7 +28,7 @@ export class AuditInterceptor implements NestInterceptor {
           if (isMutating && user?.companyId) {
             try {
               const entityName = this.extractEntityName(url);
-              const action = `${method.toUpperCase()} ${url}`;
+              const action = `${method.toUpperCase()} ${url}`.substring(0, 50);
               const userAgent = headers['user-agent'] || null;
 
               await this.db.query(

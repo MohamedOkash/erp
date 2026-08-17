@@ -33,7 +33,7 @@ export class CostsController {
     @Query() query: QueryCostDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.costsService.findCosts(user.companyId, query);
+    return this.costsService.findCosts(user.companyId, query, user);
   }
 
   /**
@@ -81,7 +81,7 @@ export class CostsController {
     @Body() dto: CreateCostDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.costsService.createCost(user.companyId, user.userId, dto);
+    return this.costsService.createCost(user.companyId, user.userId, dto, user);
   }
 
   /**

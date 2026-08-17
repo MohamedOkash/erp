@@ -26,13 +26,19 @@ import { WorkItemPricesModule } from './work-item-prices/work-item-prices.module
 import { LaborRatesModule } from './labor-rates/labor-rates.module';
 import { TransfersModule } from './transfers/transfers.module';
 import { ControlCardsModule } from './control-cards/control-cards.module';
+import { CommonModule } from './common/common.module';
+import { UsersModule } from './users/users.module';
+import { RolesModule } from './roles/roles.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     DatabaseModule,
+    CommonModule,
     AuthModule,
+    UsersModule,
+    RolesModule,
     BranchesModule,
     ProjectsModule,
     WorkItemsModule,

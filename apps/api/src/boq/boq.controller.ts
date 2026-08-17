@@ -21,7 +21,7 @@ export class BoqController {
     @Query() query: QueryBoqDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.boqService.getBoqProgress(user.companyId, query);
+    return this.boqService.getBoqProgress(user.companyId, query, user);
   }
 
   @Get(':id')

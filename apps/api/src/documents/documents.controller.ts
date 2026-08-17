@@ -43,6 +43,7 @@ export class DocumentsController {
       user.userId,
       file,
       dto,
+      user,
     );
   }
 
@@ -55,7 +56,7 @@ export class DocumentsController {
     @Query() query: QueryDocumentDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.documentsService.findDocuments(user.companyId, query);
+    return this.documentsService.findDocuments(user.companyId, query, user);
   }
 
   /**

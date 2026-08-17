@@ -46,8 +46,10 @@ export class AuthController {
         id: user.userId,
         username: user.username,
         fullName: user.fullName,
+        employeeId: user.employeeId,
         roles: user.roles,
         permissions: user.permissions,
+        scopes: user.scopes || [],
       },
       companyId: user.companyId,
     };

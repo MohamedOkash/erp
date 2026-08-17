@@ -1,19 +1,41 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { ScopeService } from '../common/services/scope.service';
+import { AuthenticatedUser } from '../auth/auth.service';
 import { QueryBoqDto } from './dto/query-boq.dto';
 
 @Injectable()
 export class BoqService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly scopeService: ScopeService,
+  ) {}
 
   /**
    * Get BOQ progress list (total, executed, remaining, progress percentage)
    */
-  async getBoqProgress(companyId: string, query: QueryBoqDto) {
+  async getBoqProgress(
+    companyId: string,
+    query: QueryBoqDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user && query.projectId) {
+      await this.scopeService.assertProjectInScope(user, query.projectId);
+    }
+    const projectScope = user ? await this.scopeService.getProjectScope(user) : null;
+
     return this.db.withTenantClient(companyId, async (client) => {
       const conditions: string[] = ['bi.company_id = $1'];
       const params: any[] = [companyId];
       let paramIdx = 2;
+
+      if (projectScope !== null) {
+        if (projectScope.length === 0) {
+          return { data: [], total: 0, page: 1, limit: query.limit || 20, totalPages: 0 };
+        }
+        conditions.push(`b.project_id = ANY($${paramIdx++}::uuid[])`);
+        params.push(projectScope);
+      }
 
       if (query.projectId) {
         conditions.push(`b.project_id = $${paramIdx++}`);

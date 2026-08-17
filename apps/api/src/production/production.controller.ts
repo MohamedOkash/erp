@@ -30,7 +30,7 @@ export class ProductionController {
     @Body() dto: CreateProductionDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.productionService.createProductionRecord(user.companyId, dto);
+    return this.productionService.createProductionRecord(user.companyId, dto, user);
   }
 
   @Get('progress-weighted')
@@ -38,7 +38,7 @@ export class ProductionController {
     @Query('projectId') projectId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.productionService.getWeightedProgress(user.companyId, projectId);
+    return this.productionService.getWeightedProgress(user.companyId, projectId, user);
   }
 
   /**
@@ -50,7 +50,7 @@ export class ProductionController {
     @Query() query: QueryProductionDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.productionService.findProductionRecords(user.companyId, query);
+    return this.productionService.findProductionRecords(user.companyId, query, user);
   }
 
   /**

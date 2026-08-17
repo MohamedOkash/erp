@@ -7,12 +7,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { DatabaseService } from '../database/database.service';
+import { ScopeService } from '../common/services/scope.service';
+import { AuthenticatedUser } from '../auth/auth.service';
 import { UploadDocumentDto } from './dto/upload-document.dto';
 import { QueryDocumentDto } from './dto/query-document.dto';
 
 @Injectable()
 export class DocumentsService {
-  constructor(private readonly db: DatabaseService) {
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly scopeService: ScopeService,
+  ) {
     const uploadBase = path.join(process.cwd(), 'uploads', 'documents');
     if (!fs.existsSync(uploadBase)) {
       fs.mkdirSync(uploadBase, { recursive: true });
@@ -54,12 +59,17 @@ export class DocumentsService {
     userId: string,
     file: Express.Multer.File,
     dto: UploadDocumentDto,
+    user?: AuthenticatedUser,
   ) {
     if (!file) {
       throw new BadRequestException({
         code: 'FILE_REQUIRED',
         message: 'A file is required for upload',
       });
+    }
+
+    if (user && dto.projectId) {
+      await this.scopeService.assertProjectInScope(user, dto.projectId);
     }
 
     return this.db.withTenantTransaction(companyId, async (client) => {
@@ -76,25 +86,25 @@ export class DocumentsService {
           categoryId = catRes.rows[0].id;
         } else {
           const newCat = await client.query(
-            `INSERT INTO document_categories (company_id, name, code)
+            `INSERT INTO document_categories (company_id, name, description)
              VALUES ($1, $2, $3)
              RETURNING id`,
-            [companyId, categoryName, categoryName.toLowerCase().replace(/\s+/g, '_')],
+            [companyId, categoryName, `${categoryName} documents`],
           );
           categoryId = newCat.rows[0].id;
         }
       }
 
-      // 2. Save file
+      // 2. Save physical file
       const saved = this.saveFileToStorage(file);
-      const title = dto.title || file.originalname;
 
       // 3. Create document record
+      const title = dto.title || file.originalname;
       const docRes = await client.query(
         `INSERT INTO documents (
-           company_id, category_id, project_id, title, document_number, current_version, created_by
-         ) VALUES ($1, $2, $3, $4, $5, 1, $6)
-         RETURNING id, company_id, category_id, project_id, title, document_number, current_version, created_by, created_at, updated_at`,
+           company_id, category_id, project_id, title, document_number, created_by
+         ) VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, company_id, category_id, project_id, title, document_number, created_at, updated_at`,
         [
           companyId,
           categoryId,
@@ -141,11 +151,28 @@ export class DocumentsService {
   /**
    * List documents with filters and pagination
    */
-  async findDocuments(companyId: string, query: QueryDocumentDto) {
+  async findDocuments(
+    companyId: string,
+    query: QueryDocumentDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user && query.projectId) {
+      await this.scopeService.assertProjectInScope(user, query.projectId);
+    }
+    const projectScope = user ? await this.scopeService.getProjectScope(user) : null;
+
     return this.db.withTenantClient(companyId, async (client) => {
       const conditions: string[] = ['d.company_id = $1'];
       const params: any[] = [companyId];
       let paramIdx = 2;
+
+      if (projectScope !== null) {
+        if (projectScope.length === 0) {
+          return { data: [], total: 0, page: 1, limit: query.limit || 20, totalPages: 0 };
+        }
+        conditions.push(`(d.project_id IS NULL OR d.project_id = ANY($${paramIdx++}::uuid[]))`);
+        params.push(projectScope);
+      }
 
       if (query.projectId) {
         conditions.push(`d.project_id = $${paramIdx++}`);

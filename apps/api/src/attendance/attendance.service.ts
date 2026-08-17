@@ -5,13 +5,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { ScopeService } from '../common/services/scope.service';
+import { AuthenticatedUser } from '../auth/auth.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { QueryAttendanceDto } from './dto/query-attendance.dto';
 
 @Injectable()
 export class AttendanceService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly scopeService: ScopeService,
+  ) {}
 
   private parseTimeToMinutes(timeStr: string): number {
     const parts = timeStr.split(':').map((p) => parseInt(p, 10));
@@ -25,7 +30,11 @@ export class AttendanceService {
     companyId: string,
     userId: string,
     dto: CreateAttendanceDto,
+    user?: AuthenticatedUser,
   ) {
+    if (user && dto.projectId) {
+      await this.scopeService.assertProjectInScope(user, dto.projectId);
+    }
     if (dto.checkInTime && dto.checkOutTime) {
       const inMins = this.parseTimeToMinutes(dto.checkInTime);
       const outMins = this.parseTimeToMinutes(dto.checkOutTime);
@@ -132,11 +141,28 @@ export class AttendanceService {
   /**
    * Find attendance records with filtering and pagination
    */
-  async findAttendance(companyId: string, query: QueryAttendanceDto) {
+  async findAttendance(
+    companyId: string,
+    query: QueryAttendanceDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user && query.projectId) {
+      await this.scopeService.assertProjectInScope(user, query.projectId);
+    }
+    const projectScope = user ? await this.scopeService.getProjectScope(user) : null;
+
     return this.db.withTenantClient(companyId, async (client) => {
       const conditions: string[] = ['a.company_id = $1'];
       const params: any[] = [companyId];
       let paramIdx = 2;
+
+      if (projectScope !== null) {
+        if (projectScope.length === 0) {
+          return { data: [], total: 0, page: 1, limit: query.limit || 20, totalPages: 0 };
+        }
+        conditions.push(`a.project_id = ANY($${paramIdx++}::uuid[])`);
+        params.push(projectScope);
+      }
 
       if (query.fromDate) {
         conditions.push(`a.date >= $${paramIdx++}`);

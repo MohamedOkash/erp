@@ -27,7 +27,7 @@ export class TransfersController {
     @Query() query: QueryTransfersDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.transfersService.findTransfers(user.companyId, query);
+    return this.transfersService.findTransfers(user.companyId, query, user);
   }
 
   @Get(':id')
@@ -70,6 +70,7 @@ export class TransfersController {
       user.userId,
       primaryRole,
       dto,
+      user,
     );
   }
 

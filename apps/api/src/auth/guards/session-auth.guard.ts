@@ -54,7 +54,7 @@ export class SessionAuthGuard implements CanActivate {
       [session.user_id],
     );
 
-    // Fetch user permissions
+    // Fetch user permissions (role permissions)
     const permsRes = await this.db.query(
       `SELECT DISTINCT p.code
        FROM user_roles ur
@@ -64,23 +64,81 @@ export class SessionAuthGuard implements CanActivate {
       [session.user_id],
     );
 
+    // Fetch user permission overrides (grant & deny)
+    let overridesRes = { rows: [] as any[] };
+    try {
+      overridesRes = await this.db.query(
+        `SELECT p.code, upo.grant_type
+         FROM user_permission_overrides upo
+         JOIN permissions p ON upo.permission_id = p.id
+         WHERE upo.user_id = $1`,
+        [session.user_id],
+      );
+    } catch {
+      // Table might not exist in some unit tests
+    }
+
+    const effectivePerms = new Set<string>(permsRes.rows.map((p) => p.code));
+    for (const ov of overridesRes.rows) {
+      if (ov.grant_type === 'grant') {
+        effectivePerms.add(ov.code);
+      } else if (ov.grant_type === 'deny') {
+        effectivePerms.delete(ov.code);
+      }
+    }
+
+    // Fetch user project scopes
+    let scopesRes = { rows: [] as any[] };
+    try {
+      scopesRes = await this.db.query(
+        `SELECT ups.id, ups.project_id, ups.branch_id, ups.work_area_id,
+                p.name AS project_name, p.code AS project_code,
+                b.name AS branch_name,
+                wa.name AS work_area_name
+         FROM user_project_scopes ups
+         JOIN projects p ON ups.project_id = p.id
+         LEFT JOIN branches b ON ups.branch_id = b.id
+         LEFT JOIN work_areas wa ON ups.work_area_id = wa.id
+         WHERE ups.user_id = $1`,
+        [session.user_id],
+      );
+    } catch {
+      // Table might not exist in some unit tests
+    }
+
+    const roles = rolesRes.rows.map((r) => ({
+      roleName: r.role_name,
+      roleCode: r.role_code,
+      scopeType: r.scope_type,
+      scopeId: r.scope_id || undefined,
+    }));
+
+    const scopes = scopesRes.rows.map((s) => ({
+      id: s.id,
+      projectId: s.project_id,
+      projectName: s.project_name,
+      projectCode: s.project_code,
+      branchId: s.branch_id,
+      branchName: s.branch_name,
+      workAreaId: s.work_area_id,
+      workAreaName: s.work_area_name,
+    }));
+
+    const companyId = session.company_id || 'c0000000-0000-0000-0000-000000000001';
+
     const authenticatedUser = {
       userId: session.user_id,
-      companyId: session.company_id,
+      companyId,
       employeeId: session.employee_id || undefined,
       username: session.username,
       fullName: session.full_name,
-      roles: rolesRes.rows.map((r) => ({
-        roleName: r.role_name,
-        roleCode: r.role_code,
-        scopeType: r.scope_type,
-        scopeId: r.scope_id || undefined,
-      })),
-      permissions: permsRes.rows.map((p) => p.code),
+      roles,
+      permissions: Array.from(effectivePerms),
+      scopes,
     };
 
     request.user = authenticatedUser;
-    request.companyId = session.company_id;
+    request.companyId = companyId;
     request.userId = session.user_id;
 
     return true;

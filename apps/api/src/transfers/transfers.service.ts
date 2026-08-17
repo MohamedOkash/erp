@@ -4,19 +4,42 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { ScopeService } from '../common/services/scope.service';
+import { AuthenticatedUser } from '../auth/auth.service';
 import { RequestTransferDto } from './dto/request-transfer.dto';
 import { RejectTransferDto } from './dto/approve-transfer.dto';
 import { QueryTransfersDto } from './dto/query-transfers.dto';
 
 @Injectable()
 export class TransfersService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly scopeService: ScopeService,
+  ) {}
 
-  async findTransfers(companyId: string, query: QueryTransfersDto) {
+  async findTransfers(
+    companyId: string,
+    query: QueryTransfersDto,
+    user?: AuthenticatedUser,
+  ) {
+    if (user && query.projectId) {
+      await this.scopeService.assertProjectInScope(user, query.projectId);
+    }
+    const projectScope = user ? await this.scopeService.getProjectScope(user) : null;
+
     return this.db.withTenantClient(companyId, async (client) => {
       const conditions: string[] = ['t.company_id = $1'];
       const params: any[] = [companyId];
       let paramIdx = 2;
+
+      if (projectScope !== null) {
+        if (projectScope.length === 0) {
+          return { data: [], total: 0, page: 1, limit: query.limit || 20, totalPages: 0 };
+        }
+        conditions.push(`(t.from_project_id = ANY($${paramIdx}::uuid[]) OR t.to_project_id = ANY($${paramIdx}::uuid[]))`);
+        params.push(projectScope);
+        paramIdx++;
+      }
 
       if (query.status) {
         conditions.push(`t.status = $${paramIdx++}`);
@@ -123,7 +146,11 @@ export class TransfersService {
     userId: string,
     primaryRole: string,
     dto: RequestTransferDto,
+    user?: AuthenticatedUser,
   ) {
+    if (user && dto.fromProjectId) {
+      await this.scopeService.assertProjectInScope(user, dto.fromProjectId);
+    }
     return this.db.withTenantTransaction(companyId, async (client) => {
       // 1. Verify employee exists and fetch active assignment
       const empRes = await client.query(

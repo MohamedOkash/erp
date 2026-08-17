@@ -1260,3 +1260,133 @@
 - **تحديث سياسة:** `PUT /api/v1/attendance-policies/:id`
 - **إلغاء تنشيط سياسة:** `DELETE /api/v1/attendance-policies/:id`
 
+---
+
+## 21. موديول إدارة الحسابات ومصفوفة الصلاحيات والعزل النطاقي (User Management, RBAC & Project Scopes)
+
+### 1) استعراض المستخدمين (List Users)
+- **المسار:** `GET /api/v1/users`
+- **الصلاحية:** `company_admin` أو `super_admin`
+- **الـ Query Params:** `page`, `limit`, `search`, `roleCode`, `branchId`, `projectId`, `isActive`
+- **الـ Response:**
+  ```json
+  {
+    "data": [
+      {
+        "id": "uuid",
+        "companyId": "uuid",
+        "employeeId": "uuid or null",
+        "username": "eng_riyadh",
+        "email": "eng@company.com",
+        "fullName": "م. أحمد خالد",
+        "phone": "0501234567",
+        "isActive": true,
+        "employee": {
+          "id": "uuid",
+          "name": "أحمد خالد",
+          "code": "EMP-001",
+          "roleType": "engineer"
+        },
+        "roles": [
+          {
+            "roleId": "uuid",
+            "roleName": "مهندس موقع",
+            "roleCode": "engineer",
+            "scopeType": "company",
+            "scopeId": null
+          }
+        ],
+        "scopes": [
+          {
+            "id": "uuid",
+            "projectId": "uuid",
+            "projectName": "برج النرجس",
+            "projectCode": "PRJ-01",
+            "branchId": "uuid",
+            "branchName": "فرع الرياض",
+            "workAreaId": null,
+            "workAreaName": null
+          }
+        ]
+      }
+    ],
+    "total": 15,
+    "page": 1,
+    "limit": 50,
+    "totalPages": 1
+  }
+  ```
+
+### 2) إنشاء حساب مستخدم جديد (Create User)
+- **المسار:** `POST /api/v1/users`
+- **الصلاحية:** `company_admin` فقط
+- **الـ Request Body:**
+  ```json
+  {
+    "employeeId": "uuid (optional)",
+    "username": "eng_faisal",
+    "password": "Password123!",
+    "fullName": "فيصل العتيبي (optional if employeeId provided)",
+    "email": "faisal@example.com (optional)",
+    "phone": "0550000000 (optional)",
+    "roleCodes": ["engineer"],
+    "scopes": [
+      {
+        "projectId": "uuid (required)",
+        "branchId": "uuid (optional)",
+        "workAreaId": "uuid (optional)"
+      }
+    ],
+    "isActive": true
+  }
+  ```
+- **الاستجابة:** `201 Created` مع بيانات الحساب المنشأ كاملة.
+
+### 3) تعديل بيانات المستخدم (Update User)
+- **المسار:** `PATCH /api/v1/users/:id`
+- **الـ Body:** `{ fullName?, email?, phone?, employeeId?, roleCodes?: string[], scopes?: Array<{ projectId, branchId?, workAreaId? }>, isActive?: boolean }`
+
+### 4) إعادة تعيين كلمة المرور (Reset Password)
+- **المسار:** `POST /api/v1/users/:id/reset-password`
+- **الـ Body:** `{ "newPassword": "string (min 6 chars)" }`
+
+### 5) تعطيل الحساب (Soft Delete User)
+- **المسار:** `DELETE /api/v1/users/:id`
+- **الاستجابة:** `200 OK` مع إلغاء كافة الجلسات النشطة للمستخدم.
+
+### 6) استثناءات الصلاحيات للمستخدم (Permission Overrides)
+- **استعراض الاستثناءات:** `GET /api/v1/users/:id/overrides`
+- **تحديث الاستثناءات:** `PUT /api/v1/users/:id/overrides`
+  - **Body:**
+    ```json
+    {
+      "overrides": [
+        { "permissionCode": "audit.view", "grantType": "grant" },
+        { "permissionCode": "production.create", "grantType": "deny" }
+      ]
+    }
+    ```
+- **حساب الصلاحيات النهائي في `/auth/me`:**
+  $$\text{Effective Permissions} = (\text{Role Permissions} \cup \text{Grant Overrides}) \setminus \text{Deny Overrides}$$
+
+### 7) مصفوفة الصلاحيات والأدوار (Roles & Permissions Catalog)
+- **كتالوج الصلاحيات الكامل:** `GET /api/v1/permissions`
+  - يرجع قائمة بكافة صلاحيات النظام مصنفة بالـ `module` و `action` مع الوصف العربي.
+- **قائمة الأدوار:** `GET /api/v1/roles`
+- **صلاحيات دور محدد:** `GET /api/v1/roles/:id/permissions`
+- **تحديث مصفوفة صلاحيات الدور:** `PUT /api/v1/roles/:id/permissions`
+  - **Body:** `{ "permissionIds": ["uuid1", "uuid2", ...] }`
+
+### 8) فرض النطاق والعزل ضد تسريب البيانات (Server-side Scope Enforcement)
+- **قاعدة الأمان:** المستخدمون غير الإداريين (Site Engineers, Supervisors, Project Managers المقيدين) لا يمكنهم استعراض أو إنشاء أو تعديل أي سجل في موديولات (`production`, `attendance`, `boq`, `costs`, `control-cards`, `documents`, `transfers`) لمشروع خارج نطاقاتهم المسجلة.
+- **في حال محاولة الوصول لمشروع خارج النطاق:**
+  - يرجع الخادم استجابة `403 Forbidden`:
+  ```json
+  {
+    "statusCode": 403,
+    "message": "Project is out of assigned scope",
+    "code": "OUT_OF_SCOPE"
+  }
+  ```
+
+
