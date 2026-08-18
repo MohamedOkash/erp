@@ -153,12 +153,13 @@
   --status-info: var(--color-teal-500);
   --status-info-bg: rgba(20, 184, 166, 0.14);
 
-  /* Continuous Corner Curvature */
-  --radius-xs: 6px;
+  /* Continuous Curvature */
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 22px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
   --radius-full: 9999px;
 
   /* Z-Index Hierarchy */
