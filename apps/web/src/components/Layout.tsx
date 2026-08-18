@@ -439,54 +439,6 @@ export const Layout: React.FC = () => {
             );
           })}
         </nav>
-
-        {/* Sidebar Bottom Footer: Live Online & Currency Bar */}
-        <div
-          style={{
-            padding: '0.75rem 1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            fontSize: '0.75rem',
-            color: 'var(--text-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: 'var(--bg-surface-elevated, rgba(30, 41, 59, 0.4))',
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ color: 'var(--text-dim)' }}>{t('header.currency_label') || t('auto.العملة_25278c')}:</span>
-            <span style={{ fontWeight: 800, color: 'var(--brand-accent, #f59e0b)', fontFamily: 'monospace' }}>
-              {t('header.currency_value') || 'SAR 🇸🇦'}
-            </span>
-          </div>
-
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.2rem 0.55rem',
-              borderRadius: '9999px',
-              background: 'var(--status-success-bg, rgba(16, 185, 129, 0.15))',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              color: 'var(--status-success, #10b981)',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-            }}
-          >
-            <span
-              className="animate-pulse-soft"
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: '#10b981',
-              }}
-            />
-            <span>{t('header.online_status') || t('auto.متصل_2f181f')}</span>
-          </div>
-        </div>
       </aside>
 
       {/* Main View Area */}

@@ -133,9 +133,9 @@ export const Modal: React.FC<ModalProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.5rem 1rem',
+        padding: '1rem',
         zIndex,
-        overflowY: 'auto',
+        overflow: 'hidden',
         transition: 'opacity 0.2s var(--ease-apple-spring)',
       }}
       dir={direction}
@@ -146,8 +146,7 @@ export const Modal: React.FC<ModalProps> = ({
         style={{
           width: '100%',
           maxWidth: widthStyle,
-          maxHeight: maxHeight || 'calc(100vh - 3rem)',
-          height: 'auto',
+          maxHeight: maxHeight || 'calc(100vh - 2.5rem)',
           display: 'flex',
           flexDirection: 'column',
           margin: 'auto',
@@ -240,10 +239,11 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         )}
 
-        {/* Scrollable Body (Internal scroll only) */}
+        {/* Scrollable Body with minHeight: 0 to constrain flex child */}
         <div
           style={{
             flex: '1 1 auto',
+            minHeight: 0,
             overflowY: 'auto',
             padding: '1.5rem 1.75rem',
           }}

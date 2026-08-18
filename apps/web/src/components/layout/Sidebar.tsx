@@ -164,21 +164,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
           </NavLink>
         ))}
       </nav>
-
-      {/* Footer / App Version */}
-      {!collapsed && (
-        <div
-          style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border-subtle)',
-            fontSize: '0.75rem',
-            color: 'var(--text-dim)',
-            textAlign: 'center',
-          }}
-        >
-          <span>{t('auto.الإصدار_1_0_0_Saudi_Localizati_21e06b')}</span>
-        </div>
-      )}
     </aside>
   );
 };
