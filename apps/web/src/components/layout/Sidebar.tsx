@@ -1,6 +1,6 @@
-import { useI18n } from '../../i18n/I18nContext';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useI18n } from '../../i18n/I18nContext';
 import {
   LayoutDashboard,
   Users,
@@ -118,9 +118,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
         {!collapsed && (
           <div style={{ overflow: 'hidden' }}>
             <h2 style={{ fontSize: '1rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
-              {t('auto.نظام_التشطيبات_5b7890')}</h2>
+              {t('auto.نظام_التشطيبات_5b7890')}
+            </h2>
             <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
-              Construction ERP
+              {t('app.subtitle')}
             </span>
           </div>
         )}

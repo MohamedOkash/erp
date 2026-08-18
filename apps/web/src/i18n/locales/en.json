@@ -130,7 +130,9 @@
     "user_default": "System User",
     "light_mode": "Switch to Light Theme",
     "dark_mode": "Switch to Dark Theme",
-    "field_scope": "Field Work Scope"
+    "field_scope": "Field Work Scope",
+    "toggle_theme": "Toggle Theme",
+    "currency_value": "SAR 🇸🇦"
   },
   "auth": {
     "login_title": "Sign In to ERP System",
@@ -162,7 +164,8 @@
     "view_all": "View All",
     "new_production": "Record Production",
     "new_transfer": "Request Transfer",
-    "open_control_card": "Control & Profit Cards"
+    "open_control_card": "Control & Profit Cards",
+    "live_api": "Live API"
   },
   "operations": {
     "production_title": "Daily Production & Execution Stages",
@@ -242,7 +245,9 @@
     "confirm_password": "Confirm New Password",
     "password_hint": "Password must be at least 8 characters long to maintain system security.",
     "save_profile": "Save Profile Changes",
-    "change_password": "Change Password"
+    "change_password": "Change Password",
+    "placeholder_name": "e.g. Fahad Al-Otaibi",
+    "placeholder_username": "e.g. fahad_eng"
   },
   "auto": {
     "Current_password_is_wrong_كلمة_6abfa4": "Current password is wrong",
@@ -1693,5 +1698,8 @@
     "بند_نشط_ومتاح_للاستخدام_في_الم_3fbcc5": "Item active and available for use in projects and BOQ",
     "تأكيد_حذف_بند_العمل_ba39a3": "Confirm Work Item Deletion",
     "هل_أنت_متأكد_من_حذف_بند_العمل_25ca1e": "Are you sure you want to delete this work item"
+  },
+  "reports": {
+    "placeholder_user_uuids": "user-uuid-1, user-uuid-2..."
   }
 }

@@ -722,7 +722,7 @@ export const SavedReportsPage: React.FC = () => {
             <textarea
               className="input-field"
               rows={3}
-              placeholder="user-uuid-1, user-uuid-2..."
+              placeholder={t('reports.placeholder_user_uuids')}
               value={shareUserIdsText}
               onChange={(e) => setShareUserIdsText(e.target.value)}
             />

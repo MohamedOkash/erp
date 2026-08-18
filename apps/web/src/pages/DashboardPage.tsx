@@ -145,7 +145,7 @@ export const DashboardPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
             <span className="badge badge-success" style={{ fontSize: '0.75rem', gap: '0.3rem' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d399' }} />
-              <span>Live API</span>
+              <span>{t('dashboard.live_api')}</span>
             </span>
           </div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.35rem 0', color: 'var(--text-heading)' }}>

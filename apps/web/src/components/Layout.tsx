@@ -456,7 +456,9 @@ export const Layout: React.FC = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <span style={{ color: 'var(--text-dim)' }}>{t('header.currency_label') || t('auto.العملة_25278c')}:</span>
-            <span style={{ fontWeight: 800, color: 'var(--brand-accent, #f59e0b)', fontFamily: 'monospace' }}>SAR 🇸🇦</span>
+            <span style={{ fontWeight: 800, color: 'var(--brand-accent, #f59e0b)', fontFamily: 'monospace' }}>
+              {t('header.currency_value') || 'SAR 🇸🇦'}
+            </span>
           </div>
 
           <div
@@ -513,7 +515,7 @@ export const Layout: React.FC = () => {
               className="btn btn-secondary"
               style={{ padding: '0.45rem', borderRadius: 'var(--radius-sm)' }}
               title={t('header.toggle_sidebar') || t('auto.تبديل_القائمة_الجانبية_797d27')}
-              aria-label="Toggle Navigation"
+              aria-label={t('header.toggle_sidebar')}
             >
               {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
@@ -572,7 +574,7 @@ export const Layout: React.FC = () => {
                 height: '38px',
               }}
               title={theme === 'dark' ? t('header.light_mode') : t('header.dark_mode')}
-              aria-label="Toggle Theme"
+              aria-label={t('header.toggle_theme')}
             >
               {theme === 'dark' ? (
                 <Sun size={18} color="#fbbf24" />

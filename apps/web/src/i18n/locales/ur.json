@@ -123,14 +123,16 @@
     "offline_status": "غیر متصل",
     "system_edition": "تعمیراتی نظام",
     "saudi_edition": "Saudi Edition 🇸🇦",
-    "toggle_sidebar": "سائیڈ بار تبدیل کریں",
+    "toggle_sidebar": "سائیڈبار تبدیل کریں",
     "account_settings": "اکاؤنٹ کی ترتیبات",
     "system_settings": "سسٹم کی ترتیبات",
     "logout": "لاگ آؤٹ",
     "user_default": "سسٹم صارف",
     "light_mode": "لائٹ تھیم فعال کریں",
     "dark_mode": "ڈارک تھیم فعال کریں",
-    "field_scope": "فیلڈ ورک کا دائرہ کار"
+    "field_scope": "فیلڈ ورک کا دائرہ کار",
+    "toggle_theme": "تھیم تبدیل کریں",
+    "currency_value": "SAR 🇸🇦"
   },
   "auth": {
     "login_title": "ERP سسٹم میں لاگ ان کریں",
@@ -162,7 +164,8 @@
     "view_all": "سب دیکھیں",
     "new_production": "پیداوار درج کریں",
     "new_transfer": "تبادلے کی درخواست",
-    "open_control_card": "کنٹرول اور منافع کارڈز"
+    "open_control_card": "کنٹرول اور منافع کارڈز",
+    "live_api": "براہ راست API"
   },
   "operations": {
     "production_title": "روزانہ پیداوار اور کام کے مراحل",
@@ -242,7 +245,9 @@
     "confirm_password": "نئے پاس ورڈ کی تصدیق کریں",
     "password_hint": "سسٹم سیکیورٹی برقرار رکھنے کے لیے پاس ورڈ کم از کم 8 حروف کا ہونا ضروری ہے۔",
     "save_profile": "تبدیلیاں محفوظ کریں",
-    "change_password": "پاس ورڈ تبدیل کریں"
+    "change_password": "پاس ورڈ تبدیل کریں",
+    "placeholder_name": "مثال: فہد العتیبی",
+    "placeholder_username": "مثال: fahad_eng"
   },
   "auto": {
     "Current_password_is_wrong_كلمة_6abfa4": "Current password is wrong / كلمة المرور الحالية غير صحيحة",
@@ -1693,5 +1698,8 @@
     "بند_نشط_ومتاح_للاستخدام_في_الم_3fbcc5": "بند نشط ومتاح للاستخدام في المشروعات والمقايسات",
     "تأكيد_حذف_بند_العمل_ba39a3": "تأكيد حذف بند العمل",
     "هل_أنت_متأكد_من_حذف_بند_العمل_25ca1e": "هل أنت متأكد من حذف بند العمل"
+  },
+  "reports": {
+    "placeholder_user_uuids": "صارف-آئی-ڈی-1, صارف-آئی-ڈی-2..."
   }
 }

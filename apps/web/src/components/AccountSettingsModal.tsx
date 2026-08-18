@@ -246,7 +246,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                   className="input-field"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Fahad Al-Otaibi"
+                  placeholder={t('account_modal.placeholder_name')}
                   required
                 />
               </div>
@@ -258,7 +258,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                   className="input-field"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. fahad_eng"
+                  placeholder={t('account_modal.placeholder_username')}
                   required
                 />
               </div>
