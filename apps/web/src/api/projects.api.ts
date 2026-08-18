@@ -42,8 +42,8 @@ export interface CreateProjectPayload {
   status?: string;
   startDate?: string;
   endDate?: string;
-  contractValue?: number;
-  description?: string;
+  clientName?: string;
+  location?: string;
 }
 
 export interface UpdateProjectPayload {
@@ -53,9 +53,8 @@ export interface UpdateProjectPayload {
   status?: string;
   startDate?: string;
   endDate?: string;
-  contractValue?: number;
-  description?: string;
-  isActive?: boolean;
+  clientName?: string;
+  location?: string;
 }
 
 export const projectsApi = {
