@@ -4,3 +4,5 @@ dist/
 *.log
 .env
 *.env
+scripts/*.txt
+scripts/extracted_hardcoded.json
