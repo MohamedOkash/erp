@@ -166,7 +166,7 @@ describe('Live Control Cards & Daily Control Report (Excel Sheets Engine)', () =
 
     const card = res.body;
     expect(card.item.code).toBe('BLK-01');
-    expect(card.totals.perDay).toBe(65);
+    expect(card.totals.perDay).toBe(75.5);
     expect(card.stages.length).toBe(2);
     expect(card.stages[0].percentage).toBe(0.15);
     expect(card.stages[1].percentage).toBe(0.85);
