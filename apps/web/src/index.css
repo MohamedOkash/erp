@@ -162,6 +162,19 @@
   --radius-2xl: 24px;
   --radius-full: 9999px;
 
+  /* Typography Scale & Tracking Tokens */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 17px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
   /* Z-Index Hierarchy */
   --z-sidebar: 40;
   --z-header: 45;
