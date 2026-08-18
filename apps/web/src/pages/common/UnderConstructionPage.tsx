@@ -77,7 +77,7 @@ export const UnderConstructionPage: React.FC = () => {
   const navigate = useNavigate();
 
   const moduleInfo = MODULE_DATA[location.pathname] || {
-    title: 'الصفحة قيد التطوير والتجهيز',
+    title: t('auto.الصفحة_قيد_التطوير_والتجهيز_2a794f'),
     subtitle: 'Module Under Construction',
     description:
       t('auto.هذه_الوحدة_البرمجية_قيد_التجهي_7b182a'),

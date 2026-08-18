@@ -153,19 +153,19 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
               <option value="active">{t('auto.قيد_التنفيذ_In_Progress_dafbd2')}</option>
               <option value="completed">{t('auto.مكتمل_Completed_20d037')}</option>
               <option value="paused">{t('auto.معلق_On_Hold_12e520')}</option>
-              <option value="archived">{t('auto.مؤرشف_Archived_14a22b') || 'مؤرشف (Archived)'}</option>
+              <option value="archived">{t('auto.مؤرشف_Archived_14a22b')}</option>
             </select>
           </div>
 
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
               <User size={14} />
-              <span>{t('auto.اسم_العميل_أو_المالك_33a1e2') || 'العميل / المالك'}</span>
+              <span>{t('auto.اسم_العميل_أو_المالك_33a1e2')}</span>
             </label>
             <input
               type="text"
               className="input-field"
-              placeholder={t('auto.مثال_شركة_التطوير_العقاري_31f0b2') || 'مثال: شركة التطوير العقاري'}
+              placeholder={t('auto.مثال_شركة_التطوير_العقاري_31f0b2')}
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
             />
@@ -198,10 +198,10 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
           <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
             <label className="form-label">
               <MapPin size={14} />
-              <span>{t('auto.موقع_المشروع_وملاحظات_الموقع_32e18d') || 'موقع المشروع / تفاصيل العقد'}</span>
+              <span>{t('auto.موقع_المشروع_وملاحظات_الموقع_32e18d')}</span>
             </label>
             <textarea
-              rows={3}
+              rows={2}
               className="input-field"
               style={{ resize: 'vertical' }}
               placeholder={t('auto.تفاصيل_العقد_والموقع_4960d7')}

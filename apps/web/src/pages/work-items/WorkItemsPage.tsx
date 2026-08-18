@@ -51,7 +51,7 @@ function getDepartmentIcon(code?: string, name?: string) {
   if (c.includes('WOOD') || n.includes('نجار')) return Compass;
   if (c.includes('ALUM') || n.includes('ألمنيوم') || n.includes('المنيوم')) return LayoutGrid;
   if (c.includes('ELEC') || n.includes('كهرب')) return Zap;
-  if (c.includes('PLUMB') || n.includes('صح') || n.includes('سباك')) return Droplet;
+  if (c.includes('PLUMB') || n.includes('صحي') || n.includes('سباك')) return Droplet;
   if (c.includes('HVAC') || n.includes('تكييف')) return Wind;
   if (c.includes('WATER') || c.includes('ISO') || n.includes('عزل')) return Shield;
   if (c.includes('EPOXY') || n.includes('إيبوكسي') || n.includes('ايبوكسي')) return Sparkles;
