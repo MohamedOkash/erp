@@ -42,7 +42,7 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnOverlayClick = true,
   closeOnEscape = true,
   headerActions,
-  zIndex = 1000,
+  zIndex = 1010,
 }) => {
   const { direction, t } = useI18n();
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -127,20 +127,22 @@ export const Modal: React.FC<ModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1.25rem',
         zIndex,
         overflow: 'hidden',
+        transition: 'opacity 0.2s var(--ease-apple-spring)',
       }}
       dir={direction}
     >
       <div
         ref={modalContainerRef}
-        className="glass-card animate-fade-in"
+        className="glass-card animate-fade-in-up"
         style={{
           width: '100%',
           maxWidth: widthStyle,
@@ -150,11 +152,12 @@ export const Modal: React.FC<ModalProps> = ({
           flexDirection: 'column',
           padding: 0,
           overflow: 'hidden',
-          border: '1px solid var(--border-glow, rgba(59, 130, 246, 0.3))',
-          boxShadow: 'var(--shadow-xl, 0 25px 50px -12px rgba(0, 0, 0, 0.5))',
-          borderRadius: 'var(--radius-xl, 16px)',
-          background: 'var(--bg-surface, #111d38)',
-          color: 'var(--text-main, #ffffff)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: 'var(--shadow-sheet)',
+          borderRadius: 'var(--radius-xl, 22px)',
+          background: 'var(--bg-surface)',
+          color: 'var(--text-main)',
+          transformOrigin: 'center center',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -167,8 +170,8 @@ export const Modal: React.FC<ModalProps> = ({
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '1.25rem 1.75rem',
-              borderBottom: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
-              background: 'var(--bg-surface-elevated, rgba(30, 41, 59, 0.5))',
+              borderBottom: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface-elevated)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
@@ -176,9 +179,9 @@ export const Modal: React.FC<ModalProps> = ({
                 <div
                   style={{
                     padding: '0.55rem',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(30, 64, 175, 0.4) 100%)',
-                    border: '1px solid rgba(59, 130, 246, 0.35)',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(30, 64, 175, 0.3) 100%)',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
                     color: '#60a5fa',
                     display: 'flex',
                     alignItems: 'center',
@@ -189,11 +192,11 @@ export const Modal: React.FC<ModalProps> = ({
                 </div>
               )}
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1.3 }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-heading)', margin: 0, lineHeight: 1.3 }}>
                   {title}
                 </h3>
                 {subtitle && (
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-dim, #94a3b8)', marginTop: '0.2rem' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
                     {subtitle}
                   </div>
                 )}
@@ -207,29 +210,30 @@ export const Modal: React.FC<ModalProps> = ({
                 onClick={onClose}
                 aria-label={t('common.close')}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: 'var(--text-muted, #94a3b8)',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-muted)',
                   cursor: 'pointer',
-                  padding: '0.45rem',
-                  borderRadius: '8px',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: 'var(--radius-full)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'all 0.2s',
+                  transition: 'all var(--transition-fast)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
                   e.currentTarget.style.color = '#ef4444';
-                  e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                  e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                  e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                  e.currentTarget.style.color = 'var(--text-muted)';
+                  e.currentTarget.style.borderColor = 'var(--border-subtle)';
                 }}
               >
-                <X size={20} />
+                <X size={16} />
               </button>
             </div>
           </div>
@@ -240,7 +244,7 @@ export const Modal: React.FC<ModalProps> = ({
           style={{
             flex: '1 1 auto',
             overflowY: 'auto',
-            padding: '1.75rem',
+            padding: '1.5rem 1.75rem',
           }}
         >
           {children}
@@ -255,9 +259,9 @@ export const Modal: React.FC<ModalProps> = ({
               alignItems: 'center',
               justifyContent: 'flex-end',
               gap: '0.75rem',
-              padding: '1.25rem 1.75rem',
-              borderTop: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
-              background: 'var(--bg-surface-elevated, rgba(30, 41, 59, 0.7))',
+              padding: '1rem 1.75rem',
+              borderTop: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface-elevated)',
             }}
           >
             {footer}
