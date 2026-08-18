@@ -19,9 +19,13 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS for frontend clients
+  // Enable CORS for frontend clients (configurable via CORS_ORIGIN in production)
+  const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : true;
+
   app.enableCors({
-    origin: '*',
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

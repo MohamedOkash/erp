@@ -1,0 +1,39 @@
+# ============================================================================
+# Multi-Stage Dockerfile for NestJS API Service (Root Alias)
+# ============================================================================
+
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY apps/api/package*.json ./apps/api/
+
+RUN npm --prefix apps/api install
+
+COPY apps/api ./apps/api
+COPY db ./db
+COPY scripts ./scripts
+
+RUN npm --prefix apps/api run build
+
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+COPY package*.json ./
+COPY apps/api/package*.json ./apps/api/
+RUN npm --prefix apps/api install --omit=dev && npm cache clean --force
+
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/db ./db
+COPY --from=builder /app/scripts ./scripts
+
+RUN mkdir -p /app/apps/api/uploads/documents
+
+EXPOSE 3000
+
+CMD ["node", "apps/api/dist/main.js"]

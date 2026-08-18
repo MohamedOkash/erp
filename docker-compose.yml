@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # --------------------------------------------------------------------------
+  # 1. Backend API Service (NestJS)
+  # --------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: construction_erp_api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - SESSION_SECRET=${SESSION_SECRET:-construction_erp_secret}
+    volumes:
+      - document_uploads:/app/apps/api/uploads/documents
+    networks:
+      - erp_network
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+
+  # --------------------------------------------------------------------------
+  # 2. Frontend Web Application (React SPA + Nginx Reverse Proxy)
+  # --------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: construction_erp_web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+    networks:
+      - erp_network
+    depends_on:
+      - api
+
+  # --------------------------------------------------------------------------
+  # 3. Optional Local PostgreSQL Database (if not using Supabase / Cloud DB)
+  # --------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: construction_erp_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-construction_erp}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - erp_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-construction_erp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  erp_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  document_uploads:
+    driver: local
