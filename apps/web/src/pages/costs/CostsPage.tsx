@@ -543,8 +543,8 @@ export const CostsPage: React.FC = () => {
         }
       >
         <form id="create-cost-form" onSubmit={handleSaveCost}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+            <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
               <label className="form-label">{t('auto.البيان_الوصف_bd6e15')}</label>
               <input
                 type="text"
@@ -556,7 +556,7 @@ export const CostsPage: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.الفئة_7f688d')}</label>
               <select
                 required
@@ -573,7 +573,7 @@ export const CostsPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.التاريخ_31f58d')}</label>
               <WheelDatePicker
                 required
@@ -582,7 +582,7 @@ export const CostsPage: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.المشروع_7f28ee')}</label>
               <select
                 className="input-field"
@@ -598,7 +598,7 @@ export const CostsPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.الفرع_59a3fe')}</label>
               <select
                 className="input-field"
@@ -614,7 +614,7 @@ export const CostsPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.الكمية_252300')}</label>
               <input
                 type="number"
@@ -626,7 +626,7 @@ export const CostsPage: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.سعر_الوحدة_SAR_7869ce')}</label>
               <input
                 type="number"
@@ -638,7 +638,7 @@ export const CostsPage: React.FC = () => {
               />
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
               <label className="form-label">{t('auto.المبلغ_الإجمالي_SAR_2b1289')}</label>
               <input
                 type="number"

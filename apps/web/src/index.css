@@ -481,6 +481,12 @@ h1, h2, h3, h4, h5, h6 {
   gap: 0.45rem;
 }
 
+div[style*="grid"] > .form-group,
+div[style*="display: grid"] > .form-group,
+div[style*="display:grid"] > .form-group {
+  margin-bottom: 0;
+}
+
 .form-label {
   font-size: 13px;
   font-weight: 600;

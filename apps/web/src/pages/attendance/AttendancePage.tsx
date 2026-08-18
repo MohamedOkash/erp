@@ -622,8 +622,8 @@ export const AttendancePage: React.FC = () => {
         }
       >
         <form id="attendance-form" onSubmit={handleSaveAttendance}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+            <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
               <label className="form-label">{t('auto.الموظف_العامل_6eefbb')}</label>
               <select
                 required
@@ -640,7 +640,7 @@ export const AttendancePage: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.المشروع_7f28ee')}</label>
               <select
                 className="input-field"
@@ -656,7 +656,7 @@ export const AttendancePage: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.الفرع_59a3fe')}</label>
               <select
                 className="input-field"
@@ -672,7 +672,7 @@ export const AttendancePage: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.التاريخ_31f58d')}</label>
               <WheelDatePicker
                 required
@@ -681,7 +681,7 @@ export const AttendancePage: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.حالة_الحضور_1043a2')}</label>
               <select
                 required
@@ -696,7 +696,7 @@ export const AttendancePage: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.ساعات_الإضافي_37cc3e')}</label>
               <input
                 type="number"
@@ -708,7 +708,7 @@ export const AttendancePage: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.وقت_الحضور_b25f47')}</label>
               <WheelTimePicker
                 value={formData.checkInTime || ''}
@@ -716,7 +716,7 @@ export const AttendancePage: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">{t('auto.وقت_الانصراف_2fe8a8')}</label>
               <WheelTimePicker
                 value={formData.checkOutTime || ''}
