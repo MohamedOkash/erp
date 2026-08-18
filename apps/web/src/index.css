@@ -3,7 +3,82 @@
   --font-arabic: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-latin: 'Outfit', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
 
-  /* 8pt Spacing Grid System */
+  /* ============================================================
+     Rich Palette Master System (Tailwind / Apple Pro inspired)
+     ============================================================ */
+  /* Primary: Safety Amber (هوية المقاولات والسلامة الميدانية) */
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+  --color-amber-800: #92400e;
+  --color-amber-900: #78350f;
+
+  /* Accent 1: Teal (للتأكيدات والاعتمادات الإيجابية) */
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+
+  /* Accent 2: Violet (للعناصر المميزة والتقارير المتقدمة) */
+  --color-violet-50: #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-200: #ddd6fe;
+  --color-violet-300: #c4b5fd;
+  --color-violet-400: #a78bfa;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
+  --color-violet-700: #6d28d9;
+  --color-violet-800: #5b21b6;
+  --color-violet-900: #4c1d95;
+
+  /* Accent 3: Emerald (للإنجاز والنجاح المالي) */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+
+  /* Accent 4: Rose (للأخطاء والتحذيرات والخصومات) */
+  --color-rose-50: #fff1f2;
+  --color-rose-100: #ffe4e6;
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-rose-600: #e11d48;
+
+  /* Accent 5: Cobalt Blue (للإدارة والتنقل الرئيسي) */
+  --color-blue-50: #eff6ff;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+
+  /* Neutrals: Slate (رمادي مزرق عميق أنيق) */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  /* ============================================================
+     8pt Spacing Grid System
+     ============================================================ */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -15,19 +90,21 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Dark Theme Color Palette (Apple Midnight & Contracting Accent) */
-  --bg-main: #0b1329;
-  --bg-surface: #111d38;
-  --bg-surface-elevated: #18284d;
-  --bg-card: rgba(17, 29, 56, 0.78);
-  --bg-glass: rgba(24, 40, 77, 0.65);
-  --bg-header: rgba(11, 19, 41, 0.82);
-  --bg-sidebar: rgba(15, 23, 42, 0.88);
-  --bg-input: rgba(17, 29, 56, 0.85);
-  --bg-dropdown: rgba(17, 29, 56, 0.95);
+  /* ============================================================
+     Dark Theme Semantic Color Mapping
+     ============================================================ */
+  --bg-main: #060b18;
+  --bg-surface: #0b1426;
+  --bg-surface-elevated: #111d38;
+  --bg-card: rgba(11, 20, 38, 0.78);
+  --bg-glass: rgba(17, 29, 56, 0.65);
+  --bg-header: rgba(6, 11, 24, 0.82);
+  --bg-sidebar: rgba(8, 15, 30, 0.90);
+  --bg-input: rgba(11, 20, 38, 0.85);
+  --bg-dropdown: rgba(11, 20, 38, 0.96);
   
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: #3b82f6;
+  --border-focus: var(--color-blue-500);
   --border-glow: rgba(59, 130, 246, 0.35);
 
   --text-main: #f8fafc;
@@ -35,27 +112,30 @@
   --text-muted: #94a3b8;
   --text-dim: #64748b;
 
-  --brand-primary: #2563eb;
-  --brand-primary-hover: #1d4ed8;
-  --brand-accent: #f59e0b;
-  --brand-accent-hover: #d97706;
+  --brand-primary: var(--color-blue-600);
+  --brand-primary-hover: var(--color-blue-700);
+  --brand-accent: var(--color-amber-500);
+  --brand-accent-hover: var(--color-amber-600);
 
-  --status-success: #10b981;
+  --status-success: var(--color-emerald-500);
   --status-success-bg: rgba(16, 185, 129, 0.14);
-  --status-warning: #f59e0b;
+  --status-warning: var(--color-amber-500);
   --status-warning-bg: rgba(245, 158, 11, 0.14);
-  --status-danger: #ef4444;
-  --status-danger-bg: rgba(239, 68, 68, 0.14);
-  --status-info: #0ea5e9;
-  --status-info-bg: rgba(14, 165, 233, 0.14);
+  --status-danger: var(--color-rose-500);
+  --status-danger-bg: rgba(244, 63, 94, 0.14);
+  --status-info: var(--color-teal-500);
+  --status-info-bg: rgba(20, 184, 166, 0.14);
 
-  /* Apple Multi-layer Diffused Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.35), 0 2px 6px -1px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --shadow-lg: 0 10px 28px -4px rgba(0, 0, 0, 0.45), 0 6px 12px -3px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --shadow-xl: 0 24px 50px -12px rgba(0, 0, 0, 0.6), 0 12px 24px -6px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.09);
-  --shadow-sheet: 0 32px 64px -16px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  --shadow-glow: 0 0 28px rgba(37, 99, 235, 0.28);
+  /* Apple Liquid Glass Diffused Shadows (Dark) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.45), 0 2px 6px -1px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.55), 0 6px 14px -3px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-xl: 0 24px 56px -12px rgba(0, 0, 0, 0.7), 0 12px 24px -6px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-sheet: 0 36px 72px -16px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  --shadow-glow: 0 0 32px rgba(37, 99, 235, 0.3);
+  --shadow-amber: 0 0 25px rgba(245, 158, 11, 0.25);
+  --shadow-violet: 0 0 25px rgba(139, 92, 246, 0.25);
+  --shadow-teal: 0 0 25px rgba(20, 184, 166, 0.25);
 
   /* Continuous Corner Curvature */
   --radius-xs: 6px;
@@ -65,7 +145,7 @@
   --radius-xl: 22px;
   --radius-full: 9999px;
 
-  /* Z-Index Layer Hierarchy */
+  /* Z-Index Hierarchy */
   --z-sidebar: 40;
   --z-header: 45;
   --z-dropdown: 60;
@@ -74,65 +154,71 @@
   --z-modal: 1010;
   --z-tooltip: 1050;
 
-  /* Apple Fluid Motion Curves */
+  /* Apple Motion Curves */
   --ease-apple-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-apple-press: cubic-bezier(0.16, 1, 0.3, 1);
   --transition-fast: 0.12s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-normal: 0.26s cubic-bezier(0.32, 0.72, 0, 1);
   --transition-spring: 0.38s cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* Apple Glass Blur Material */
+  /* Liquid Glass Material */
   --glass-filter: blur(24px) saturate(190%);
 
   color-scheme: dark;
 }
 
 [data-theme="light"] {
-  /* Light Theme Color Palette - Contracting Brand Identity & Clean Apple Vibrancy */
-  --bg-main: #F4F6F9;
+  /* Light Theme Semantic Mapping (Clean Contracting Identity & Glass Vibrancy) */
+  --bg-main: #F1F5F9;
   --bg-surface: #FFFFFF;
   --bg-surface-elevated: #F8FAFC;
   --bg-card: rgba(255, 255, 255, 0.94);
   --bg-glass: rgba(255, 255, 255, 0.88);
-  --bg-header: rgba(255, 255, 255, 0.85);
+  --bg-header: rgba(255, 255, 255, 0.86);
   --bg-sidebar: rgba(255, 255, 255, 0.92);
   --bg-input: #FFFFFF;
   --bg-dropdown: #FFFFFF;
   
-  --border-subtle: rgba(14, 42, 71, 0.08);
-  --border-focus: #2563EB;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-focus: var(--color-blue-600);
   --border-glow: rgba(37, 99, 235, 0.22);
 
-  --text-main: #0E2A47;
-  --text-heading: #0B2238;
+  --text-main: #0F172A;
+  --text-heading: #020617;
   --text-muted: #64748B;
   --text-dim: #94A3B8;
 
-  --brand-primary: #2563EB;
-  --brand-primary-hover: #1D4ED8;
-  --brand-accent: #F5A300;
-  --brand-accent-hover: #D97706;
+  --brand-primary: var(--color-blue-600);
+  --brand-primary-hover: var(--color-blue-700);
+  --brand-accent: var(--color-amber-600);
+  --brand-accent-hover: var(--color-amber-700);
 
-  --status-success: #059669;
+  --status-success: var(--color-emerald-600);
   --status-success-bg: rgba(5, 150, 105, 0.12);
-  --status-warning: #D97706;
-  --status-warning-bg: rgba(245, 163, 0, 0.14);
-  --status-danger: #DC2626;
-  --status-danger-bg: rgba(220, 38, 38, 0.12);
-  --status-info: #0284C7;
-  --status-info-bg: rgba(2, 132, 199, 0.12);
+  --status-warning: var(--color-amber-600);
+  --status-warning-bg: rgba(217, 119, 6, 0.14);
+  --status-danger: var(--color-rose-600);
+  --status-danger-bg: rgba(225, 29, 72, 0.12);
+  --status-info: var(--color-teal-600);
+  --status-info-bg: rgba(13, 148, 136, 0.12);
 
-  /* Diffused Apple Multi-tier Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 4px 14px -2px rgba(14, 42, 71, 0.07), 0 2px 4px -1px rgba(14, 42, 71, 0.03);
-  --shadow-lg: 0 10px 28px -4px rgba(14, 42, 71, 0.09), 0 4px 8px -2px rgba(14, 42, 71, 0.04);
-  --shadow-xl: 0 24px 50px -12px rgba(14, 42, 71, 0.12), 0 8px 16px -4px rgba(14, 42, 71, 0.05);
-  --shadow-sheet: 0 32px 64px -16px rgba(14, 42, 71, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
-  --shadow-glow: 0 0 24px rgba(37, 99, 235, 0.14);
+  /* Diffused Multi-tier Shadows (Light) */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.10), 0 4px 8px -2px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 24px 56px -12px rgba(15, 23, 42, 0.14), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+  --shadow-sheet: 0 36px 72px -16px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 0 28px rgba(37, 99, 235, 0.14);
+  --shadow-amber: 0 0 25px rgba(217, 119, 6, 0.16);
+  --shadow-violet: 0 0 25px rgba(124, 58, 237, 0.16);
+  --shadow-teal: 0 0 25px rgba(13, 148, 136, 0.16);
 
   color-scheme: light;
 }
 
+/* ============================================================
+   Global Reset & Scrollbars
+   ============================================================ */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -181,7 +267,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Background animated gradient glow */
+/* Background animated gradient glow (Ambient Mesh) */
 .app-bg-glow {
   position: fixed;
   top: 0;
@@ -198,11 +284,11 @@ body {
   position: absolute;
   top: -15%;
   right: -10%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0) 70%);
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, rgba(139, 92, 246, 0.06) 40%, transparent 70%);
   border-radius: 50%;
-  filter: blur(50px);
+  filter: blur(60px);
 }
 
 .app-bg-glow::after {
@@ -210,11 +296,11 @@ body {
   position: absolute;
   bottom: -20%;
   left: -10%;
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0) 70%);
+  width: 750px;
+  height: 750px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, rgba(20, 184, 166, 0.05) 45%, transparent 70%);
   border-radius: 50%;
-  filter: blur(60px);
+  filter: blur(70px);
 }
 
 /* ============================================================
@@ -229,7 +315,7 @@ button:active:not(:disabled),
 }
 
 /* ============================================================
-   Glassmorphism & Card Styles (Depth without Heavy Borders)
+   Liquid Glass & Card Architecture
    ============================================================ */
 .glass-card {
   background: var(--bg-card);
@@ -244,7 +330,7 @@ button:active:not(:disabled),
 .glass-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.28);
 }
 
 .glass-panel {
@@ -258,7 +344,7 @@ button:active:not(:disabled),
 }
 
 /* ============================================================
-   Apple Typography Scale (12 / 13 / 14 / 17 / 22 / 28 / 34)
+   Apple Typography Hierarchy
    ============================================================ */
 .text-caption-2 { font-size: 11px; line-height: 1.3; font-weight: 500; }
 .text-caption-1 { font-size: 12px; line-height: 1.35; font-weight: 500; }
@@ -278,7 +364,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============================================================
-   Badges (Apple Capsule System)
+   Badges (Rich Apple Capsule Tokens)
    ============================================================ */
 .badge {
   display: inline-flex;
@@ -313,11 +399,23 @@ h1, h2, h3, h4, h5, h6 {
 .badge-danger {
   background: var(--status-danger-bg);
   color: var(--status-danger);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.badge-violet {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--color-violet-400);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.badge-teal {
+  background: rgba(20, 184, 166, 0.15);
+  color: var(--color-teal-400);
+  border: 1px solid rgba(20, 184, 166, 0.3);
 }
 
 /* ============================================================
-   Form Controls (Apple 44px Touch Target Metric)
+   Form Controls (Apple 44px Touch Target & Focus Glow)
    ============================================================ */
 .form-group {
   margin-bottom: 1.25rem;
@@ -456,7 +554,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
 }
 
 /* ============================================================
-   Buttons (Apple Tactile Metrics)
+   Buttons (Apple Tactile Feedback & Gradients)
    ============================================================ */
 .btn {
   display: inline-flex;
@@ -506,8 +604,32 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
   box-shadow: var(--shadow-md);
 }
 
+.btn-amber {
+  background: linear-gradient(135deg, var(--color-amber-500) 0%, var(--color-amber-600) 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+}
+
+.btn-amber:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-amber-400) 0%, var(--color-amber-500) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.45);
+}
+
+.btn-teal {
+  background: linear-gradient(135deg, var(--color-teal-500) 0%, var(--color-teal-600) 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(20, 184, 166, 0.35);
+}
+
+.btn-teal:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-teal-400) 0%, var(--color-teal-500) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(20, 184, 166, 0.45);
+}
+
 /* ============================================================
-   Tables (No Vertical Lines, Row Hover Tint with Spring)
+   Tables (No Vertical Lines, Spring Hover Tint)
    ============================================================ */
 table {
   width: 100%;
