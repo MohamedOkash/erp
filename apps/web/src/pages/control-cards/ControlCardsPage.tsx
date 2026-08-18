@@ -192,17 +192,7 @@ export const ControlCardsPage: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                transition: 'all 0.2s ease-in-out',
                 position: 'relative',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
               }}
             >
               {/* Card Header */}
