@@ -136,7 +136,7 @@ export const DashboardPage: React.FC = () => {
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(15, 23, 42, 0.85) 100%)',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, var(--bg-surface-elevated) 100%)',
           border: '1px solid rgba(59, 130, 246, 0.25)',
           gap: '1.25rem',
         }}
@@ -224,7 +224,7 @@ export const DashboardPage: React.FC = () => {
                   <div
                     key={proj.id}
                     style={{
-                      background: 'rgba(15, 23, 42, 0.6)',
+                      background: 'var(--bg-surface-elevated)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: 'var(--radius-md)',
                       padding: '1.15rem',
@@ -236,7 +236,7 @@ export const DashboardPage: React.FC = () => {
                   >
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                        <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>
+                        <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-heading)' }}>
                           {proj.name}
                         </div>
                         <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>
@@ -296,7 +296,7 @@ export const DashboardPage: React.FC = () => {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.88rem' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <th style={{ padding: '0.85rem' }}>{t('auto.اسم_البند_61a04e')}</th>
                       <th style={{ padding: '0.85rem' }}>{t('auto.التصنيف_7f5b59')}</th>
                       <th style={{ padding: '0.85rem' }}>{t('auto.سعر_العقد_SAR_1f80cf')}</th>
@@ -307,7 +307,7 @@ export const DashboardPage: React.FC = () => {
                   <tbody>
                     {controlCards.slice(0, 5).map((card) => (
                       <tr key={card.workItemId} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                        <td style={{ padding: '0.85rem', fontWeight: 600, color: '#ffffff' }}>
+                        <td style={{ padding: '0.85rem', fontWeight: 600, color: 'var(--text-heading)' }}>
                           {card.name}
                         </td>
                         <td style={{ padding: '0.85rem' }}>
@@ -390,14 +390,14 @@ export const DashboardPage: React.FC = () => {
                     key={alt.id}
                     style={{
                       padding: '0.75rem',
-                      background: 'rgba(15, 23, 42, 0.6)',
+                      background: 'var(--bg-surface-elevated)',
                       border: '1px solid rgba(239, 68, 68, 0.2)',
                       borderRadius: 'var(--radius-md)',
                       fontSize: '0.85rem',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                      <strong style={{ color: '#ffffff' }}>{alt.title}</strong>
+                      <strong style={{ color: 'var(--text-heading)' }}>{alt.title}</strong>
                       <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
                         {alt.type === 'alert' ? t('auto.تنبيه_عاجل_20e4b3') : alt.type === 'warning' ? t('auto.تحذير_59c393') : t('auto.إشعار_598069')}
                       </span>
@@ -440,14 +440,14 @@ export const DashboardPage: React.FC = () => {
                     key={rec.id}
                     style={{
                       padding: '0.75rem',
-                      background: 'rgba(15, 23, 42, 0.5)',
+                      background: 'var(--bg-surface-elevated)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: 'var(--radius-md)',
                       fontSize: '0.85rem',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                      <strong style={{ color: '#ffffff' }}>{rec.workItemName || t('auto.بند_عمل_4ad23b')}</strong>
+                      <strong style={{ color: 'var(--text-heading)' }}>{rec.workItemName || t('auto.بند_عمل_4ad23b')}</strong>
                       <span style={{ color: '#34d399', fontWeight: 700 }}>
                         {rec.actualQuantity || 0} {t('auto.وحدة_2f2e97')}</span>
                     </div>

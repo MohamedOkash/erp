@@ -208,7 +208,7 @@ export const DailyReportPage: React.FC = () => {
           </div>
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.إجمالي_الكميات_المنفذة_7c07f3')}</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>{totalActual.toLocaleString()}</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-heading)' }}>{totalActual.toLocaleString()}</div>
           </div>
         </div>
 
@@ -259,7 +259,7 @@ export const DailyReportPage: React.FC = () => {
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)', background: 'rgba(15, 23, 42, 0.6)' }}>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)', background: 'var(--bg-surface-elevated)' }}>
                 <th style={{ padding: '0.75rem 1rem' }}>{t('auto.البند_وكوده_372c75')}</th>
                 <th style={{ padding: '0.75rem 1rem' }}>{t('auto.المرحلة_المنفذة_84025')}</th>
                 <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.الكمية_المنفذة_1fde49')}</th>
@@ -274,19 +274,19 @@ export const DailyReportPage: React.FC = () => {
             <tbody>
               {reportRows.map((row) => (
                 <tr key={row.recordId} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#ffffff' }}>
+                  <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: 'var(--text-heading)' }}>
                     <div>{row.workItemName}</div>
                     {row.workItemCode && (
                       <span style={{ fontSize: '0.7rem', color: '#93c5fd' }}>{row.workItemCode}</span>
                     )}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <div style={{ color: '#ffffff' }}>{row.stageName}</div>
+                    <div style={{ color: 'var(--text-heading)' }}>{row.stageName}</div>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                       {t('auto.وزن_2f2f91')}{Math.round(row.stagePercentage * 100)}%
                     </span>
                   </td>
-                  <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, color: '#ffffff' }}>
+                  <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, color: 'var(--text-heading)' }}>
                     {row.actualQuantity} {row.unit}
                   </td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, color: '#34d399' }}>
@@ -325,7 +325,7 @@ export const DailyReportPage: React.FC = () => {
             <tfoot>
               <tr
                 style={{
-                  background: 'rgba(30, 41, 59, 0.8)',
+                  background: 'var(--bg-surface-elevated)',
                   borderTop: '2px solid var(--border-subtle)',
                   fontWeight: 800,
                   fontSize: '0.9rem',
@@ -333,7 +333,7 @@ export const DailyReportPage: React.FC = () => {
               >
                 <td colSpan={2} style={{ padding: '1rem', color: '#93c5fd' }}>
                   {t('auto.الإجمالي_لليوم_6fc91e')}</td>
-                <td style={{ padding: '1rem', textAlign: 'center', color: '#ffffff' }}>
+                <td style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-heading)' }}>
                   {totalActual.toLocaleString()}
                 </td>
                 <td style={{ padding: '1rem', textAlign: 'center', color: '#34d399' }}>

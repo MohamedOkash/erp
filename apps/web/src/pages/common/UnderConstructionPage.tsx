@@ -125,7 +125,7 @@ export const UnderConstructionPage: React.FC = () => {
           <span>{t('auto.الوحدة_قيد_التجهيز_والتطوير_Wo_48ac30')}</span>
         </div>
 
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.5rem', color: '#ffffff' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.5rem', color: 'var(--text-heading)' }}>
           {moduleInfo.title}
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#93c5fd', margin: '0 0 1.25rem', fontFamily: 'monospace' }}>
@@ -139,7 +139,7 @@ export const UnderConstructionPage: React.FC = () => {
         {/* Feature Preview Card */}
         <div
           style={{
-            background: 'rgba(15, 23, 42, 0.6)',
+            background: 'var(--bg-surface-elevated)',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-md)',
             padding: '1.25rem 1.5rem',

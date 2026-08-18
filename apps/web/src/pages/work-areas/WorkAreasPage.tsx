@@ -245,7 +245,7 @@ export const WorkAreasPage: React.FC = () => {
             <Layers size={17} color={depth === 0 ? '#60a5fa' : '#38bdf8'} />
 
             <div>
-              <span style={{ fontWeight: 600, color: '#ffffff', fontSize: '0.95rem' }}>
+              <span style={{ fontWeight: 600, color: 'var(--text-heading)', fontSize: '0.95rem' }}>
                 {node.name}
               </span>
               {node.code && (
@@ -427,7 +427,7 @@ export const WorkAreasPage: React.FC = () => {
         </div>
 
         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          {t('auto.إجمالي_المناطق_المسجلة_بالمشرو_58b775')}<strong style={{ color: '#ffffff' }}>{areas.length}</strong>
+          {t('auto.إجمالي_المناطق_المسجلة_بالمشرو_58b775')}<strong style={{ color: 'var(--text-heading)' }}>{areas.length}</strong>
         </div>
       </div>
 
@@ -583,7 +583,7 @@ export const WorkAreasPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_478ebe')}<strong style={{ color: '#ffffff' }}>"{deletingArea?.name}"</strong>{t('auto.سيتم_حذف_أو_فصل_كافة_المناطق_ا_351564')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_478ebe')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingArea?.name}"</strong>{t('auto.سيتم_حذف_أو_فصل_كافة_المناطق_ا_351564')}</p>
       </Modal>
     </div>
   );

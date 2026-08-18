@@ -79,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       style={{
         width: collapsed ? '80px' : '260px',
         minHeight: '100vh',
-        background: 'rgba(17, 29, 56, 0.95)',
+        background: 'var(--bg-surface-elevated)',
         backdropFilter: 'blur(16px)',
         borderLeft: '1px solid var(--border-subtle)',
         display: 'flex',

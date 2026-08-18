@@ -376,7 +376,7 @@ export const SavedReportsPage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.اسم_التقرير_7ae285')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.نوع_التقرير_669ac1')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الصلاحية_والمشاركة_752f89')}</th>
@@ -400,7 +400,7 @@ export const SavedReportsPage: React.FC = () => {
                       }}
                     >
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{rep.name}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.05rem' }}>{rep.name}</div>
                       </td>
                       <td style={{ padding: '1rem' }}>{getReportTypeBadge(rep.report_type)}</td>
                       <td style={{ padding: '1rem' }}>
@@ -643,7 +643,7 @@ export const SavedReportsPage: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  background: 'rgba(15, 23, 42, 0.5)',
+                  background: 'var(--bg-surface-elevated)',
                   padding: '0.75rem 1rem',
                   borderRadius: 'var(--radius-md)',
                   marginBottom: '1rem',
@@ -663,7 +663,7 @@ export const SavedReportsPage: React.FC = () => {
                 {runResult.data && runResult.data.length > 0 ? (
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
                     <thead>
-                      <tr style={{ background: 'rgba(15, 23, 42, 0.9)', position: 'sticky', top: 0 }}>
+                      <tr style={{ background: 'var(--bg-surface-elevated)', position: 'sticky', top: 0 }}>
                         {Object.keys(runResult.data[0]).slice(0, 6).map((k) => (
                           <th key={k} style={{ padding: '0.75rem' }}>
                             {k}
@@ -762,7 +762,7 @@ export const SavedReportsPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ق_66627c')}<strong style={{ color: '#ffffff' }}>"{deletingReport?.name}"</strong>{t('auto.k_61f')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ق_66627c')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingReport?.name}"</strong>{t('auto.k_61f')}</p>
       </Modal>
     </div>
   );

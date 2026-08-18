@@ -360,7 +360,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 </label>
                 <select
                   className="input-field"
-                  style={{ borderColor: 'rgba(129, 140, 248, 0.4)', background: 'rgba(15, 23, 42, 0.9)' }}
+                  style={{ borderColor: 'rgba(129, 140, 248, 0.4)', background: 'var(--bg-surface-elevated)' }}
                   value={workItemStageId}
                   onChange={(e) => handleStageChange(e.target.value)}
                 >
@@ -526,7 +526,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                       gridTemplateColumns: '2fr 1fr 0.9fr 0.9fr 0.9fr 1fr auto',
                       gap: '0.4rem',
                       alignItems: 'center',
-                      background: 'rgba(15, 23, 42, 0.6)',
+                      background: 'var(--bg-surface-elevated)',
                       padding: '0.5rem 0.75rem',
                       borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border-subtle)',

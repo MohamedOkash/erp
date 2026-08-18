@@ -278,7 +278,7 @@ export const Layout: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
-                color: '#ffffff',
+                color: 'var(--text-heading)',
                 fontWeight: 800,
                 fontSize: '1.1rem',
                 border: '1px solid rgba(245, 163, 0, 0.4)',

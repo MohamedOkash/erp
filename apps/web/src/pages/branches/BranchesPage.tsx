@@ -272,7 +272,7 @@ export const BranchesPage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.اسم_الفرع_61a0aa')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.كود_الفرع_6d339b')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الموقع_العنوان_136885')}</th>
@@ -296,7 +296,7 @@ export const BranchesPage: React.FC = () => {
                       }}
                     >
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{b.name}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.05rem' }}>{b.name}</div>
                         {b.phone && (
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.هاتف_5b5965')}{b.phone}</div>
                         )}
@@ -429,7 +429,7 @@ export const BranchesPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_4c8746')}<strong style={{ color: '#ffffff' }}>"{deletingBranch?.name}"</strong>{t('auto.هذا_الإجراء_لا_يمكن_التراجع_عن_66852b')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_4c8746')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingBranch?.name}"</strong>{t('auto.هذا_الإجراء_لا_يمكن_التراجع_عن_66852b')}</p>
       </Modal>
     </div>
   );

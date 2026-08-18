@@ -306,7 +306,7 @@ export const RbacMatrixPage: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '1rem',
-            background: 'rgba(15, 23, 42, 0.7)',
+            background: 'var(--bg-surface-elevated)',
             padding: '0.5rem 1rem',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-subtle)',
@@ -315,13 +315,13 @@ export const RbacMatrixPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Users size={16} color="#60a5fa" />
             <span style={{ color: 'var(--text-muted)' }}>{t('auto.إجمالي_الأدوار_1626db')}</span>
-            <strong style={{ color: '#fff' }}>{roles.length}</strong>
+            <strong style={{ color: 'var(--text-heading)' }}>{roles.length}</strong>
           </div>
           <div style={{ width: '1px', height: '16px', background: 'var(--border-subtle)' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Sliders size={16} color="#34d399" />
             <span style={{ color: 'var(--text-muted)' }}>{t('auto.إجمالي_الصلاحيات_3a6109')}</span>
-            <strong style={{ color: '#fff' }}>{permissions.length}</strong>
+            <strong style={{ color: 'var(--text-heading)' }}>{permissions.length}</strong>
           </div>
         </div>
       </div>
@@ -389,7 +389,7 @@ export const RbacMatrixPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-            <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Users size={16} color="#60a5fa" />
               <span>{t('auto.الأدوار_الوظيفية_Roles_1083da')}</span>
             </h3>
@@ -509,7 +509,7 @@ export const RbacMatrixPage: React.FC = () => {
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
+                    <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-heading)' }}>
                       {selectedRole.name}
                     </h2>
                     <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', fontFamily: 'monospace' }}>
@@ -623,7 +623,7 @@ export const RbacMatrixPage: React.FC = () => {
                       <div
                         style={{
                           padding: '1rem 1.25rem',
-                          background: 'rgba(15, 23, 42, 0.6)',
+                          background: 'var(--bg-surface-elevated)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
@@ -636,7 +636,7 @@ export const RbacMatrixPage: React.FC = () => {
                           <span style={{ color: conf.color, display: 'flex', alignItems: 'center' }}>
                             {conf.icon}
                           </span>
-                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#fff' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-heading)' }}>
                             {conf.label}
                           </span>
                           <span

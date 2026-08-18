@@ -236,7 +236,7 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#ffffff' }}>{t('auto.سياسات_الدوام_الحالية_7db79b')}</h3>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-heading)' }}>{t('auto.سياسات_الدوام_الحالية_7db79b')}</h3>
                 <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   {t('auto.يتم_تطبيق_السياسة_الأحدث_سريان_60e172')}</p>
               </div>
@@ -257,7 +257,7 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
                 style={{
                   textAlign: 'center',
                   padding: '2.5rem',
-                  background: 'rgba(30, 41, 59, 0.4)',
+                  background: 'var(--bg-surface-elevated)',
                   borderRadius: 'var(--radius-lg)',
                   border: '1px dashed var(--border-subtle)',
                 }}
@@ -279,12 +279,12 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         borderLeft: isGeneral ? '4px solid #38bdf8' : '4px solid #a855f7',
-                        background: 'rgba(15, 23, 42, 0.6)',
+                        background: 'var(--bg-surface-elevated)',
                       }}
                     >
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ffffff' }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-heading)' }}>
                             {isGeneral ? t('auto.السياسة_العامة_للمنشأة_52da9d') : `🏗️ مشروع: ${p.projectName || t('auto.مشروع_مخصص_5b4a40')}`}
                           </span>
                           {p.isActive ? (
@@ -350,7 +350,7 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
           <form id="attendance-policy-form" onSubmit={handleSavePolicy} className="animate-fade-in">
             <div
               style={{
-                background: 'rgba(30, 41, 59, 0.6)',
+                background: 'var(--bg-surface-elevated)',
                 padding: '1.25rem',
                 borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--border-subtle)',
@@ -358,7 +358,7 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h4 style={{ margin: 0, fontSize: '1rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Edit2 size={16} color="#38bdf8" />
                   <span>{editingPolicy ? t('auto.تعديل_سياسة_الحضور_1f86a1') : t('auto.إضافة_سياسة_حضور_جديدة_1b5f36')}</span>
                 </h4>
@@ -515,7 +515,7 @@ export const AttendancePolicyModal: React.FC<AttendancePolicyModalProps> = ({
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                 />
-                <label htmlFor="policyIsActive" style={{ cursor: 'pointer', fontSize: '0.85rem', color: '#ffffff' }}>
+                <label htmlFor="policyIsActive" style={{ cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-heading)' }}>
                   {t('auto.تفعيل_هذه_السياسة_فورا_للاستخد_8e8ad4')}</label>
               </div>
             </div>

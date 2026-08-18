@@ -232,7 +232,7 @@ export const BoqProgressPage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.رقم_البند_التوصيف_ee0761')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.المشروع_7f28ee')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الوحدة_252118')}</th>
@@ -262,7 +262,7 @@ export const BoqProgressPage: React.FC = () => {
                         }}
                       >
                         <td style={{ padding: '1rem' }}>
-                          <div style={{ fontWeight: 700, color: '#ffffff' }}>
+                          <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>
                             {item.itemNumber ? `${item.itemNumber} - ` : ''}
                             {item.workItemName || item.description || t('auto.بند_مقايسة_d822ee')}
                           </div>

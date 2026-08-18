@@ -240,13 +240,13 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
           style={{
             padding: '1.1rem',
             border: `1px solid ${totalPercentage === 100 ? 'rgba(16, 185, 129, 0.4)' : totalPercentage > 100 ? 'rgba(239, 68, 68, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
-            background: 'rgba(15, 23, 42, 0.6)',
+            background: 'var(--bg-surface-elevated)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Percent size={16} color={getStatusColor()} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff' }}>{t('auto.مجموع_نسب_المراحل_التنفيذية_7a1b24')}</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-heading)' }}>{t('auto.مجموع_نسب_المراحل_التنفيذية_7a1b24')}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span
@@ -328,7 +328,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               {editingStageId ? (
                 <>
                   <Edit2 size={16} color="#60a5fa" />
@@ -526,14 +526,14 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                           justifyContent: 'center',
                           fontSize: '0.8rem',
                           fontWeight: 700,
-                          color: '#ffffff',
+                          color: 'var(--text-heading)',
                         }}
                       >
                         {idx + 1}
                       </div>
 
                       <div>
-                        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-heading)' }}>
                           {stg.name}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
@@ -544,7 +544,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                           )}
                           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                             <TrendingUp size={12} color="#60a5fa" />
-                            <span>{t('auto.الإنتاجية_القياسية_705d56')}<strong style={{ color: '#ffffff' }}>{stg.standard_productivity}</strong></span>
+                            <span>{t('auto.الإنتاجية_القياسية_705d56')}<strong style={{ color: 'var(--text-heading)' }}>{stg.standard_productivity}</strong></span>
                           </span>
                         </div>
                       </div>

@@ -121,7 +121,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
             {/* SECTION 1: STAGES BREAKDOWN */}
             <div
               style={{
-                background: 'rgba(15, 23, 42, 0.7)',
+                background: 'var(--bg-surface-elevated)',
                 borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--border-subtle)',
                 overflow: 'hidden',
@@ -130,7 +130,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
               <div
                 style={{
                   padding: '0.75rem 1.25rem',
-                  background: 'rgba(30, 41, 59, 0.6)',
+                  background: 'var(--bg-surface-elevated)',
                   borderBottom: '1px solid var(--border-subtle)',
                   display: 'flex',
                   alignItems: 'center',
@@ -145,7 +145,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(15, 23, 42, 0.9)', color: 'var(--text-dim)', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <tr style={{ background: 'var(--bg-surface-elevated)', color: 'var(--text-dim)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <th style={{ padding: '0.75rem 1rem' }}>{t('auto.مرحلة_التنفيذ_802356')}</th>
                       <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.الوزن_النسبي_71981f')}</th>
                       <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.الإنتاجية_القياسية_للفرقة_1882b9')}</th>
@@ -156,7 +156,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
                   <tbody>
                     {card.stages.map((stg, idx) => (
                       <tr key={stg.id || idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#ffffff' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: 'var(--text-heading)' }}>
                           <span style={{ color: 'var(--text-dim)', marginLeft: '0.5rem' }}>{idx + 1}.</span>
                           {stg.name}
                         </td>
@@ -183,7 +183,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
               {/* Card 1: الإجماليات ومعدلات الإنتاج */}
               <div
                 style={{
-                  background: 'rgba(15, 23, 42, 0.6)',
+                  background: 'var(--bg-surface-elevated)',
                   borderRadius: 'var(--radius-lg)',
                   border: '1px solid var(--border-subtle)',
                   padding: '1.25rem',
@@ -195,7 +195,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--border-subtle)', paddingBottom: '0.4rem' }}>
                     <span style={{ color: 'var(--text-muted)' }}>{t('auto.مستهدف_اليوم_بالكامل_127458')}</span>
-                    <strong style={{ color: '#ffffff', fontSize: '1rem' }}>{card.totals.perDay} {card.item.unit}{t('auto.يوم_2dc238')}</strong>
+                    <strong style={{ color: 'var(--text-heading)', fontSize: '1rem' }}>{card.totals.perDay} {card.item.unit}{t('auto.يوم_2dc238')}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--border-subtle)', paddingBottom: '0.4rem' }}>
                     <span style={{ color: 'var(--text-muted)' }}>{t('auto.معدل_إنتاج_الفرد_بالساعة_1db493')}</span>
@@ -209,7 +209,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
               {/* Card 2: تكلفة العمالة وأجور الفريق */}
               <div
                 style={{
-                  background: 'rgba(15, 23, 42, 0.6)',
+                  background: 'var(--bg-surface-elevated)',
                   borderRadius: 'var(--radius-lg)',
                   border: '1px solid var(--border-subtle)',
                   padding: '1.25rem',
@@ -237,7 +237,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
               {/* Card 3: العقد والهامش الربحي */}
               <div
                 style={{
-                  background: 'rgba(15, 23, 42, 0.6)',
+                  background: 'var(--bg-surface-elevated)',
                   borderRadius: 'var(--radius-lg)',
                   border: '1px solid var(--border-subtle)',
                   padding: '1.25rem',
@@ -294,14 +294,14 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', textAlign: 'center' }}>
-                <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ background: 'var(--bg-surface-elevated)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '0.25rem' }}>{t('auto.كمية_المقايسة_الكلية_63b1a4')}</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-heading)' }}>
                     {card.live.boqQuantity.toLocaleString()} {card.item.unit}
                   </div>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ background: 'var(--bg-surface-elevated)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '0.25rem' }}>{t('auto.المنجز_الموزون_المعتمد_5cfa10')}</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399' }}>
                     {card.live.weightedDone.toLocaleString()} {card.item.unit}
@@ -310,7 +310,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
                     ({card.live.progressPct}{t('auto.إنجاز_77d773')}</div>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ background: 'var(--bg-surface-elevated)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '0.25rem' }}>{t('auto.متوسط_التنفيذ_اليومي_آخر_7_أيا_592fcd')}</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#60a5fa' }}>
                     {card.live.actualDailyAvg} {card.item.unit}{t('auto.يوم_2dc238')}</div>
@@ -319,7 +319,7 @@ export const ControlCardDetailModal: React.FC<ControlCardDetailModalProps> = ({
                   </div>
                 </div>
 
-                <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ background: 'var(--bg-surface-elevated)', padding: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '0.25rem' }}>{t('auto.الأيام_المتبقية_لإنهاء_البند_658742')}</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24' }}>
                     {card.live.remainingDays} {t('auto.يوم_عمل_3f9ea6')}</div>

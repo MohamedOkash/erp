@@ -306,7 +306,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
                 onChange={(e) => setIsActive(e.target.checked)}
                 style={{ width: '16px', height: '16px', cursor: 'pointer' }}
               />
-              <label htmlFor="empActiveCheck" style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>
+              <label htmlFor="empActiveCheck" style={{ cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-heading)' }}>
                 {t('auto.الموظف_العامل_على_رأس_العمل_ون_5f861f')}</label>
             </div>
           </div>

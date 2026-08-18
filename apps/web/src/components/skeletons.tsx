@@ -27,7 +27,7 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
     >
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
         <thead>
-          <tr style={{ background: 'rgba(15, 23, 42, 0.65)', borderBottom: '1px solid var(--border-subtle)' }}>
+          <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
             {colConfigs.map((col, idx) => (
               <th key={idx} style={{ padding: '0.85rem 1rem', width: col.width }}>
                 <div

@@ -190,7 +190,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 borderRadius: 'var(--radius-lg)',
                 padding: '2.5rem 1.5rem',
                 textAlign: 'center',
-                background: 'rgba(15, 23, 42, 0.4)',
+                background: 'var(--bg-surface-elevated)',
                 marginBottom: '1.5rem',
                 cursor: 'pointer',
               }}
@@ -226,7 +226,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
             >
               <div
                 className="glass-card"
-                style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(30, 41, 59, 0.6)' }}
+                style={{ padding: '0.75rem', textAlign: 'center', background: 'var(--bg-surface-elevated)' }}
               >
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.الإجمالي_6307e4')}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>{importResult.summary.total}</div>
@@ -274,7 +274,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
               }}
             >
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
-                <thead style={{ position: 'sticky', top: 0, background: 'rgba(15, 23, 42, 0.95)', zIndex: 10 }}>
+                <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-surface-elevated)', zIndex: 10 }}>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     <th style={{ padding: '0.6rem 0.75rem' }}>#</th>
                     <th style={{ padding: '0.6rem 0.75rem' }}>{t('auto.الاسم_59a39c')}</th>

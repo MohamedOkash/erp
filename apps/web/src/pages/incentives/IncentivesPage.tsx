@@ -513,7 +513,7 @@ export const IncentivesPage: React.FC = () => {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <th style={{ padding: '1rem' }}>{t('auto.التاريخ_7f54ad')}</th>
                       <th style={{ padding: '1rem' }}>{t('auto.المستفيد_العامل_79da69')}</th>
                       <th style={{ padding: '1rem' }}>{t('auto.المشروع_7f28ee')}</th>
@@ -545,7 +545,7 @@ export const IncentivesPage: React.FC = () => {
                             </div>
                           </td>
                           <td style={{ padding: '1rem' }}>
-                            <div style={{ fontWeight: 700, color: '#ffffff' }}>{item.employee_name || t('auto.عامل_2ec042')}</div>
+                            <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{item.employee_name || t('auto.عامل_2ec042')}</div>
                             {item.employee_code && (
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                                 {t('auto.كود_2f1031')}{item.employee_code}
@@ -740,7 +740,7 @@ export const IncentivesPage: React.FC = () => {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <th style={{ padding: '1rem', width: '40px' }}>
                         <input
                           type="checkbox"
@@ -785,7 +785,7 @@ export const IncentivesPage: React.FC = () => {
                             />
                           </td>
                           <td style={{ padding: '1rem' }}>
-                            <div style={{ fontWeight: 700, color: '#ffffff' }}>{item.employeeName}</div>
+                            <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{item.employeeName}</div>
                           </td>
                           <td style={{ padding: '1rem' }}>
                             <span className="badge badge-primary">{item.ruleName}</span>
@@ -826,7 +826,7 @@ export const IncentivesPage: React.FC = () => {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <th style={{ padding: '1rem' }}>{t('auto.اسم_القاعدة_7c288e')}</th>
                       <th style={{ padding: '1rem' }}>{t('auto.النوع_والمسار_27ccb9')}</th>
                       <th style={{ padding: '1rem' }}>{t('auto.الحد_المستهدف_أو_أيام_2ea2d1')}</th>
@@ -851,7 +851,7 @@ export const IncentivesPage: React.FC = () => {
                           }}
                         >
                           <td style={{ padding: '1rem' }}>
-                            <div style={{ fontWeight: 700, color: '#ffffff' }}>{rule.name}</div>
+                            <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{rule.name}</div>
                           </td>
                           <td style={{ padding: '1rem' }}>{getRuleTypeBadge(rule.rule_type)}</td>
                           <td style={{ padding: '1rem', fontWeight: 600 }}>
@@ -1042,7 +1042,7 @@ export const IncentivesPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_47c717')}<strong style={{ color: '#ffffff' }}>"{deletingRule?.name}"</strong>{t('auto.k_61f')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_47c717')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingRule?.name}"</strong>{t('auto.k_61f')}</p>
       </Modal>
     </div>
   );

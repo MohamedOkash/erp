@@ -640,7 +640,7 @@ export const SettingsPage: React.FC = () => {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <th style={{ padding: '1rem' }}>{t('auto.فئة_ونوع_الأجر_2a8bed')}</th>
                       <th style={{ padding: '1rem' }}>{t('auto.الأجر_بالساعة_SAR_Hour_1f9e77')}</th>
                       <th style={{ padding: '1rem' }}>{t('auto.الأجر_اليومي_SAR_Day_119f30')}</th>
@@ -720,7 +720,7 @@ export const SettingsPage: React.FC = () => {
                 {(user?.fullName || user?.username || 'A').charAt(0).toUpperCase()}
               </div>
               <div>
-                <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem' }}>
+                <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '1.1rem' }}>
                   {user?.fullName || user?.username}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
@@ -750,7 +750,7 @@ export const SettingsPage: React.FC = () => {
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.88rem' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                     <th style={{ padding: '1rem', textAlign: 'right' }}>{t('auto.الوحدة_الشاشة_4ec293')}</th>
                     <th style={{ padding: '1rem' }}>{t('auto.مدير_النظام_Admin_7feaa4')}</th>
                     <th style={{ padding: '1rem' }}>{t('auto.مدير_المشروع_PM_7e434e')}</th>
@@ -762,7 +762,7 @@ export const SettingsPage: React.FC = () => {
                 <tbody>
                   {permissionsMatrix.map((row, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                      <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, color: '#ffffff' }}>
+                      <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, color: 'var(--text-heading)' }}>
                         {row.module}
                       </td>
                       <td style={{ padding: '1rem' }}>
@@ -843,7 +843,7 @@ export const SettingsPage: React.FC = () => {
                 <Calculator size={26} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-heading)' }}>
                   {t('auto.معاملات_المعادلات_الحسابية_وال_56ada9')}</h3>
                 <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   {t('auto.جميع_الأرقام_والمعادلات_في_الن_c97c5c')}</p>
@@ -864,7 +864,7 @@ export const SettingsPage: React.FC = () => {
               <div className="glass-card" style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <Clock size={18} color="#60a5fa" />
-                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)' }}>
                     {t('auto.معايير_أوقات_وساعات_العمل_769179')}</h4>
                 </div>
 
@@ -913,7 +913,7 @@ export const SettingsPage: React.FC = () => {
               <div className="glass-card" style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <Sliders size={18} color="#34d399" />
-                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)' }}>
                     {t('auto.دقة_الحسابات_والتقريب_العشري_664eb3')}</h4>
                 </div>
 
@@ -944,7 +944,7 @@ export const SettingsPage: React.FC = () => {
               <div className="glass-card" style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <HardHat size={18} color="#fbbf24" />
-                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)' }}>
                     {t('auto.تكوين_طاقم_العمل_الافتراضي_Def_60f13b')}</h4>
                 </div>
 
@@ -983,7 +983,7 @@ export const SettingsPage: React.FC = () => {
               <div className="glass-card" style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <Activity size={18} color="#a78bfa" />
-                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)' }}>
                     {t('auto.الإنتاجيات_واليوميات_القياسية__37030c')}</h4>
                 </div>
 
@@ -1040,13 +1040,13 @@ export const SettingsPage: React.FC = () => {
               className="glass-card"
               style={{
                 padding: '1.5rem',
-                background: 'rgba(15, 23, 42, 0.7)',
+                background: 'var(--bg-surface-elevated)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
                 <Info size={18} color="#60a5fa" />
-                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)' }}>
                   {t('auto.معاينة_حية_لتطبيق_هذه_المعاملا_a8e04a')}</h4>
               </div>
 

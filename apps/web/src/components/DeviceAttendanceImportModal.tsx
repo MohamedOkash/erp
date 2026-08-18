@@ -288,7 +288,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
               />
               {selectedFile ? (
                 <div>
-                  <h4 style={{ margin: '0 0 0.25rem', color: '#ffffff', fontSize: '1.1rem' }}>
+                  <h4 style={{ margin: '0 0 0.25rem', color: 'var(--text-heading)', fontSize: '1.1rem' }}>
                     {selectedFile.name}
                   </h4>
                   <p style={{ margin: 0, color: '#34d399', fontSize: '0.85rem' }}>
@@ -296,7 +296,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                 </div>
               ) : (
                 <div>
-                  <h4 style={{ margin: '0 0 0.25rem', color: '#ffffff', fontSize: '1.05rem' }}>
+                  <h4 style={{ margin: '0 0 0.25rem', color: 'var(--text-heading)', fontSize: '1.05rem' }}>
                     {t('auto.اسحب_وأفلت_شيت_إكسيل_البصمة_هن_56e670')}</h4>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                     {t('auto.يدعم_ملفات_أجهزة_ZKTeco_Suprem_76cdea')}</p>
@@ -314,7 +314,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
               <div
                 style={{
                   padding: '0.85rem 1.25rem',
-                  background: 'rgba(30, 41, 59, 0.7)',
+                  background: 'var(--bg-surface-elevated)',
                   border: '1px solid rgba(56, 189, 248, 0.3)',
                   borderRadius: 'var(--radius-lg)',
                   display: 'flex',
@@ -327,7 +327,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <Sparkles size={18} color="#38bdf8" />
                   <div>
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ffffff' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-heading)' }}>
                       {t('auto.السياسة_المطبقة_57fb00')}{policyUsed.projectName}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginRight: '0.5rem' }}>
@@ -402,7 +402,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
             >
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(15, 23, 42, 0.8)', borderBottom: '1px solid var(--border-subtle)', position: 'sticky', top: 0, zIndex: 5 }}>
+                  <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)', position: 'sticky', top: 0, zIndex: 5 }}>
                     <th style={{ padding: '0.6rem 0.8rem' }}>#</th>
                     <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.الموظف_كود_البصمة_7fad2a')}</th>
                     <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.التاريخ_7f54ad')}</th>
@@ -465,7 +465,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                               value={row.statusCode}
                               onChange={(e) => handleRowChange(row.rowIndex, 'status', e.target.value)}
                               style={{
-                                background: 'rgba(15, 23, 42, 0.9)',
+                                background: 'var(--bg-surface-elevated)',
                                 border: '1px solid var(--border-subtle)',
                                 color: row.statusCode === 'present' ? '#34d399' : row.statusCode === 'late' ? '#fbbf24' : '#f87171',
                                 borderRadius: 'var(--radius-sm)',
@@ -511,7 +511,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                               value={row.overtime || 0}
                               onChange={(e) => handleRowChange(row.rowIndex, 'overtime', Number(e.target.value) || 0)}
                               style={{
-                                background: 'rgba(15, 23, 42, 0.7)',
+                                background: 'var(--bg-surface-elevated)',
                                 border: '1px solid var(--border-subtle)',
                                 color: '#60a5fa',
                                 fontWeight: 600,
@@ -531,9 +531,9 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                               value={row.notes || ''}
                               onChange={(e) => handleRowChange(row.rowIndex, 'notes', e.target.value)}
                               style={{
-                                background: 'rgba(15, 23, 42, 0.7)',
+                                background: 'var(--bg-surface-elevated)',
                                 border: '1px solid var(--border-subtle)',
-                                color: '#ffffff',
+                                color: 'var(--text-heading)',
                                 borderRadius: 'var(--radius-sm)',
                                 padding: '0.2rem 0.5rem',
                                 fontSize: '0.8rem',

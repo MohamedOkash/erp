@@ -340,7 +340,7 @@ export const ProjectsPage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.المشروع_الكود_45c134')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الفرع_التابع_26570d')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
@@ -365,7 +365,7 @@ export const ProjectsPage: React.FC = () => {
                       }}
                     >
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{proj.name}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.05rem' }}>{proj.name}</div>
                         {proj.code && (
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                             <Hash size={11} />
@@ -505,7 +505,7 @@ export const ProjectsPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_479702')}<strong style={{ color: '#ffffff' }}>"{deletingProject?.name}"</strong>{t('auto.k_61f')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_479702')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingProject?.name}"</strong>{t('auto.k_61f')}</p>
       </Modal>
     </div>
   );

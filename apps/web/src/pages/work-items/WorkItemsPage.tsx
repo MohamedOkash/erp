@@ -289,7 +289,7 @@ export const WorkItemsPage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#ffffff',
+                color: 'var(--text-heading)',
                 boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
               }}
             >
@@ -452,7 +452,7 @@ export const WorkItemsPage: React.FC = () => {
                 padding: '0.15rem 0.5rem',
                 borderRadius: '999px',
                 background: selectedCategoryId === '' ? '#2563eb' : 'rgba(255,255,255,0.08)',
-                color: '#ffffff',
+                color: 'var(--text-heading)',
                 fontWeight: 700,
               }}
             >
@@ -692,7 +692,7 @@ export const WorkItemsPage: React.FC = () => {
                 <thead>
                   <tr
                     style={{
-                      background: 'rgba(15, 23, 42, 0.85)',
+                      background: 'var(--bg-surface-elevated)',
                       borderBottom: '1px solid var(--border-subtle)',
                     }}
                   >
@@ -933,11 +933,11 @@ export const WorkItemsPage: React.FC = () => {
 
                           {/* Expandable Sub-Stages Accordion View */}
                           {isExpanded && (
-                            <tr style={{ background: 'rgba(15, 23, 42, 0.65)', borderBottom: '1px solid var(--border-subtle)' }}>
+                            <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                               <td colSpan={8} style={{ padding: '1rem 1.5rem 1.5rem 1.5rem' }}>
                                 <div
                                   style={{
-                                    background: 'rgba(30, 41, 59, 0.7)',
+                                    background: 'var(--bg-surface-elevated)',
                                     borderRadius: 'var(--radius-md)',
                                     border: '1px solid rgba(59, 130, 246, 0.2)',
                                     padding: '1.25rem',
@@ -1012,7 +1012,7 @@ export const WorkItemsPage: React.FC = () => {
                                         <div
                                           key={stage.id || sIdx}
                                           style={{
-                                            background: 'rgba(15, 23, 42, 0.75)',
+                                            background: 'var(--bg-surface-elevated)',
                                             border: '1px solid rgba(148, 163, 184, 0.15)',
                                             borderRadius: '8px',
                                             padding: '0.85rem 1rem',
@@ -1296,7 +1296,7 @@ export const WorkItemsPage: React.FC = () => {
                 onChange={(e) => setFormIsActive(e.target.checked)}
                 style={{ width: '16px', height: '16px' }}
               />
-              <label style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>
+              <label style={{ cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-heading)' }}>
                 {t('auto.بند_نشط_ومتاح_للاستخدام_في_الم_3fbcc5')}</label>
             </div>
           </div>
@@ -1333,7 +1333,7 @@ export const WorkItemsPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_حذف_بند_العمل_25ca1e')}<strong style={{ color: '#ffffff' }}>"{deletingItem?.name}"</strong>{t('auto.k_61f')}</p>
+          {t('auto.هل_أنت_متأكد_من_حذف_بند_العمل_25ca1e')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingItem?.name}"</strong>{t('auto.k_61f')}</p>
       </Modal>
 
       {/* Stages Management Modal */}

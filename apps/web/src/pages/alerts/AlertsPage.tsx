@@ -243,7 +243,7 @@ export const AlertsPage: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                     {getRuleTypeBadge(r.ruleType)}
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      {t('auto.الحد_الحرج_22d09a')}<strong style={{ color: '#fff' }}>{r.thresholdValue} {r.thresholdUnit || ''}</strong>
+                      {t('auto.الحد_الحرج_22d09a')}<strong style={{ color: 'var(--text-heading)' }}>{r.thresholdValue} {r.thresholdUnit || ''}</strong>
                     </span>
                   </div>
                 </div>
@@ -293,7 +293,7 @@ export const AlertsPage: React.FC = () => {
                   onClick={() => !n.isRead && handleMarkRead(n.id)}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                    <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>{n.title}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem' }}>{n.title}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                       <Clock size={12} />
                       <span>{new Date(n.createdAt).toLocaleDateString('ar-SA')}</span>

@@ -505,7 +505,7 @@ export const ProductionPage: React.FC = () => {
           <div className="desktop-table-view table-responsive">
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.التاريخ_7f54ad')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.المشروع_الفرع_45c129')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.البند_والمرحلة_6d447a')}</th>
@@ -540,7 +540,7 @@ export const ProductionPage: React.FC = () => {
                         </div>
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{rec.projectName}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{rec.projectName}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                           {rec.branchName || t('auto.فرع_184029')} {rec.workAreaName ? `• ${rec.workAreaName}` : ''}
                         </div>

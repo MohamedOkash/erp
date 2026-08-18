@@ -509,7 +509,7 @@ export const EmployeesPage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.الاسم_الكود_20cd46')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الوثيقة_رقم_الهوية_21e36e')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.صلاحية_الإقامة_الهوية_39a3f4')}</th>
@@ -536,7 +536,7 @@ export const EmployeesPage: React.FC = () => {
                       }}
                     >
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1rem' }}>{emp.name}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1rem' }}>{emp.name}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                           {emp.code || t('auto.بدون_كود_519c6b')} {emp.phone ? `• ${emp.phone}` : ''}
                         </div>
@@ -703,7 +703,7 @@ export const EmployeesPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_66e6c4')}<strong style={{ color: '#ffffff' }}>"{deactivatingEmployee?.name}"</strong>{t('auto.Soft_Delete_يمكن_إعادة_تنشيطه__21ff8f')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_66e6c4')}<strong style={{ color: 'var(--text-heading)' }}>"{deactivatingEmployee?.name}"</strong>{t('auto.Soft_Delete_يمكن_إعادة_تنشيطه__21ff8f')}</p>
       </Modal>
 
       {/* View Assignments Modal */}
@@ -725,7 +725,7 @@ export const EmployeesPage: React.FC = () => {
                 key={idx}
                 style={{
                   padding: '0.75rem 1rem',
-                  background: 'rgba(15, 23, 42, 0.6)',
+                  background: 'var(--bg-surface-elevated)',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-subtle)',
                   display: 'flex',
@@ -734,7 +734,7 @@ export const EmployeesPage: React.FC = () => {
                 }}
               >
                 <div>
-                  <div style={{ fontWeight: 600, color: '#ffffff' }}>{a.projectName}</div>
+                  <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{a.projectName}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                     {t('auto.كود_2f1031')}{a.projectCode} {t('auto.دور_263c7e')}{a.assignedRole}
                   </div>

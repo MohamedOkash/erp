@@ -217,7 +217,7 @@ export const PricesManagementModal: React.FC<PricesManagementModalProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               {editingPriceId ? (
                 <>
                   <Edit2 size={16} color="#34d399" />
@@ -421,7 +421,7 @@ export const PricesManagementModal: React.FC<PricesManagementModalProps> = ({
                   >
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-heading)' }}>
                           {p.branch_name ? `فرع: ${p.branch_name}` : t('auto.السعر_القياسي_العام_لكل_الفروع_1822cd')}
                         </span>
                         <span
@@ -442,7 +442,7 @@ export const PricesManagementModal: React.FC<PricesManagementModalProps> = ({
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        <span>{t('auto.المواد_7f2006')}<strong style={{ color: '#ffffff' }}>{p.material_price} {t('auto.ريال_2e8e0f')}</strong></span>
+                        <span>{t('auto.المواد_7f2006')}<strong style={{ color: 'var(--text-heading)' }}>{p.material_price} {t('auto.ريال_2e8e0f')}</strong></span>
                         <span>{t('auto.أجر_الفني_2a2767')}<strong style={{ color: '#fbbf24' }}>{p.labor_rate_skilled} {t('auto.ريال_2e8e0f')}</strong></span>
                         <span>{t('auto.أجر_المساعد_381b74')}<strong style={{ color: '#fbbf24' }}>{p.labor_rate_unskilled} {t('auto.ريال_2e8e0f')}</strong></span>
                       </div>

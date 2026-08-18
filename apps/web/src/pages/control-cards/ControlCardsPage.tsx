@@ -199,7 +199,7 @@ export const ControlCardsPage: React.FC = () => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   <div>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1.4 }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-heading)', margin: 0, lineHeight: 1.4 }}>
                       {c.name}
                     </h3>
                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.35rem' }}>
@@ -225,7 +225,7 @@ export const ControlCardsPage: React.FC = () => {
                 {/* Rates & Productivity Block */}
                 <div
                   style={{
-                    background: 'rgba(15, 23, 42, 0.6)',
+                    background: 'var(--bg-surface-elevated)',
                     borderRadius: 'var(--radius-md)',
                     padding: '0.75rem',
                     marginBottom: '0.75rem',
@@ -237,7 +237,7 @@ export const ControlCardsPage: React.FC = () => {
                 >
                   <div>
                     <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem', display: 'block' }}>{t('auto.مستهدف_اليوم_79b9b9')}</span>
-                    <strong style={{ color: '#ffffff', fontSize: '0.95rem' }}>{c.totalPerDay} {c.unit}</strong>
+                    <strong style={{ color: 'var(--text-heading)', fontSize: '0.95rem' }}>{c.totalPerDay} {c.unit}</strong>
                   </div>
                   <div>
                     <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem', display: 'block' }}>{t('auto.تكلفة_العمالة_6542d7')}{c.unit}</span>
@@ -276,7 +276,7 @@ export const ControlCardsPage: React.FC = () => {
                       <span style={{ color: 'var(--text-dim)' }}>{t('auto.التقدم_في_المشروع_20e42f')}</span>
                       <strong style={{ color: '#60a5fa' }}>{c.progressPct}%</strong>
                     </div>
-                    <div style={{ width: '100%', height: '6px', background: 'rgba(15, 23, 42, 0.8)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '6px', background: 'var(--bg-surface-elevated)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div
                         style={{
                           width: `${Math.min(100, c.progressPct)}%`,

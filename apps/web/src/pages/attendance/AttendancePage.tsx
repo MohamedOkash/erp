@@ -502,7 +502,7 @@ export const AttendancePage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.التاريخ_7f54ad')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الموظف_العامل_75e51c')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.المشروع_والفرع_410648')}</th>
@@ -532,7 +532,7 @@ export const AttendancePage: React.FC = () => {
                         {att.date}
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{att.employeeName || t('auto.موظف_2f1f2e')}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{att.employeeName || t('auto.موظف_2f1f2e')}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                           {t('auto.هوية_5b68da')}{att.nationalId || '—'}
                         </div>

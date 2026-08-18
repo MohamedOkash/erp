@@ -17,7 +17,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
       style={{
         height: '64px',
         borderBottom: '1px solid var(--border-subtle)',
-        background: 'rgba(11, 19, 41, 0.85)',
+        background: 'var(--bg-surface-elevated)',
         backdropFilter: 'blur(12px)',
         display: 'flex',
         alignItems: 'center',
@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         {/* User Info & Role Badges */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-heading)' }}>
               {user?.fullName || user?.username}
             </span>
             <div style={{ display: 'flex', gap: '0.25rem' }}>

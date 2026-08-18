@@ -151,7 +151,7 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
               onChange={(e) => setIsActive(e.target.checked)}
               style={{ width: '16px', height: '16px', cursor: 'pointer' }}
             />
-            <label htmlFor="isActiveCheck" style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>
+            <label htmlFor="isActiveCheck" style={{ cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-heading)' }}>
               {t('auto.فرع_نشط_ومتاح_للعمليات_c5c33b')}</label>
           </div>
         </div>

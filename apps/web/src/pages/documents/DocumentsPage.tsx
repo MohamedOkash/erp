@@ -418,7 +418,7 @@ export const DocumentsPage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.عنوان_المستند_والملف_2b9aec')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.رقم_المستند_626b4f')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.التصنيف_7f5b59')}</th>
@@ -447,7 +447,7 @@ export const DocumentsPage: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           {getFileIcon(doc.file_name)}
                           <div>
-                            <div style={{ fontWeight: 700, color: '#ffffff' }}>{doc.title}</div>
+                            <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{doc.title}</div>
                             {doc.file_name && (
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                                 {doc.file_name}
@@ -712,7 +712,7 @@ export const DocumentsPage: React.FC = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              background: 'rgba(15, 23, 42, 0.5)',
+              background: 'var(--bg-surface-elevated)',
               padding: '0.75rem 1rem',
               borderRadius: 'var(--radius-md)',
             }}
@@ -771,7 +771,7 @@ export const DocumentsPage: React.FC = () => {
                       v{ver.version_number}
                     </span>
                     <div>
-                      <div style={{ fontWeight: 700, color: '#ffffff' }}>{ver.file_name}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{ver.file_name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                         {formatFileSize(ver.file_size_bytes)} {t('auto.تم_الرفع_6deb4e')}{' '}
                         {ver.created_at ? ver.created_at.split('T')[0] : '—'}
@@ -892,7 +892,7 @@ export const DocumentsPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_479791')}<strong style={{ color: '#ffffff' }}>"{deletingDoc?.title}"</strong>{t('auto.سيتم_حذف_الملف_وكافة_إصداراته__73b427')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_479791')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingDoc?.title}"</strong>{t('auto.سيتم_حذف_الملف_وكافة_إصداراته__73b427')}</p>
       </Modal>
     </div>
   );

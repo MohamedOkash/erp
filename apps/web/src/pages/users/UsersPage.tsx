@@ -471,7 +471,7 @@ export const UsersPage: React.FC = () => {
               borderRadius: '10px',
               background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
               border: '1px solid #60a5fa',
-              color: '#ffffff',
+              color: 'var(--text-heading)',
               cursor: 'pointer',
               fontSize: '14px',
               fontWeight: 700,
@@ -868,7 +868,7 @@ export const UsersPage: React.FC = () => {
               padding: '9px 18px',
               borderRadius: '8px',
               background: '#2563eb',
-              color: '#fff',
+              color: 'var(--text-heading)',
               border: 'none',
               cursor: 'pointer',
               fontWeight: 600,
@@ -880,7 +880,7 @@ export const UsersPage: React.FC = () => {
       ) : (
         <div
           style={{
-            background: 'rgba(15, 23, 42, 0.75)',
+            background: 'var(--bg-surface-elevated)',
             backdropFilter: 'blur(12px)',
             border: '1px solid var(--border-subtle)',
             borderRadius: '16px',
@@ -900,7 +900,7 @@ export const UsersPage: React.FC = () => {
               <thead>
                 <tr
                   style={{
-                    background: 'rgba(17, 29, 56, 0.98)',
+                    background: 'var(--bg-surface-elevated)',
                     borderBottom: '2px solid var(--border-subtle)',
                     color: 'var(--text-muted)',
                     fontSize: '12px',
@@ -955,7 +955,7 @@ export const UsersPage: React.FC = () => {
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontWeight: 800,
-                              color: '#fff',
+                              color: 'var(--text-heading)',
                               fontSize: '14px',
                             }}
                           >
@@ -1723,7 +1723,7 @@ export const UsersPage: React.FC = () => {
                     borderRadius: '8px',
                     background: '#2563eb',
                     border: 'none',
-                    color: '#ffffff',
+                    color: 'var(--text-heading)',
                     fontWeight: 700,
                     cursor: formSubmitting ? 'not-allowed' : 'pointer',
                   }}
@@ -1787,7 +1787,7 @@ export const UsersPage: React.FC = () => {
                   <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
                     {t('auto.استثناءات_الصلاحيات_المباشرة_ل_604831')}</h3>
                   <p style={{ margin: '3px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                    {t('auto.المستخدم_5acb8e')}<strong style={{ color: '#fff' }}>{overridesModalUser.fullName}</strong> (@{overridesModalUser.username})
+                    {t('auto.المستخدم_5acb8e')}<strong style={{ color: 'var(--text-heading)' }}>{overridesModalUser.fullName}</strong> (@{overridesModalUser.username})
                   </p>
                 </div>
               </div>
@@ -1944,7 +1944,7 @@ export const UsersPage: React.FC = () => {
                   borderRadius: '8px',
                   background: '#8b5cf6',
                   border: 'none',
-                  color: '#ffffff',
+                  color: 'var(--text-heading)',
                   fontWeight: 700,
                   cursor: savingOverrides ? 'not-allowed' : 'pointer',
                 }}
@@ -2142,7 +2142,7 @@ export const UsersPage: React.FC = () => {
             </div>
 
             <p style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.6', marginBottom: '22px' }}>
-              {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_b8d5c7')}<strong style={{ color: '#fff' }}>"{deleteConfirmUser.fullName}"</strong> (@{deleteConfirmUser.username}{t('auto.لن_يتمكن_المستخدم_من_تسجيل_الد_a0837c')}</p>
+              {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_b8d5c7')}<strong style={{ color: 'var(--text-heading)' }}>"{deleteConfirmUser.fullName}"</strong> (@{deleteConfirmUser.username}{t('auto.لن_يتمكن_المستخدم_من_تسجيل_الد_a0837c')}</p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button
@@ -2167,7 +2167,7 @@ export const UsersPage: React.FC = () => {
                   borderRadius: '8px',
                   background: '#dc2626',
                   border: 'none',
-                  color: '#ffffff',
+                  color: 'var(--text-heading)',
                   fontWeight: 700,
                   cursor: 'pointer',
                 }}

@@ -217,7 +217,7 @@ export const TransfersPage: React.FC = () => {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
             <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+              <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <th style={{ padding: '1rem' }}>{t('auto.الكادر_المشرف_1a5d06')}</th>
                 <th style={{ padding: '1rem' }}>{t('auto.من_مشروع_4b0ba0')}</th>
                 <th style={{ padding: '1rem' }}>{t('auto.إلى_مشروع_bbc0a4')}</th>
@@ -245,7 +245,7 @@ export const TransfersPage: React.FC = () => {
                 transfers.map((item) => (
                   <tr key={item.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#ffffff' }}>{item.employee_name}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{item.employee_name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
                         {item.employee_role} {item.employee_code ? `(${item.employee_code})` : ''}
                       </div>
@@ -257,7 +257,7 @@ export const TransfersPage: React.FC = () => {
                       {item.to_project_name}
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <div style={{ fontSize: '0.85rem', color: '#ffffff' }}>{item.requester_name || item.requested_role}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-heading)' }}>{item.requester_name || item.requested_role}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{item.requested_role}</div>
                     </td>
                     <td style={{ padding: '1rem', maxWidth: '240px' }}>

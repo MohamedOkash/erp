@@ -90,7 +90,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({ record }) =>
     <div
       style={{
         padding: '1.25rem',
-        background: 'rgba(15, 23, 42, 0.6)',
+        background: 'var(--bg-surface-elevated)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-subtle)',
       }}
@@ -102,7 +102,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({ record }) =>
           alignItems: 'center',
           gap: '0.5rem',
           marginBottom: '1.25rem',
-          color: '#ffffff',
+          color: 'var(--text-heading)',
         }}
       >
         <Clock size={18} color="#60a5fa" />
@@ -207,7 +207,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({ record }) =>
                 </span>
               </div>
 
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginTop: '0.2rem' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-heading)', marginTop: '0.2rem' }}>
                 {step.title}
               </div>
 

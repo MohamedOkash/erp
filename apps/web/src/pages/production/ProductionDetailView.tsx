@@ -243,7 +243,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
         <div className="glass-card" style={{ padding: '0.85rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <Calendar size={13} /> {t('auto.التاريخ_7f54ad')}</div>
-          <div style={{ fontSize: '1rem', fontWeight: 600, color: '#ffffff', marginTop: '0.2rem' }}>
+          <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-heading)', marginTop: '0.2rem' }}>
             {record.date ? record.date.split('T')[0] : '—'}
           </div>
         </div>
@@ -251,7 +251,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
         <div className="glass-card" style={{ padding: '0.85rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <Building size={13} /> {t('auto.الفرع_والمشروع_58ce26')}</div>
-          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.2rem' }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-heading)', marginTop: '0.2rem' }}>
             {projectName}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{branchName}</div>
@@ -271,7 +271,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
         <div className="glass-card" style={{ padding: '0.85rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <HardHat size={13} /> {t('auto.المشرف_المسؤول_178a71')}</div>
-          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.2rem' }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-heading)', marginTop: '0.2rem' }}>
             {supervisorName}
           </div>
         </div>
@@ -283,7 +283,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
         style={{
           padding: '1.25rem',
           marginBottom: '1.5rem',
-          background: 'rgba(15, 23, 42, 0.7)',
+          background: 'var(--bg-surface-elevated)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
@@ -338,7 +338,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
 
           <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
-              <thead style={{ background: 'rgba(15, 23, 42, 0.8)' }}>
+              <thead style={{ background: 'var(--bg-surface-elevated)' }}>
                 <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.اسم_العامل_2d8f2a')}</th>
                   <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.الكود_59a408')}</th>

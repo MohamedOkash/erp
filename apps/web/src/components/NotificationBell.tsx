@@ -212,7 +212,7 @@ export const NotificationBell: React.FC = () => {
               top: '-3px',
               right: '-3px',
               background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-              color: '#ffffff',
+              color: 'var(--text-heading)',
               fontSize: '0.65rem',
               fontWeight: 800,
               minWidth: '18px',

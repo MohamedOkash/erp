@@ -373,7 +373,7 @@ export const NotificationsPage: React.FC = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem', width: '50px' }}>{t('auto.النوع_59a413')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.عنوان_الإشعار_3eaae3')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.التفاصيل_والمحتوى_42752b')}</th>
@@ -505,7 +505,7 @@ export const NotificationsPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               {getNotificationIcon(selectedNotification.type)}
-              <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>
+              <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-heading)' }}>
                 {selectedNotification.title}
               </span>
             </div>
