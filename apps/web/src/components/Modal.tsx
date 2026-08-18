@@ -128,14 +128,14 @@ export const Modal: React.FC<ModalProps> = ({
         position: 'fixed',
         inset: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.65)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        backdropFilter: 'blur(24px) saturate(190%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(190%)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '1rem',
+        padding: '2.5rem 1rem 1.5rem 1rem',
         zIndex,
-        overflow: 'hidden',
+        overflowY: 'auto',
         transition: 'opacity 0.2s var(--ease-apple-spring)',
       }}
       dir={direction}
@@ -146,18 +146,18 @@ export const Modal: React.FC<ModalProps> = ({
         style={{
           width: '100%',
           maxWidth: widthStyle,
-          maxHeight: maxHeight || 'calc(100vh - 2.5rem)',
+          maxHeight: maxHeight || 'calc(100vh - 4.5rem)',
           display: 'flex',
           flexDirection: 'column',
-          margin: 'auto',
+          margin: '0 auto',
           padding: 0,
           overflow: 'hidden',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-sheet)',
+          border: 'var(--border-glass-strong, 1px solid rgba(255, 255, 255, 0.15))',
+          boxShadow: 'var(--shadow-xl), 0 20px 50px rgba(0, 0, 0, 0.35)',
           borderRadius: 'var(--radius-xl, 20px)',
           background: 'var(--bg-surface)',
           color: 'var(--text-main)',
-          transformOrigin: 'center center',
+          transformOrigin: 'top center',
         }}
         onClick={(e) => e.stopPropagation()}
       >

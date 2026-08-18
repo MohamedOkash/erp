@@ -25,52 +25,52 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
     {
       to: '/dashboard',
       label: t('auto.الرئيسية_772ff2'),
-      icon: <LayoutDashboard size={20} />,
+      icon: <LayoutDashboard size={18} />,
     },
     {
       to: '/employees',
       label: t('auto.العمال_والموظفون_54d4fe'),
-      icon: <Users size={20} />,
+      icon: <Users size={18} />,
     },
     {
       to: '/projects',
       label: t('auto.المشاريع_والفروع_59c3e5'),
-      icon: <FolderKanban size={20} />,
+      icon: <FolderKanban size={18} />,
     },
     {
       to: '/boq',
       label: t('auto.المقايسة_وتقدم_التنفيذ_77ac76'),
-      icon: <FileSpreadsheet size={20} />,
+      icon: <FileSpreadsheet size={18} />,
     },
     {
       to: '/production',
       label: t('auto.الإنتاجية_اليومية_5b6d3f'),
-      icon: <Layers size={20} />,
+      icon: <Layers size={18} />,
     },
     {
       to: '/attendance',
       label: t('auto.الحضور_والانصراف_7d9ff8'),
-      icon: <CalendarCheck size={20} />,
+      icon: <CalendarCheck size={18} />,
     },
     {
       to: '/costs',
       label: t('auto.التكاليف_وسجل_المصروفات_7b7976'),
-      icon: <DollarSign size={20} />,
+      icon: <DollarSign size={18} />,
     },
     {
       to: '/incentives',
       label: t('auto.الحوافز_والمكافآت_52fa80'),
-      icon: <Award size={20} />,
+      icon: <Award size={18} />,
     },
     {
       to: '/documents',
       label: t('auto.المستندات_والأرشيف_7b3887'),
-      icon: <FileText size={20} />,
+      icon: <FileText size={18} />,
     },
     {
       to: '/alerts',
       label: t('auto.التنبيهات_والإشعارات_dc4ebf'),
-      icon: <BellRing size={20} />,
+      icon: <BellRing size={18} />,
     },
   ];
 
