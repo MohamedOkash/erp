@@ -100,10 +100,23 @@ async function run() {
         await client.query(initSql);
         console.log('0001_init.sql applied successfully.');
 
-        console.log('Applying db/migrations/0002_seed_demo.sql...');
-        const seedSql = fs.readFileSync(seedSqlPath, 'utf8');
-        await client.query(seedSql);
-        console.log('0002_seed_demo.sql applied successfully.');
+        const isProdOrSkipSeed = process.env.NODE_ENV === 'production' || process.env.SKIP_SEED === '1';
+
+        if (isProdOrSkipSeed) {
+            console.log('[PRODUCTION MODE] Skipping 0002_seed_demo.sql...');
+            const bootstrapPath = path.resolve(repoRoot, 'db/migrations/0012_bootstrap_first_run.sql');
+            if (fs.existsSync(bootstrapPath)) {
+                console.log('Applying db/migrations/0012_bootstrap_first_run.sql...');
+                const bootstrapSql = fs.readFileSync(bootstrapPath, 'utf8');
+                await client.query(bootstrapSql);
+                console.log('0012_bootstrap_first_run.sql applied successfully.');
+            }
+        } else {
+            console.log('Applying db/migrations/0002_seed_demo.sql...');
+            const seedSql = fs.readFileSync(seedSqlPath, 'utf8');
+            await client.query(seedSql);
+            console.log('0002_seed_demo.sql applied successfully.');
+        }
 
         const tables = [
             'companies',

@@ -61,10 +61,18 @@ async function run() {
     const migrationsDir = path.join(__dirname, '../db/migrations');
     const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
 
+    const isProdOrSkipSeed = process.env.NODE_ENV === 'production' || process.env.SKIP_SEED === '1' || process.argv.includes('--skip-seed');
+
     for (const file of files) {
       const checkRes = await client.query('SELECT name FROM _migrations WHERE name = $1', [file]);
       if (checkRes.rows.length > 0) {
         console.log(`[SKIPPED] Migration already recorded: ${file}`);
+        continue;
+      }
+
+      if (file === '0002_seed_demo.sql' && isProdOrSkipSeed) {
+        console.log(`[PRODUCTION SAFE] Skipping demo seed file: ${file} (recording as skipped in _migrations)`);
+        await client.query('INSERT INTO _migrations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [file]);
         continue;
       }
 
