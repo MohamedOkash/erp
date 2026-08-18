@@ -90,7 +90,7 @@ export const EmployeesPage: React.FC = () => {
       setEmployees(res.data);
       setTotal(res.total);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل بيانات الموظفين');
+      setError(err.message || t('auto.فشل_تحميل_بيانات_الموظفين_5d64ce'));
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +115,7 @@ export const EmployeesPage: React.FC = () => {
       const emp = await employeesApi.getByIdentity(identityLookupQuery.trim());
       setLookupResult(emp);
     } catch (err: any) {
-      setError(err.message || 'لم يتم العثور على أي موظف بهذا الرقم القومي/الهوية');
+      setError(err.message || t('auto.لم_يتم_العثور_على_أي_موظف_بهذا_7d37f7'));
     } finally {
       setIsSearchingIdentity(false);
     }
@@ -137,16 +137,16 @@ export const EmployeesPage: React.FC = () => {
     try {
       if (editingEmployee) {
         await employeesApi.update(editingEmployee.id, payload);
-        setSuccessMsg('تم تحديث بيانات الموظف بنجاح');
+        setSuccessMsg(t('auto.تم_تحديث_بيانات_الموظف_بنجاح_41c88a'));
       } else {
         await employeesApi.create(payload as CreateEmployeePayload);
-        setSuccessMsg('تم إنشاء سجل الموظف الجديد بنجاح');
+        setSuccessMsg(t('auto.تم_إنشاء_سجل_الموظف_الجديد_بنج_5f1582'));
       }
       setIsFormModalOpen(false);
       loadEmployees();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ بيانات الموظف');
+      setError(err.message || t('auto.فشل_حفظ_بيانات_الموظف_6ef2f2'));
     } finally {
       setIsSaving(false);
     }
@@ -162,7 +162,7 @@ export const EmployeesPage: React.FC = () => {
       loadEmployees();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل تعطيل الموظف');
+      setError(err.message || t('auto.فشل_تعطيل_الموظف_9c4147'));
     } finally {
       setIsDeactivating(false);
     }
@@ -173,10 +173,10 @@ export const EmployeesPage: React.FC = () => {
     setError(null);
     try {
       await employeesApi.exportXlsx();
-      setSuccessMsg('تم تصدير ملف الموظفين بنجاح');
+      setSuccessMsg(t('auto.تم_تصدير_ملف_الموظفين_بنجاح_6742ef'));
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل تصدير ملف الموظفين');
+      setError(err.message || t('auto.فشل_تصدير_ملف_الموظفين_a38acc'));
     } finally {
       setIsExporting(false);
     }
@@ -186,11 +186,11 @@ export const EmployeesPage: React.FC = () => {
     const type = emp.identityType || 'national_id';
     switch (type) {
       case 'national_id':
-        return <span className="badge badge-primary">هوية وطنية 🇸🇦</span>;
+        return <span className="badge badge-primary">{t('auto.هوية_وطنية_4faf6f')}</span>;
       case 'iqama':
-        return <span className="badge badge-secondary">إقامة مقيم</span>;
+        return <span className="badge badge-secondary">{t('auto.إقامة_مقيم_250e80')}</span>;
       case 'passport':
-        return <span className="badge badge-accent">جواز سفر</span>;
+        return <span className="badge badge-accent">{t('auto.جواز_سفر_3efa11')}</span>;
       default:
         return <span className="badge badge-secondary">{type}</span>;
     }
@@ -207,30 +207,30 @@ export const EmployeesPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي الموظفين',
+      label: t('auto.إجمالي_الموظفين_39fbc7'),
       value: total,
       helper: `${employees.length} مسجلين حالياً`,
       icon: <Users size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'الموظفون النشطون',
+      label: t('auto.الموظفون_النشطون_185bc8'),
       value: activeCount,
       helper: `${total - activeCount} معطل أو مؤرشف`,
       icon: <ShieldCheck size={22} />,
       color: '#34d399',
     },
     {
-      label: 'المشرفون والكوادر',
+      label: t('auto.المشرفون_والكوادر_2b9753'),
       value: supervisorsCount,
       helper: `${workersCount} عمال تشغيل`,
       icon: <HardHat size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'متوسط الأجر اليومي',
+      label: t('auto.متوسط_الأجر_اليومي_239c75'),
       value: `${avgWage} SAR`,
-      helper: 'لكافة التخصصات والمواقع',
+      helper: t('auto.لكافة_التخصصات_والمواقع_524e26'),
       icon: <DollarSign size={22} />,
       color: '#a78bfa',
     },
@@ -244,15 +244,13 @@ export const EmployeesPage: React.FC = () => {
     if (diffDays <= 0) {
       return (
         <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', fontSize: '0.72rem' }}>
-          منتهية ({Math.abs(diffDays)} يوم مضت)
-        </span>
+          {t('auto.منتهية_33ddc2')}{Math.abs(diffDays)} {t('auto.يوم_مضت_4bcf17')}</span>
       );
     }
     if (diffDays <= 90) {
       return (
         <span className="badge badge-primary" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', fontSize: '0.72rem' }}>
-          تنتهي خلال {diffDays} يوم
-        </span>
+          {t('auto.تنتهي_خلال_1544ea')}{diffDays} {t('auto.يوم_1864c7')}</span>
       );
     }
     return (
@@ -377,27 +375,27 @@ export const EmployeesPage: React.FC = () => {
         <form onSubmit={handleIdentityLookup} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#60a5fa', fontWeight: 600, fontSize: '0.9rem' }}>
             <CreditCard size={18} />
-            <span>فحص هوية / إقامة فوري:</span>
+            <span>{t('auto.فحص_هوية_إقامة_فوري_38f076')}</span>
           </div>
 
           <input
             type="text"
             className="input-field"
             style={{ maxWidth: '320px', padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-            placeholder="أدخل رقم الهوية أو الإقامة..."
+            placeholder={t('auto.أدخل_رقم_الهوية_أو_الإقامة_1c04de')}
             value={identityLookupQuery}
             onChange={(e) => setIdentityLookupQuery(e.target.value)}
           />
 
           <button type="submit" className="btn btn-secondary" disabled={isSearchingIdentity} style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}>
             {isSearchingIdentity ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-            <span>استعلام</span>
+            <span>{t('auto.استعلام_625abd')}</span>
           </button>
 
           {lookupResult && (
             <div className="animate-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginRight: 'auto' }}>
               <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>
-                ✓ وُجد: {lookupResult.name} ({lookupResult.roleType}) - {lookupResult.branchName || 'فرع'}
+                {t('auto.و_جد_6dcdee')}{lookupResult.name} ({lookupResult.roleType}) - {lookupResult.branchName || t('auto.فرع_184029')}
               </span>
               <button
                 type="button"
@@ -426,12 +424,12 @@ export const EmployeesPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Search size={14} />
-            <span>بحث بالاسم أو الكود</span>
+            <span>{t('auto.بحث_بالاسم_أو_الكود_2f040e')}</span>
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="ابحث..."
+            placeholder={t('auto.ابحث_4fa1bf')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -443,7 +441,7 @@ export const EmployeesPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Building size={14} />
-            <span>الفرع</span>
+            <span>{t('auto.الفرع_59a3fe')}</span>
           </label>
           <select
             className="input-field"
@@ -453,7 +451,7 @@ export const EmployeesPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الفروع</option>
+            <option value="">{t('auto.كافة_الفروع_1a62e9')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -465,7 +463,7 @@ export const EmployeesPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Briefcase size={14} />
-            <span>الدور الوظيفي</span>
+            <span>{t('auto.الدور_الوظيفي_358574')}</span>
           </label>
           <select
             className="input-field"
@@ -475,16 +473,16 @@ export const EmployeesPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الأدوار</option>
-            <option value="worker">عامل (Worker)</option>
-            <option value="supervisor">مشرف (Supervisor)</option>
-            <option value="engineer">مهندس (Engineer)</option>
-            <option value="project_manager">مدير مشروع</option>
+            <option value="">{t('auto.كافة_الأدوار_33a1e2')}</option>
+            <option value="worker">{t('auto.عامل_Worker_1f1ef5')}</option>
+            <option value="supervisor">{t('auto.مشرف_Supervisor_d857fa')}</option>
+            <option value="engineer">{t('auto.مهندس_Engineer_2f03b8')}</option>
+            <option value="project_manager">{t('auto.مدير_مشروع_36ebfd')}</option>
           </select>
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الحالة</label>
+          <label className="form-label">{t('auto.الحالة_252d72')}</label>
           <select
             className="input-field"
             value={statusFilter}
@@ -493,9 +491,9 @@ export const EmployeesPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الحالات</option>
-            <option value="true">نشط فقط</option>
-            <option value="false">معطل فقط</option>
+            <option value="">{t('auto.كافة_الحالات_3318a9')}</option>
+            <option value="true">{t('auto.نشط_فقط_361dab')}</option>
+            <option value="false">{t('auto.معطل_فقط_66c560')}</option>
           </select>
         </div>
       </div>
@@ -512,22 +510,21 @@ export const EmployeesPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>الاسم / الكود</th>
-                  <th style={{ padding: '1rem' }}>الوثيقة / رقم الهوية</th>
-                  <th style={{ padding: '1rem' }}>صلاحية الإقامة / الهوية</th>
-                  <th style={{ padding: '1rem' }}>الفرع الأساسي</th>
-                  <th style={{ padding: '1rem' }}>الدور</th>
-                  <th style={{ padding: '1rem' }}>الأجر اليومي</th>
-                  <th style={{ padding: '1rem' }}>الحالة</th>
-                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الاسم_الكود_20cd46')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الوثيقة_رقم_الهوية_21e36e')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.صلاحية_الإقامة_الهوية_39a3f4')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الفرع_الأساسي_5b1823')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الدور_59a3bd')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الأجر_اليومي_14bd29')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                 </tr>
               </thead>
               <tbody>
                 {employees.length === 0 ? (
                   <tr>
                     <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا يوجد موظفون مطابقون لمعايير البحث
-                    </td>
+                      {t('auto.لا_يوجد_موظفون_مطابقون_لمعايير_41cbd3')}</td>
                   </tr>
                 ) : (
                   employees.map((emp) => (
@@ -541,7 +538,7 @@ export const EmployeesPage: React.FC = () => {
                       <td style={{ padding: '1rem' }}>
                         <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1rem' }}>{emp.name}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                          {emp.code || 'بدون كود'} {emp.phone ? `• ${emp.phone}` : ''}
+                          {emp.code || t('auto.بدون_كود_519c6b')} {emp.phone ? `• ${emp.phone}` : ''}
                         </div>
                       </td>
                       <td style={{ padding: '1rem' }}>
@@ -556,7 +553,7 @@ export const EmployeesPage: React.FC = () => {
                         {getExpiryBadge(emp.identityExpiryDate)}
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                        {emp.branchName || 'غير محدد'}
+                        {emp.branchName || t('auto.غير_محدد_1567b8')}
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <span className="badge badge-secondary" style={{ textTransform: 'capitalize' }}>
@@ -565,15 +562,14 @@ export const EmployeesPage: React.FC = () => {
                       </td>
                       <td style={{ padding: '1rem', fontWeight: 600 }}>
                         {emp.dailyWage}{' '}
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR/يوم</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.SAR_يوم_65be80')}</span>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         {emp.isActive ? (
-                          <span className="badge badge-success">نشط</span>
+                          <span className="badge badge-success">{t('auto.نشط_185349')}</span>
                         ) : (
                           <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>
-                            معطل
-                          </span>
+                            {t('auto.معطل_2f1ba8')}</span>
                         )}
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
@@ -584,7 +580,7 @@ export const EmployeesPage: React.FC = () => {
                               onClick={() => setViewingAssignmentsEmp(emp)}
                               className="btn btn-secondary"
                               style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                              title="عرض التعيينات"
+                              title={t('auto.عرض_التعيينات_3aca01')}
                             >
                               <Layers size={14} />
                             </button>
@@ -594,7 +590,7 @@ export const EmployeesPage: React.FC = () => {
                             onClick={() => handleOpenEdit(emp)}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title="تعديل الموظف"
+                            title={t('auto.تعديل_الموظف_4f28c8')}
                           >
                             <Edit2 size={14} />
                           </button>
@@ -608,7 +604,7 @@ export const EmployeesPage: React.FC = () => {
                               color: '#f87171',
                               borderColor: 'rgba(239, 68, 68, 0.25)',
                             }}
-                            title="تعطيل / حذف"
+                            title={t('auto.تعطيل_حذف_560bfd')}
                           >
                             <Trash2 size={14} />
                           </button>
@@ -634,8 +630,7 @@ export const EmployeesPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} موظف/عامل
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.موظف_عامل_4750aa')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -643,17 +638,15 @@ export const EmployeesPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -674,7 +667,7 @@ export const EmployeesPage: React.FC = () => {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onSuccess={() => {
-          setSuccessMsg('تم استيراد واعتماد بيانات الموظفين بنجاح!');
+          setSuccessMsg(t('auto.تم_استيراد_واعتماد_بيانات_المو_558540'));
           loadEmployees();
           setTimeout(() => setSuccessMsg(null), 4000);
         }}
@@ -684,7 +677,7 @@ export const EmployeesPage: React.FC = () => {
       <Modal
         isOpen={!!deactivatingEmployee}
         onClose={() => setDeactivatingEmployee(null)}
-        title="تأكيد تعطيل الموظف"
+        title={t('auto.تأكيد_تعطيل_الموظف_53c565')}
         icon={<Trash2 size={22} color="#f87171" />}
         maxWidth="sm"
         footer={
@@ -695,8 +688,7 @@ export const EmployeesPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeactivating}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleConfirmDeactivate}
@@ -705,14 +697,13 @@ export const EmployeesPage: React.FC = () => {
               disabled={isDeactivating}
             >
               {isDeactivating ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تأكيد التعطيل</span>
+              <span>{t('auto.تأكيد_التعطيل_63699e')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          هل أنت متأكد من رغبتك في تعطيل الموظف <strong style={{ color: '#ffffff' }}>"{deactivatingEmployee?.name}"</strong>؟ (Soft Delete - يمكن إعادة تنشيطه لاحقًا).
-        </p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_66e6c4')}<strong style={{ color: '#ffffff' }}>"{deactivatingEmployee?.name}"</strong>{t('auto.Soft_Delete_يمكن_إعادة_تنشيطه__21ff8f')}</p>
       </Modal>
 
       {/* View Assignments Modal */}
@@ -724,8 +715,7 @@ export const EmployeesPage: React.FC = () => {
         maxWidth="md"
         footer={
           <button type="button" onClick={() => setViewingAssignmentsEmp(null)} className="btn btn-secondary">
-            إغلاق
-          </button>
+            {t('auto.إغلاق_59834d')}</button>
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -746,18 +736,17 @@ export const EmployeesPage: React.FC = () => {
                 <div>
                   <div style={{ fontWeight: 600, color: '#ffffff' }}>{a.projectName}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                    كود: {a.projectCode} • دور: {a.assignedRole}
+                    {t('auto.كود_2f1031')}{a.projectCode} {t('auto.دور_263c7e')}{a.assignedRole}
                   </div>
                 </div>
                 <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>
-                  منذ {a.startDate ? a.startDate.split('T')[0] : '—'}
+                  {t('auto.منذ_1851af')}{a.startDate ? a.startDate.split('T')[0] : '—'}
                 </span>
               </div>
             ))
           ) : (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, textAlign: 'center', padding: '1rem' }}>
-              لا توجد تعيينات حالية لهذا الموظف
-            </p>
+              {t('auto.لا_توجد_تعيينات_حالية_لهذا_الم_63ad6b')}</p>
           )}
         </div>
       </Modal>

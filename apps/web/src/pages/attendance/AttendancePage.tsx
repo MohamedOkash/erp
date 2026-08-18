@@ -125,7 +125,7 @@ export const AttendancePage: React.FC = () => {
       setAttendance(res.data);
       setTotal(res.total);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل سجلات الحضور');
+      setError(err.message || t('auto.فشل_تحميل_سجلات_الحضور_213f7a'));
     } finally {
       setIsLoading(false);
     }
@@ -164,12 +164,12 @@ export const AttendancePage: React.FC = () => {
         ...formData,
         overtimeHours: Number(formData.overtimeHours) || 0,
       });
-      setSuccessMsg('تم تسجيل الحضور بنجاح');
+      setSuccessMsg(t('auto.تم_تسجيل_الحضور_بنجاح_41cc2b'));
       setShowCreateModal(false);
       loadAttendance();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل تسجيل الحضور');
+      setError(err.message || t('auto.فشل_تسجيل_الحضور_d34dd0'));
     } finally {
       setIsSaving(false);
     }
@@ -177,13 +177,13 @@ export const AttendancePage: React.FC = () => {
 
   // Compute summary stats
   const presentCount = attendance.filter(
-    (a) => a.statusCode === 'present' || (!a.statusCode && (a.statusName || '').includes('حاضر')),
+    (a) => a.statusCode === 'present' || (!a.statusCode && (a.statusName || '').includes(t('auto.حاضر_2e68dd'))),
   ).length;
   const absentCount = attendance.filter(
-    (a) => a.statusCode === 'absent' || (a.statusName || '').includes('غائب'),
+    (a) => a.statusCode === 'absent' || (a.statusName || '').includes(t('auto.غائب_2ec74a')),
   ).length;
   const lateCount = attendance.filter(
-    (a) => a.statusCode === 'late' || (a.statusName || '').includes('متأخر'),
+    (a) => a.statusCode === 'late' || (a.statusName || '').includes(t('auto.متأخر_5b3e7c')),
   ).length;
   const totalOvertime = attendance.reduce((acc, a) => acc + (Number(a.overtimeHours) || 0), 0);
 
@@ -201,7 +201,7 @@ export const AttendancePage: React.FC = () => {
             }}
           >
             <Fingerprint size={12} color="#60a5fa" />
-            <span>بصمة جهاز</span>
+            <span>{t('auto.بصمة_جهاز_42e3b3')}</span>
           </span>
         );
       case 'xlsx':
@@ -217,23 +217,23 @@ export const AttendancePage: React.FC = () => {
             }}
           >
             <FileSpreadsheet size={12} />
-            <span>إكسيل</span>
+            <span>{t('auto.إكسيل_598729')}</span>
           </span>
         );
       default:
         return (
           <span className="badge badge-secondary" style={{ gap: '0.3rem', fontSize: '0.75rem' }}>
             <Edit3 size={12} />
-            <span>يدوي</span>
+            <span>{t('auto.يدوي_2f3dce')}</span>
           </span>
         );
     }
   };
 
   const getStatusBadge = (statusName?: string, statusCode?: string) => {
-    const name = statusName || 'حاضر';
+    const name = statusName || t('auto.حاضر_2e68dd');
     const code = statusCode || 'present';
-    if (code === 'present' || name.includes('حاضر')) {
+    if (code === 'present' || name.includes(t('auto.حاضر_2e68dd'))) {
       return (
         <span className="badge badge-success" style={{ gap: '0.3rem' }}>
           <UserCheck size={12} />
@@ -241,7 +241,7 @@ export const AttendancePage: React.FC = () => {
         </span>
       );
     }
-    if (code === 'late' || name.includes('متأخر')) {
+    if (code === 'late' || name.includes(t('auto.متأخر_5b3e7c'))) {
       return (
         <span
           className="badge badge-accent"
@@ -257,7 +257,7 @@ export const AttendancePage: React.FC = () => {
         </span>
       );
     }
-    if (code === 'absent' || name.includes('غائب')) {
+    if (code === 'absent' || name.includes(t('auto.غائب_2ec74a'))) {
       return (
         <span
           className="badge badge-secondary"
@@ -282,30 +282,30 @@ export const AttendancePage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'الحاضرون اليوم',
+      label: t('auto.الحاضرون_اليوم_41951c'),
       value: presentCount,
       helper: `${attendance.length} مسجلين بالجلسة`,
       icon: <UserCheck size={22} />,
       color: '#34d399',
     },
     {
-      label: 'تأخيرات الحضور',
+      label: t('auto.تأخيرات_الحضور_569af0'),
       value: lateCount,
-      helper: 'تجاوز وقت الوردية والسماح',
+      helper: t('auto.تجاوز_وقت_الوردية_والسماح_41f150'),
       icon: <Clock size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'الغياب والتغيب',
+      label: t('auto.الغياب_والتغيب_2921ad'),
       value: absentCount,
-      helper: 'بدون إذن أو لم يبصموا',
+      helper: t('auto.بدون_إذن_أو_لم_يبصموا_4f229c'),
       icon: <UserX size={22} />,
       color: '#f87171',
     },
     {
-      label: 'ساعات إضافي اليوم',
+      label: t('auto.ساعات_إضافي_اليوم_4fef88'),
       value: `${totalOvertime.toFixed(1)} ساعة`,
-      helper: 'تُحسب في مخصصات الرواتب',
+      helper: t('auto.ت_حسب_في_مخصصات_الرواتب_88869d'),
       icon: <Zap size={22} />,
       color: '#60a5fa',
     },
@@ -421,12 +421,11 @@ export const AttendancePage: React.FC = () => {
           <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Filter size={14} />
-              <span>المشروع</span>
+              <span>{t('auto.المشروع_7f28ee')}</span>
             </div>
             {isSingleScoped && (
               <span style={{ fontSize: '10px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <Lock size={11} /> نطاق مخصص
-              </span>
+                <Lock size={11} /> {t('auto.نطاق_مخصص_1b6320')}</span>
             )}
           </label>
           <select
@@ -439,7 +438,7 @@ export const AttendancePage: React.FC = () => {
             }}
             style={isSingleScoped ? { opacity: 0.85, cursor: 'not-allowed', borderColor: 'rgba(139, 92, 246, 0.4)' } : {}}
           >
-            {!isSingleScoped && <option value="">كافة المشاريع</option>}
+            {!isSingleScoped && <option value="">{t('auto.كافة_المشاريع_65e01c')}</option>}
             {scopedProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -449,7 +448,7 @@ export const AttendancePage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الفرع</label>
+          <label className="form-label">{t('auto.الفرع_59a3fe')}</label>
           <select
             className="input-field"
             value={selectedBranch}
@@ -458,7 +457,7 @@ export const AttendancePage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الفروع</option>
+            <option value="">{t('auto.كافة_الفروع_1a62e9')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -468,9 +467,9 @@ export const AttendancePage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">من تاريخ</label>
+          <label className="form-label">{t('auto.من_تاريخ_4c8e03')}</label>
           <WheelDatePicker
-            placeholder="من تاريخ..."
+            placeholder={t('auto.من_تاريخ_3db437')}
             value={fromDate}
             onChange={(val) => {
               setFromDate(val);
@@ -480,9 +479,9 @@ export const AttendancePage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">إلى تاريخ</label>
+          <label className="form-label">{t('auto.إلى_تاريخ_d3e6d7')}</label>
           <WheelDatePicker
-            placeholder="إلى تاريخ..."
+            placeholder={t('auto.إلى_تاريخ_33c707')}
             value={toDate}
             onChange={(val) => {
               setToDate(val);
@@ -504,22 +503,21 @@ export const AttendancePage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>التاريخ</th>
-                  <th style={{ padding: '1rem' }}>الموظف / العامل</th>
-                  <th style={{ padding: '1rem' }}>المشروع والفرع</th>
-                  <th style={{ padding: '1rem' }}>المصدر</th>
-                  <th style={{ padding: '1rem' }}>حالة الحضور</th>
-                  <th style={{ padding: '1rem' }}>وقت الحضور</th>
-                  <th style={{ padding: '1rem' }}>وقت الانصراف</th>
-                  <th style={{ padding: '1rem' }}>ساعات الإضافي</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.التاريخ_7f54ad')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الموظف_العامل_75e51c')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المشروع_والفرع_410648')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المصدر_252257')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.حالة_الحضور_2945fd')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.وقت_الحضور_b25f47')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.وقت_الانصراف_2fe8a8')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.ساعات_الإضافي_37cc3e')}</th>
                 </tr>
               </thead>
               <tbody>
                 {attendance.length === 0 ? (
                   <tr>
                     <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد سجلات حضور مسجلة
-                    </td>
+                      {t('auto.لا_توجد_سجلات_حضور_مسجلة_7d0848')}</td>
                   </tr>
                 ) : (
                   attendance.map((att) => (
@@ -534,9 +532,9 @@ export const AttendancePage: React.FC = () => {
                         {att.date}
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{att.employeeName || 'موظف'}</div>
+                        <div style={{ fontWeight: 700, color: '#ffffff' }}>{att.employeeName || t('auto.موظف_2f1f2e')}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                          هوية: {att.nationalId || '—'}
+                          {t('auto.هوية_5b68da')}{att.nationalId || '—'}
                         </div>
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
@@ -558,8 +556,7 @@ export const AttendancePage: React.FC = () => {
                       <td style={{ padding: '1rem' }}>
                         {Number(att.overtimeHours) > 0 ? (
                           <span className="badge badge-accent">
-                            +{Number(att.overtimeHours).toFixed(1)} ساعة
-                          </span>
+                            +{Number(att.overtimeHours).toFixed(1)} {t('auto.ساعة_2e9486')}</span>
                         ) : (
                           <span style={{ color: 'var(--text-dim)' }}>0</span>
                         )}
@@ -584,8 +581,7 @@ export const AttendancePage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} سجل حضور
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.سجل_حضور_2ba5dc')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -593,17 +589,15 @@ export const AttendancePage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -613,17 +607,16 @@ export const AttendancePage: React.FC = () => {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="تسجيل حضور موظف"
+        title={t('auto.تسجيل_حضور_موظف_4edd57')}
         icon={<CalendarCheck size={22} color="#60a5fa" />}
         maxWidth="lg"
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
             <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="attendance-form" className="btn btn-primary" disabled={isSaving}>
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تسجيل الحضور</span>
+              <span>{t('auto.تسجيل_الحضور_b1ae62')}</span>
             </button>
           </div>
         }
@@ -631,14 +624,14 @@ export const AttendancePage: React.FC = () => {
         <form id="attendance-form" onSubmit={handleSaveAttendance}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">الموظف / العامل *</label>
+              <label className="form-label">{t('auto.الموظف_العامل_6eefbb')}</label>
               <select
                 required
                 className="input-field"
                 value={formData.employeeId}
                 onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
               >
-                <option value="">اختر الموظف...</option>
+                <option value="">{t('auto.اختر_الموظف_2520bb')}</option>
                 {employees.map((emp) => (
                   <option key={emp.id} value={emp.id}>
                     {emp.name} ({emp.identityNumber})
@@ -648,13 +641,13 @@ export const AttendancePage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">المشروع</label>
+              <label className="form-label">{t('auto.المشروع_7f28ee')}</label>
               <select
                 className="input-field"
                 value={formData.projectId || ''}
                 onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
               >
-                <option value="">بدون تحديد مشروع</option>
+                <option value="">{t('auto.بدون_تحديد_مشروع_76d760')}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -664,13 +657,13 @@ export const AttendancePage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">الفرع</label>
+              <label className="form-label">{t('auto.الفرع_59a3fe')}</label>
               <select
                 className="input-field"
                 value={formData.branchId || ''}
                 onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
               >
-                <option value="">بدون تحديد فرع</option>
+                <option value="">{t('auto.بدون_تحديد_فرع_10e80b')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -680,7 +673,7 @@ export const AttendancePage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">التاريخ *</label>
+              <label className="form-label">{t('auto.التاريخ_31f58d')}</label>
               <WheelDatePicker
                 required
                 value={formData.date}
@@ -689,22 +682,22 @@ export const AttendancePage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">حالة الحضور *</label>
+              <label className="form-label">{t('auto.حالة_الحضور_1043a2')}</label>
               <select
                 required
                 className="input-field"
                 value={formData.statusId}
                 onChange={(e) => setFormData({ ...formData, statusId: e.target.value })}
               >
-                <option value="00000000-0000-0000-0004-000000000001">حاضر (Present)</option>
-                <option value="00000000-0000-0000-0004-000000000002">غائب (Absent)</option>
-                <option value="00000000-0000-0000-0004-000000000003">متأخر (Late)</option>
-                <option value="00000000-0000-0000-0004-000000000004">إجازة بعذر (Excused)</option>
+                <option value="00000000-0000-0000-0004-000000000001">{t('auto.حاضر_Present_5fc486')}</option>
+                <option value="00000000-0000-0000-0004-000000000002">{t('auto.غائب_Absent_5404a0')}</option>
+                <option value="00000000-0000-0000-0004-000000000003">{t('auto.متأخر_Late_729bb3')}</option>
+                <option value="00000000-0000-0000-0004-000000000004">{t('auto.إجازة_بعذر_Excused_313084')}</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label className="form-label">ساعات الإضافي</label>
+              <label className="form-label">{t('auto.ساعات_الإضافي_37cc3e')}</label>
               <input
                 type="number"
                 min="0"
@@ -716,7 +709,7 @@ export const AttendancePage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">وقت الحضور</label>
+              <label className="form-label">{t('auto.وقت_الحضور_b25f47')}</label>
               <WheelTimePicker
                 value={formData.checkInTime || ''}
                 onChange={(val) => setFormData({ ...formData, checkInTime: val })}
@@ -724,7 +717,7 @@ export const AttendancePage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">وقت الانصراف</label>
+              <label className="form-label">{t('auto.وقت_الانصراف_2fe8a8')}</label>
               <WheelTimePicker
                 value={formData.checkOutTime || ''}
                 onChange={(val) => setFormData({ ...formData, checkOutTime: val })}
@@ -739,7 +732,7 @@ export const AttendancePage: React.FC = () => {
         isOpen={showBiometricModal}
         onClose={() => setShowBiometricModal(false)}
         onImportSuccess={() => {
-          setSuccessMsg('تم استيراد واعتماد سجلات البصمة بنجاح');
+          setSuccessMsg(t('auto.تم_استيراد_واعتماد_سجلات_البصم_4d316b'));
           loadAttendance();
           setTimeout(() => setSuccessMsg(null), 4000);
         }}

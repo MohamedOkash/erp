@@ -133,7 +133,7 @@ export const WorkItemsPage: React.FC = () => {
       setItems(res.data);
       setTotal(res.total);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل بنود الأعمال');
+      setError(err.message || t('auto.فشل_تحميل_بنود_الأعمال_31d6dc'));
     } finally {
       setIsLoading(false);
     }
@@ -227,17 +227,17 @@ export const WorkItemsPage: React.FC = () => {
 
       if (editingItem) {
         await workItemsApi.update(editingItem.id, payload);
-        setSuccessMsg('تم تحديث بند العمل بنجاح');
+        setSuccessMsg(t('auto.تم_تحديث_بند_العمل_بنجاح_3e35e0'));
       } else {
         await workItemsApi.create(payload);
-        setSuccessMsg('تم إنشاء بند العمل بنجاح');
+        setSuccessMsg(t('auto.تم_إنشاء_بند_العمل_بنجاح_1f5a96'));
       }
       setIsModalOpen(false);
       loadItems();
       loadInitialData(); // Refresh category counts
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ بند العمل');
+      setError(err.message || t('auto.فشل_حفظ_بند_العمل_59f4fc'));
     } finally {
       setIsSaving(false);
     }
@@ -254,7 +254,7 @@ export const WorkItemsPage: React.FC = () => {
       loadInitialData(); // Refresh category counts
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حذف بند العمل');
+      setError(err.message || t('auto.فشل_حذف_بند_العمل_5f4950'));
     } finally {
       setIsDeleting(false);
     }
@@ -401,7 +401,7 @@ export const WorkItemsPage: React.FC = () => {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <FolderTree size={18} color="#60a5fa" />
-              <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f1f5f9' }}>أقسام التشطيبات (15)</span>
+              <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f1f5f9' }}>{t('auto.أقسام_التشطيبات_15_1045e2')}</span>
             </div>
             <span
               style={{
@@ -413,8 +413,7 @@ export const WorkItemsPage: React.FC = () => {
                 fontWeight: 700,
               }}
             >
-              {categories.length} قسم
-            </span>
+              {categories.length} {t('auto.قسم_184434')}</span>
           </div>
 
           {/* All Departments Option */}
@@ -445,7 +444,7 @@ export const WorkItemsPage: React.FC = () => {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <LayoutGrid size={17} color={selectedCategoryId === '' ? '#60a5fa' : '#94a3b8'} />
-              <span>كافة الأقسام والبنود</span>
+              <span>{t('auto.كافة_الأقسام_والبنود_575a75')}</span>
             </div>
             <span
               style={{
@@ -573,10 +572,10 @@ export const WorkItemsPage: React.FC = () => {
           >
             {/* Active Department Info */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>القسم النشط حالياً</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('auto.القسم_النشط_حاليا_236efa')}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#60a5fa' }}>
-                  {activeCategory ? activeCategory.name : 'كافة الأقسام'}
+                  {activeCategory ? activeCategory.name : t('auto.كافة_الأقسام_33998e')}
                 </span>
                 {activeCategory?.code && (
                   <span
@@ -597,18 +596,17 @@ export const WorkItemsPage: React.FC = () => {
 
             {/* Total Items KPI */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>إجمالي البنود</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('auto.إجمالي_البنود_37af20')}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <CheckSquare size={18} color="#34d399" />
                 <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f8fafc' }}>
-                  {metrics.totalItems} بند
-                </span>
+                  {metrics.totalItems} {t('auto.بند_17e4d1')}</span>
               </div>
             </div>
 
             {/* Average Daily Target KPI */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>متوسط المستهدف اليومي</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('auto.متوسط_المستهدف_اليومي_3df9f3')}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Target size={18} color="#f59e0b" />
                 <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f8fafc' }}>
@@ -619,12 +617,11 @@ export const WorkItemsPage: React.FC = () => {
 
             {/* Total Sub-stages KPI */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>المراحل الفرعية المفككة</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('auto.المراحل_الفرعية_المفككة_52312e')}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Layers size={18} color="#818cf8" />
                 <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f8fafc' }}>
-                  {metrics.totalStages} مرحلة
-                </span>
+                  {metrics.totalStages} {t('auto.مرحلة_5b41d3')}</span>
               </div>
             </div>
           </div>
@@ -644,12 +641,12 @@ export const WorkItemsPage: React.FC = () => {
           >
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label" style={{ fontSize: '0.82rem', marginBottom: '0.35rem' }}>
-                <Search size={14} /> <span>بحث باسم البند، الكود، أو مواصفات المرحلة</span>
+                <Search size={14} /> <span>{t('auto.بحث_باسم_البند_الكود_أو_مواصفا_7a43ba')}</span>
               </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="مثال: محارة، طرطشة، بؤج، PLS-01..."
+                placeholder={t('auto.مثال_محارة_طرطشة_بؤج_PLS_01_3af384')}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -660,7 +657,7 @@ export const WorkItemsPage: React.FC = () => {
 
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label" style={{ fontSize: '0.82rem', marginBottom: '0.35rem' }}>
-                <Filter size={14} /> <span>تصفية حسب الفرع</span>
+                <Filter size={14} /> <span>{t('auto.تصفية_حسب_الفرع_77ecf9')}</span>
               </label>
               <select
                 className="input-field"
@@ -670,7 +667,7 @@ export const WorkItemsPage: React.FC = () => {
                   setPage(1);
                 }}
               >
-                <option value="">كافة الفروع</option>
+                <option value="">{t('auto.كافة_الفروع_1a62e9')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -700,15 +697,14 @@ export const WorkItemsPage: React.FC = () => {
                     }}
                   >
                     <th style={{ padding: '0.9rem 1rem', width: '40px' }}></th>
-                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>اسم بند العمل</th>
-                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>الكود</th>
-                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>القسم / الفئة</th>
-                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>المستهدف اليومي</th>
-                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>سعر الوحدة</th>
-                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>المراحل الفرعية</th>
+                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>{t('auto.اسم_بند_العمل_413641')}</th>
+                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>{t('auto.الكود_59a408')}</th>
+                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>{t('auto.القسم_الفئة_6cae77')}</th>
+                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>{t('auto.المستهدف_اليومي_49108a')}</th>
+                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>{t('auto.سعر_الوحدة_5e13de')}</th>
+                    <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8' }}>{t('auto.المراحل_الفرعية_330896')}</th>
                     <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#94a3b8', textAlign: 'center' }}>
-                      الإجراءات
-                    </th>
+                      {t('auto.الإجراءات_3259ef')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -717,8 +713,7 @@ export const WorkItemsPage: React.FC = () => {
                       <td colSpan={8} style={{ textAlign: 'center', padding: '3.5rem' }}>
                         <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
                         <p style={{ marginTop: '0.85rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                          جاري تحميل بنود ومراحل التشطيبات...
-                        </p>
+                          {t('auto.جاري_تحميل_بنود_ومراحل_التشطيب_48a57e')}</p>
                       </td>
                     </tr>
                   ) : items.length === 0 ? (
@@ -726,11 +721,9 @@ export const WorkItemsPage: React.FC = () => {
                       <td colSpan={8} style={{ textAlign: 'center', padding: '3.5rem', color: 'var(--text-muted)' }}>
                         <FolderTree size={40} style={{ margin: '0 auto 0.75rem auto', opacity: 0.4 }} />
                         <p style={{ fontSize: '0.95rem', fontWeight: 600, color: '#f8fafc' }}>
-                          لا توجد بنود عمل مسجلة في هذا القسم
-                        </p>
+                          {t('auto.لا_توجد_بنود_عمل_مسجلة_في_هذا__74a684')}</p>
                         <p style={{ fontSize: '0.82rem', marginTop: '0.25rem' }}>
-                          اضغط على زر "إضافة بند عمل جديد" لإنشاء أول بند في هذا القسم.
-                        </p>
+                          {t('auto.اضغط_على_زر_إضافة_بند_عمل_جديد_4ec495')}</p>
                       </td>
                     </tr>
                   ) : (
@@ -773,7 +766,7 @@ export const WorkItemsPage: React.FC = () => {
                                   cursor: 'pointer',
                                   transition: 'all 0.15s ease',
                                 }}
-                                title={isExpanded ? 'إخفاء المراحل' : 'عرض مراحل البند'}
+                                title={isExpanded ? t('auto.إخفاء_المراحل_656342') : t('auto.عرض_مراحل_البند_5d7e53')}
                               >
                                 {isExpanded ? <ChevronDown size={16} /> : <ChevronLeft size={16} />}
                               </button>
@@ -821,7 +814,7 @@ export const WorkItemsPage: React.FC = () => {
                               {dailyTarget ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#f59e0b' }}>
                                   <Target size={14} />
-                                  <span>{dailyTarget} {item.unitSymbol || item.unitName || 'م²'}/يوم</span>
+                                  <span>{dailyTarget} {item.unitSymbol || item.unitName || t('auto.م_c30d')}{t('auto.يوم_2dc238')}</span>
                                 </div>
                               ) : (
                                 <span style={{ color: 'var(--text-dim)' }}>—</span>
@@ -854,7 +847,7 @@ export const WorkItemsPage: React.FC = () => {
                                   }}
                                 >
                                   <Layers size={13} />
-                                  <span>{stages.length} مراحل ({stagesTotalPercent}%)</span>
+                                  <span>{stages.length} {t('auto.مراحل_6e447e')}{stagesTotalPercent}%)</span>
                                 </button>
                               ) : (
                                 <button
@@ -873,7 +866,7 @@ export const WorkItemsPage: React.FC = () => {
                                     cursor: 'pointer',
                                   }}
                                 >
-                                  <Plus size={12} /> <span>تفكيك المراحل</span>
+                                  <Plus size={12} /> <span>{t('auto.تفكيك_المراحل_1ef3bb')}</span>
                                 </button>
                               )}
                             </td>
@@ -891,9 +884,9 @@ export const WorkItemsPage: React.FC = () => {
                                     color: '#818cf8',
                                     borderColor: 'rgba(129, 140, 248, 0.3)',
                                   }}
-                                  title="إدارة مراحل البند والأوزان النسبية"
+                                  title={t('auto.إدارة_مراحل_البند_والأوزان_الن_561201')}
                                 >
-                                  <Layers size={14} /> <span>المراحل</span>
+                                  <Layers size={14} /> <span>{t('auto.المراحل_7f2a74')}</span>
                                 </button>
 
                                 <button
@@ -906,9 +899,9 @@ export const WorkItemsPage: React.FC = () => {
                                     color: '#34d399',
                                     borderColor: 'rgba(52, 211, 153, 0.3)',
                                   }}
-                                  title="إدارة الأسعار والتكلفة"
+                                  title={t('auto.إدارة_الأسعار_والتكلفة_480093')}
                                 >
-                                  <DollarSign size={14} /> <span>الأسعار</span>
+                                  <DollarSign size={14} /> <span>{t('auto.الأسعار_7ef797')}</span>
                                 </button>
 
                                 <button
@@ -916,7 +909,7 @@ export const WorkItemsPage: React.FC = () => {
                                   onClick={() => openEdit(item)}
                                   className="btn btn-secondary"
                                   style={{ padding: '0.35rem 0.5rem' }}
-                                  title="تعديل البند"
+                                  title={t('auto.تعديل_البند_acf570')}
                                 >
                                   <Edit2 size={14} />
                                 </button>
@@ -930,7 +923,7 @@ export const WorkItemsPage: React.FC = () => {
                                     color: '#f87171',
                                     borderColor: 'rgba(239, 68, 68, 0.25)',
                                   }}
-                                  title="حذف البند"
+                                  title={t('auto.حذف_البند_30018a')}
                                 >
                                   <Trash2 size={14} />
                                 </button>
@@ -966,7 +959,7 @@ export const WorkItemsPage: React.FC = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                                       <Layers size={18} color="#60a5fa" />
                                       <span style={{ fontWeight: 700, fontSize: '0.92rem', color: '#f8fafc' }}>
-                                        المراحل التنفيذية وتوزيع الأوزان للبند: "{item.name}"
+                                        {t('auto.المراحل_التنفيذية_وتوزيع_الأوز_577f4b')}{item.name}"
                                       </span>
                                     </div>
 
@@ -978,7 +971,7 @@ export const WorkItemsPage: React.FC = () => {
                                           fontWeight: 700,
                                         }}
                                       >
-                                        مجموع الأوزان: {stagesTotalPercent}% {stagesTotalPercent === 100 ? '✓ (مكتمل)' : '(غير مكتمل 100%)'}
+                                        {t('auto.مجموع_الأوزان_5bdf4a')}{stagesTotalPercent}% {stagesTotalPercent === 100 ? t('auto.مكتمل_43eed7') : t('auto.غير_مكتمل_100_e85d10')}
                                       </span>
                                       <button
                                         type="button"
@@ -991,7 +984,7 @@ export const WorkItemsPage: React.FC = () => {
                                           borderColor: 'rgba(59, 130, 246, 0.35)',
                                         }}
                                       >
-                                        <Plus size={13} /> <span>تعديل / إضافة مراحل</span>
+                                        <Plus size={13} /> <span>{t('auto.تعديل_إضافة_مراحل_41b316')}</span>
                                       </button>
                                     </div>
                                   </div>
@@ -1006,8 +999,7 @@ export const WorkItemsPage: React.FC = () => {
                                         fontSize: '0.85rem',
                                       }}
                                     >
-                                      لم يتم تقسيم هذا البند إلى مراحل فرعية بعد. اضغط على "تعديل / إضافة مراحل" لتعريف نسب الإنجاز ومستهدفات كل مرحلة.
-                                    </div>
+                                      {t('auto.لم_يتم_تقسيم_هذا_البند_إلى_مرا_7904b0')}</div>
                                   ) : (
                                     <div
                                       style={{
@@ -1108,9 +1100,9 @@ export const WorkItemsPage: React.FC = () => {
                                               marginTop: '0.2rem',
                                             }}
                                           >
-                                            <span>المستهدف القياسي:</span>
+                                            <span>{t('auto.المستهدف_القياسي_39819d')}</span>
                                             <span style={{ fontWeight: 700, color: '#f59e0b' }}>
-                                              {stage.standard_productivity ? `${stage.standard_productivity} وحدة/يوم` : 'حسب المستهدف العام'}
+                                              {stage.standard_productivity ? `${stage.standard_productivity} وحدة/يوم` : t('auto.حسب_المستهدف_العام_7a261a')}
                                             </span>
                                           </div>
                                         </div>
@@ -1141,7 +1133,7 @@ export const WorkItemsPage: React.FC = () => {
                 color: 'var(--text-muted)',
               }}
             >
-              <span>إجمالي بنود العمل: {total}</span>
+              <span>{t('auto.إجمالي_بنود_العمل_289bd6')}{total}</span>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
                   className="btn btn-secondary"
@@ -1149,17 +1141,15 @@ export const WorkItemsPage: React.FC = () => {
                   disabled={page <= 1}
                   onClick={() => setPage(page - 1)}
                 >
-                  السابق
-                </button>
-                <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                  {t('auto.السابق_252abb')}</button>
+                <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
                 <button
                   className="btn btn-secondary"
                   style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                   disabled={page * limit >= total}
                   onClick={() => setPage(page + 1)}
                 >
-                  التالي
-                </button>
+                  {t('auto.التالي_252ecf')}</button>
               </div>
             </div>
           </div>
@@ -1170,7 +1160,7 @@ export const WorkItemsPage: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingItem ? 'تعديل بند عمل' : 'إضافة بند عمل جديد'}
+        title={editingItem ? t('auto.تعديل_بند_عمل_35c235') : t('auto.إضافة_بند_عمل_جديد_111e99')}
         icon={<CheckSquare size={22} color="#60a5fa" />}
         maxWidth="md"
         footer={
@@ -1181,8 +1171,7 @@ export const WorkItemsPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isSaving}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="submit"
               form="work-item-form"
@@ -1190,7 +1179,7 @@ export const WorkItemsPage: React.FC = () => {
               disabled={isSaving}
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingItem ? 'حفظ التعديلات' : 'إنشاء البند'}</span>
+              <span>{editingItem ? t('auto.حفظ_التعديلات_4ff313') : t('auto.إنشاء_البند_258681')}</span>
             </button>
           </div>
         }
@@ -1198,19 +1187,19 @@ export const WorkItemsPage: React.FC = () => {
         <form id="work-item-form" onSubmit={handleSave}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
-              <label className="form-label">اسم البند *</label>
+              <label className="form-label">{t('auto.اسم_البند_7ac75b')}</label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder="مثال: بياض محارة ولياسة داخلية للغرف والممرات"
+                placeholder={t('auto.مثال_بياض_محارة_ولياسة_داخلية__56e86e')}
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
               />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">كود البند</label>
+              <label className="form-label">{t('auto.كود_البند_6d33f6')}</label>
               <input
                 type="text"
                 className="input-field"
@@ -1221,7 +1210,7 @@ export const WorkItemsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">قسم التشطيبات *</label>
+              <label className="form-label">{t('auto.قسم_التشطيبات_5fb43b')}</label>
               <select
                 className="input-field"
                 value={formCategoryId}
@@ -1231,7 +1220,7 @@ export const WorkItemsPage: React.FC = () => {
                   if (selectedCat) setFormCategory(selectedCat.name);
                 }}
               >
-                <option value="">اختر القسم...</option>
+                <option value="">{t('auto.اختر_القسم_55b1f4')}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} ({c.code})
@@ -1241,7 +1230,7 @@ export const WorkItemsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">المستهدف اليومي (م²/يوم)</label>
+              <label className="form-label">{t('auto.المستهدف_اليومي_م_يوم_65a223')}</label>
               <input
                 type="number"
                 min="0"
@@ -1252,7 +1241,7 @@ export const WorkItemsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">سعر الوحدة التعاقدي (ريال)</label>
+              <label className="form-label">{t('auto.سعر_الوحدة_التعاقدي_ريال_8143a7')}</label>
               <input
                 type="number"
                 min="0"
@@ -1264,13 +1253,13 @@ export const WorkItemsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">الفرع (اختياري)</label>
+              <label className="form-label">{t('auto.الفرع_اختياري_6336a1')}</label>
               <select
                 className="input-field"
                 value={formBranchId}
                 onChange={(e) => setFormBranchId(e.target.value)}
               >
-                <option value="">كافة الفروع</option>
+                <option value="">{t('auto.كافة_الفروع_1a62e9')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -1280,12 +1269,12 @@ export const WorkItemsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
-              <label className="form-label">وصف البند والمواصفات</label>
+              <label className="form-label">{t('auto.وصف_البند_والمواصفات_1a7e27')}</label>
               <textarea
                 rows={2}
                 className="input-field"
                 style={{ resize: 'vertical' }}
-                placeholder="تفاصيل التوريد والتركيب والمواصفات الفنية..."
+                placeholder={t('auto.تفاصيل_التوريد_والتركيب_والموا_2a6781')}
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
               />
@@ -1308,8 +1297,7 @@ export const WorkItemsPage: React.FC = () => {
                 style={{ width: '16px', height: '16px' }}
               />
               <label style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>
-                بند نشط ومتاح للاستخدام في المشروعات والمقايسات
-              </label>
+                {t('auto.بند_نشط_ومتاح_للاستخدام_في_الم_3fbcc5')}</label>
             </div>
           </div>
         </form>
@@ -1319,7 +1307,7 @@ export const WorkItemsPage: React.FC = () => {
       <Modal
         isOpen={!!deletingItem}
         onClose={() => setDeletingItem(null)}
-        title="تأكيد حذف بند العمل"
+        title={t('auto.تأكيد_حذف_بند_العمل_ba39a3')}
         icon={<Trash2 size={22} color="#f87171" />}
         maxWidth="sm"
         footer={
@@ -1330,8 +1318,7 @@ export const WorkItemsPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeleting}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleConfirmDelete}
@@ -1340,14 +1327,13 @@ export const WorkItemsPage: React.FC = () => {
               disabled={isDeleting}
             >
               {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تأكيد الحذف</span>
+              <span>{t('auto.تأكيد_الحذف_4af57e')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          هل أنت متأكد من حذف بند العمل <strong style={{ color: '#ffffff' }}>"{deletingItem?.name}"</strong>؟
-        </p>
+          {t('auto.هل_أنت_متأكد_من_حذف_بند_العمل_25ca1e')}<strong style={{ color: '#ffffff' }}>"{deletingItem?.name}"</strong>{t('auto.k_61f')}</p>
       </Modal>
 
       {/* Stages Management Modal */}

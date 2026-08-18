@@ -56,7 +56,7 @@ export const BranchesPage: React.FC = () => {
       setBranches(res.data);
       setTotal(res.total);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل بيانات الفروع');
+      setError(err.message || t('auto.فشل_تحميل_بيانات_الفروع_175a7c'));
     } finally {
       setIsLoading(false);
     }
@@ -82,16 +82,16 @@ export const BranchesPage: React.FC = () => {
     try {
       if (editingBranch) {
         await branchesApi.update(editingBranch.id, payload);
-        setSuccessMsg('تم تحديث بيانات الفرع بنجاح');
+        setSuccessMsg(t('auto.تم_تحديث_بيانات_الفرع_بنجاح_77b520'));
       } else {
         await branchesApi.create(payload as CreateBranchPayload);
-        setSuccessMsg('تم إنشاء الفرع الجديد بنجاح');
+        setSuccessMsg(t('auto.تم_إنشاء_الفرع_الجديد_بنجاح_7bc327'));
       }
       setIsModalOpen(false);
       loadBranches();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ بيانات الفرع');
+      setError(err.message || t('auto.فشل_حفظ_بيانات_الفرع_20ceec'));
     } finally {
       setIsSaving(false);
     }
@@ -107,7 +107,7 @@ export const BranchesPage: React.FC = () => {
       loadBranches();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حذف الفرع');
+      setError(err.message || t('auto.فشل_حذف_الفرع_62818c'));
     } finally {
       setIsDeleting(false);
     }
@@ -119,23 +119,23 @@ export const BranchesPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي الفروع الإدارية',
+      label: t('auto.إجمالي_الفروع_الإدارية_6eb51f'),
       value: total,
       helper: `${branches.length} معروضين حالياً`,
       icon: <Building size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'الفروع النشطة والتشغيلية',
+      label: t('auto.الفروع_النشطة_والتشغيلية_1a1746'),
       value: activeCount,
-      helper: 'تستقبل مشاريع وتكاليف',
+      helper: t('auto.تستقبل_مشاريع_وتكاليف_737235'),
       icon: <Check size={22} />,
       color: '#34d399',
     },
     {
-      label: 'الفروع المعطلة أو المؤرشفة',
+      label: t('auto.الفروع_المعطلة_أو_المؤرشفة_35664c'),
       value: inactiveCount,
-      helper: 'مغلقة إدارياً',
+      helper: t('auto.مغلقة_إداريا_275fd7'),
       icon: <XCircle size={22} />,
       color: '#f87171',
     },
@@ -230,12 +230,12 @@ export const BranchesPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Search size={14} />
-            <span>بحث باسم الفرع أو الكود</span>
+            <span>{t('auto.بحث_باسم_الفرع_أو_الكود_28852f')}</span>
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="ابحث..."
+            placeholder={t('auto.ابحث_4fa1bf')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -245,7 +245,7 @@ export const BranchesPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الحالة</label>
+          <label className="form-label">{t('auto.الحالة_252d72')}</label>
           <select
             className="input-field"
             value={statusFilter}
@@ -254,9 +254,9 @@ export const BranchesPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الحالات</option>
-            <option value="true">النشطة فقط</option>
-            <option value="false">المعطلة فقط</option>
+            <option value="">{t('auto.كافة_الحالات_3318a9')}</option>
+            <option value="true">{t('auto.النشطة_فقط_4eb69d')}</option>
+            <option value="false">{t('auto.المعطلة_فقط_6b59cd')}</option>
           </select>
         </div>
       </div>
@@ -273,19 +273,18 @@ export const BranchesPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>اسم الفرع</th>
-                  <th style={{ padding: '1rem' }}>كود الفرع</th>
-                  <th style={{ padding: '1rem' }}>الموقع / العنوان</th>
-                  <th style={{ padding: '1rem' }}>الحالة</th>
-                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.اسم_الفرع_61a0aa')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.كود_الفرع_6d339b')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الموقع_العنوان_136885')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                 </tr>
               </thead>
               <tbody>
                 {branches.length === 0 ? (
                   <tr>
                     <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد فروع مسجلة مطابقة للبحث
-                    </td>
+                      {t('auto.لا_توجد_فروع_مسجلة_مطابقة_للبح_384aec')}</td>
                   </tr>
                 ) : (
                   branches.map((b) => (
@@ -299,7 +298,7 @@ export const BranchesPage: React.FC = () => {
                       <td style={{ padding: '1rem' }}>
                         <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '1.05rem' }}>{b.name}</div>
                         {b.phone && (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>هاتف: {b.phone}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.هاتف_5b5965')}{b.phone}</div>
                         )}
                       </td>
                       <td style={{ padding: '1rem' }}>
@@ -311,16 +310,15 @@ export const BranchesPage: React.FC = () => {
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                           <MapPin size={14} color="#60a5fa" />
-                          <span>{b.location || b.address || 'غير محدد'}</span>
+                          <span>{b.location || b.address || t('auto.غير_محدد_1567b8')}</span>
                         </div>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         {b.isActive ? (
-                          <span className="badge badge-success">نشط</span>
+                          <span className="badge badge-success">{t('auto.نشط_185349')}</span>
                         ) : (
                           <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>
-                            معطل
-                          </span>
+                            {t('auto.معطل_2f1ba8')}</span>
                         )}
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
@@ -330,7 +328,7 @@ export const BranchesPage: React.FC = () => {
                             onClick={() => handleOpenEdit(b)}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title="تعديل الفرع"
+                            title={t('auto.تعديل_الفرع_acfb26')}
                           >
                             <Edit2 size={15} />
                           </button>
@@ -344,7 +342,7 @@ export const BranchesPage: React.FC = () => {
                               color: '#f87171',
                               borderColor: 'rgba(239, 68, 68, 0.25)',
                             }}
-                            title="حذف الفرع"
+                            title={t('auto.حذف_الفرع_30012f')}
                           >
                             <Trash2 size={15} />
                           </button>
@@ -370,8 +368,7 @@ export const BranchesPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} فرع
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.فرع_184029')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -379,17 +376,15 @@ export const BranchesPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -408,7 +403,7 @@ export const BranchesPage: React.FC = () => {
       <Modal
         isOpen={!!deletingBranch}
         onClose={() => setDeletingBranch(null)}
-        title="تأكيد حذف الفرع"
+        title={t('auto.تأكيد_حذف_الفرع_1c70b3')}
         icon={<Trash2 size={22} color="#f87171" />}
         maxWidth="sm"
         footer={
@@ -419,8 +414,7 @@ export const BranchesPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeleting}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleConfirmDelete}
@@ -429,14 +423,13 @@ export const BranchesPage: React.FC = () => {
               disabled={isDeleting}
             >
               {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تأكيد الحذف</span>
+              <span>{t('auto.تأكيد_الحذف_4af57e')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          هل أنت متأكد من رغبتك في حذف الفرع <strong style={{ color: '#ffffff' }}>"{deletingBranch?.name}"</strong>؟ هذا الإجراء لا يمكن التراجع عنه.
-        </p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_4c8746')}<strong style={{ color: '#ffffff' }}>"{deletingBranch?.name}"</strong>{t('auto.هذا_الإجراء_لا_يمكن_التراجع_عن_66852b')}</p>
       </Modal>
     </div>
   );

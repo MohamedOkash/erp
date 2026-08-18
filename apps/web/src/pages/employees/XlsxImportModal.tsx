@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React, { useState } from 'react';
 import { employeesApi } from '../../api/employees.api';
 import type { ImportUploadResponse } from '../../api/employees.api';
@@ -24,6 +25,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
@@ -43,7 +45,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      setError('يرجى اختيار ملف إكسيل (.xlsx)');
+      setError(t('auto.يرجى_اختيار_ملف_إكسيل_xlsx_8bf257'));
       return;
     }
 
@@ -53,7 +55,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
       const res = await employeesApi.uploadXlsx(file);
       setImportResult(res);
     } catch (err: any) {
-      setError(err.message || 'فشل رفع ومعالجة ملف الإكسيل');
+      setError(err.message || t('auto.فشل_رفع_ومعالجة_ملف_الإكسيل_473084'));
     } finally {
       setIsUploading(false);
     }
@@ -66,13 +68,13 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
     setError(null);
     try {
       const res = await employeesApi.commitImport(importResult.jobId);
-      setCommitSuccess(res.message || 'تم اعتماد وإدراج بيانات الموظفين الصالحة بنجاح!');
+      setCommitSuccess(res.message || t('auto.تم_اعتماد_وإدراج_بيانات_الموظف_6b44a3'));
       setTimeout(() => {
         onSuccess();
         onClose();
       }, 2000);
     } catch (err: any) {
-      setError(err.message || 'فشل اعتماد البيانات المستوردة');
+      setError(err.message || t('auto.فشل_اعتماد_البيانات_المستوردة_935e5e'));
     } finally {
       setIsCommitting(false);
     }
@@ -89,15 +91,14 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="استيراد بيانات الموظفين من ملف Excel (.xlsx)"
+      title={t('auto.استيراد_بيانات_الموظفين_من_ملف_88b6e8')}
       icon={<FileSpreadsheet size={22} color="#10b981" />}
       maxWidth="2xl"
       footer={
         !importResult ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
             <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isUploading}>
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleUpload}
@@ -106,7 +107,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
               style={{ gap: '0.5rem' }}
             >
               {isUploading ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
-              <span>رفع وتحليل الملف</span>
+              <span>{t('auto.رفع_وتحليل_الملف_105f11')}</span>
             </button>
           </div>
         ) : (
@@ -119,13 +120,12 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
               disabled={isCommitting}
             >
               <RefreshCw size={14} />
-              <span>رفع ملف آخر</span>
+              <span>{t('auto.رفع_ملف_آخر_19ea5f')}</span>
             </button>
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isCommitting}>
-                إغلاق
-              </button>
+                {t('auto.إغلاق_59834d')}</button>
               <button
                 type="button"
                 onClick={handleCommit}
@@ -134,7 +134,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 style={{ gap: '0.5rem', background: '#059669' }}
               >
                 {isCommitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                <span>اعتماد السجلات الصالحة ({importResult.summary.valid})</span>
+                <span>{t('auto.اعتماد_السجلات_الصالحة_485f47')}{importResult.summary.valid})</span>
               </button>
             </div>
           </div>
@@ -198,11 +198,10 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
             >
               <UploadCloud size={48} color="#60a5fa" style={{ margin: '0 auto 1rem' }} />
               <h4 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                {file ? file.name : 'اختر ملف Excel (.xlsx) لرفعه وفحصه'}
+                {file ? file.name : t('auto.اختر_ملف_Excel_xlsx_لرفعه_وفحص_6524e3')}
               </h4>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                يتم فحص الأعمدة والهويات وتوليد تقرير مرحلي قبل إدراج البيانات في قاعدة البيانات
-              </p>
+                {t('auto.يتم_فحص_الأعمدة_والهويات_وتولي_3cedfc')}</p>
 
               <input
                 id="xlsx-upload-input"
@@ -229,7 +228,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 className="glass-card"
                 style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(30, 41, 59, 0.6)' }}
               >
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>الإجمالي</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.الإجمالي_6307e4')}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>{importResult.summary.total}</div>
               </div>
 
@@ -237,7 +236,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 className="glass-card"
                 style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(16, 185, 129, 0.15)' }}
               >
-                <div style={{ fontSize: '0.75rem', color: '#34d399' }}>صالح للاعتماد</div>
+                <div style={{ fontSize: '0.75rem', color: '#34d399' }}>{t('auto.صالح_للاعتماد_fe44bf')}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#34d399' }}>
                   {importResult.summary.valid}
                 </div>
@@ -247,7 +246,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 className="glass-card"
                 style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(245, 158, 11, 0.15)' }}
               >
-                <div style={{ fontSize: '0.75rem', color: '#fbbf24' }}>مكرر (Duplicate)</div>
+                <div style={{ fontSize: '0.75rem', color: '#fbbf24' }}>{t('auto.مكرر_Duplicate_6502bc')}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#fbbf24' }}>
                   {importResult.summary.duplicate}
                 </div>
@@ -257,7 +256,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 className="glass-card"
                 style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(239, 68, 68, 0.15)' }}
               >
-                <div style={{ fontSize: '0.75rem', color: '#f87171' }}>غير صالح (Invalid)</div>
+                <div style={{ fontSize: '0.75rem', color: '#f87171' }}>{t('auto.غير_صالح_Invalid_c51e31')}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#f87171' }}>
                   {importResult.summary.invalid}
                 </div>
@@ -278,10 +277,10 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                 <thead style={{ position: 'sticky', top: 0, background: 'rgba(15, 23, 42, 0.95)', zIndex: 10 }}>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     <th style={{ padding: '0.6rem 0.75rem' }}>#</th>
-                    <th style={{ padding: '0.6rem 0.75rem' }}>الاسم</th>
-                    <th style={{ padding: '0.6rem 0.75rem' }}>رقم الهوية</th>
-                    <th style={{ padding: '0.6rem 0.75rem' }}>الأجر</th>
-                    <th style={{ padding: '0.6rem 0.75rem' }}>الحالة</th>
+                    <th style={{ padding: '0.6rem 0.75rem' }}>{t('auto.الاسم_59a39c')}</th>
+                    <th style={{ padding: '0.6rem 0.75rem' }}>{t('auto.رقم_الهوية_d589ba')}</th>
+                    <th style={{ padding: '0.6rem 0.75rem' }}>{t('auto.الأجر_59a38c')}</th>
+                    <th style={{ padding: '0.6rem 0.75rem' }}>{t('auto.الحالة_252d72')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -305,12 +304,10 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                       <td style={{ padding: '0.6rem 0.75rem' }}>
                         {r.status === 'valid' ? (
                           <span className="badge badge-success" style={{ fontSize: '0.7rem' }}>
-                            <Check size={11} /> صالح
-                          </span>
+                            <Check size={11} /> {t('auto.صالح_2ea327')}</span>
                         ) : r.status === 'duplicate' ? (
                           <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
-                            <AlertTriangle size={11} /> مكرر
-                          </span>
+                            <AlertTriangle size={11} /> {t('auto.مكرر_2f1df3')}</span>
                         ) : (
                           <span
                             className="badge badge-accent"
@@ -321,8 +318,7 @@ export const XlsxImportModal: React.FC<XlsxImportModalProps> = ({
                             }}
                             title={r.errors?.join(', ')}
                           >
-                            <AlertCircle size={11} /> غير صالح
-                          </span>
+                            <AlertCircle size={11} /> {t('auto.غير_صالح_15605e')}</span>
                         )}
                       </td>
                     </tr>

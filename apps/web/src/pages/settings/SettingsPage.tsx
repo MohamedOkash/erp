@@ -44,13 +44,13 @@ export const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'company' | 'rates' | 'roles' | 'calculations'>('company');
 
   // Company Settings Form State
-  const [companyName, setCompanyName] = useState('شركة ساكوديكو للمقاولات العامة (SACODECO)');
+  const [companyName, setCompanyName] = useState(t('auto.شركة_ساكوديكو_للمقاولات_العامة_4ba917'));
   const [crNumber, setCrNumber] = useState('1010894210');
   const [vatNumber, setVatNumber] = useState('310459821000003');
-  const [currency, setCurrency] = useState('SAR - ريال سعودي');
+  const [currency, setCurrency] = useState(t('auto.SAR_ريال_سعودي_221dcf'));
   const [timezone, setTimezone] = useState('Asia/Riyadh (GMT+3)');
-  const [country, setCountry] = useState('المملكة العربية السعودية (KSA)');
-  const [address, setAddress] = useState('الرياض - حي الملز - طريق صلاح الدين الأيوبي');
+  const [country, setCountry] = useState(t('auto.المملكة_العربية_السعودية_KSA_7b4617'));
+  const [address, setAddress] = useState(t('auto.الرياض_حي_الملز_طريق_صلاح_الدي_2288a3'));
   const [phone, setPhone] = useState('+966 11 478 9900');
   const [email, setEmail] = useState('info@sacodeco-erp.sa');
   const [isSavingCompany, setIsSavingCompany] = useState(false);
@@ -97,7 +97,7 @@ export const SettingsPage: React.FC = () => {
       const data = await laborRatesApi.list();
       setRates(data || []);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل معدلات أجور العمالة');
+      setError(err.message || t('auto.فشل_تحميل_معدلات_أجور_العمالة_7414ec'));
     } finally {
       setIsLoadingRates(false);
     }
@@ -128,7 +128,7 @@ export const SettingsPage: React.FC = () => {
     setIsSavingCompany(true);
     setTimeout(() => {
       setIsSavingCompany(false);
-      setSuccessMsg('تم حفظ وتحديث بيانات الشركة والإعدادات العامة بنجاح.');
+      setSuccessMsg(t('auto.تم_حفظ_وتحديث_بيانات_الشركة_وا_7ef9d2'));
     }, 400);
   };
 
@@ -142,10 +142,10 @@ export const SettingsPage: React.FC = () => {
       if (res && res.settings) {
         setCalcSettings(res.settings);
       }
-      setSuccessMsg('تم حفظ وتحديث جميع معاملات المعادلات الرياضية والتشغيلية بنجاح!');
+      setSuccessMsg(t('auto.تم_حفظ_وتحديث_جميع_معاملات_الم_23a71d'));
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'فشل حفظ معاملات الحساب');
+      setError(err?.response?.data?.message || t('auto.فشل_حفظ_معاملات_الحساب_70579d'));
     } finally {
       setIsSavingCalc(false);
     }
@@ -180,15 +180,15 @@ export const SettingsPage: React.FC = () => {
     try {
       if (editingRate) {
         await laborRatesApi.update(editingRate.id, rateFormData);
-        setSuccessMsg('تم تحديث معدل الأجر بنجاح.');
+        setSuccessMsg(t('auto.تم_تحديث_معدل_الأجر_بنجاح_5e06a7'));
       } else {
         await laborRatesApi.create(rateFormData);
-        setSuccessMsg('تم إضافة معدل الأجر الجديد بنجاح.');
+        setSuccessMsg(t('auto.تم_إضافة_معدل_الأجر_الجديد_بنج_598548'));
       }
       setShowRateModal(false);
       loadRates();
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ معدل الأجر');
+      setError(err.message || t('auto.فشل_حفظ_معدل_الأجر_34a866'));
     } finally {
       setIsSavingRate(false);
     }
@@ -197,13 +197,13 @@ export const SettingsPage: React.FC = () => {
   const getRateTypeLabel = (type: string) => {
     switch (type) {
       case 'normal':
-        return <span className="badge badge-primary">ساعات العمل العادية (Normal)</span>;
+        return <span className="badge badge-primary">{t('auto.ساعات_العمل_العادية_Normal_29f0bb')}</span>;
       case 'overtime':
-        return <span className="badge badge-accent">ساعات العمل الإضافية (Overtime)</span>;
+        return <span className="badge badge-accent">{t('auto.ساعات_العمل_الإضافية_Overtime_5ebebf')}</span>;
       case 'weekend':
-        return <span className="badge badge-secondary">عطلات ونهاية الأسبوع (Weekend)</span>;
+        return <span className="badge badge-secondary">{t('auto.عطلات_ونهاية_الأسبوع_Weekend_183249')}</span>;
       case 'supervisor':
-        return <span className="badge badge-success">أجر الإشراف الميداني (Supervisor)</span>;
+        return <span className="badge badge-success">{t('auto.أجر_الإشراف_الميداني_Superviso_1fdfaf')}</span>;
       default:
         return <span className="badge badge-secondary">{type}</span>;
     }
@@ -212,7 +212,7 @@ export const SettingsPage: React.FC = () => {
   // Static Permissions Matrix definitions
   const permissionsMatrix = [
     {
-      module: 'بطاقات التحكم والربحية (Control Cards)',
+      module: t('auto.بطاقات_التحكم_والربحية_Control_568f9c'),
       admin: true,
       pm: true,
       engineer: true,
@@ -220,7 +220,7 @@ export const SettingsPage: React.FC = () => {
       accountant: true,
     },
     {
-      module: 'الإنتاجية اليومية والمراحل (Production)',
+      module: t('auto.الإنتاجية_اليومية_والمراحل_Pro_3383ca'),
       admin: true,
       pm: true,
       engineer: true,
@@ -228,7 +228,7 @@ export const SettingsPage: React.FC = () => {
       accountant: false,
     },
     {
-      module: 'الحضور والانصراف والإضافي (Attendance)',
+      module: t('auto.الحضور_والانصراف_والإضافي_Atte_572526'),
       admin: true,
       pm: true,
       engineer: true,
@@ -236,7 +236,7 @@ export const SettingsPage: React.FC = () => {
       accountant: true,
     },
     {
-      module: 'التكاليف والمصروفات (Costs & Expenses)',
+      module: t('auto.التكاليف_والمصروفات_Costs_Expe_2bafa4'),
       admin: true,
       pm: true,
       engineer: false,
@@ -244,7 +244,7 @@ export const SettingsPage: React.FC = () => {
       accountant: true,
     },
     {
-      module: 'الحوافز والمكافآت (Incentives Engine)',
+      module: t('auto.الحوافز_والمكافآت_Incentives_E_12209c'),
       admin: true,
       pm: true,
       engineer: false,
@@ -252,7 +252,7 @@ export const SettingsPage: React.FC = () => {
       accountant: true,
     },
     {
-      module: 'المقايسة وتقدم التنفيذ (BOQ Progress)',
+      module: t('auto.المقايسة_وتقدم_التنفيذ_BOQ_Pro_6739b1'),
       admin: true,
       pm: true,
       engineer: true,
@@ -260,7 +260,7 @@ export const SettingsPage: React.FC = () => {
       accountant: true,
     },
     {
-      module: 'الأرشيف والمستندات (Documents Archive)',
+      module: t('auto.الأرشيف_والمستندات_Documents_A_639f4a'),
       admin: true,
       pm: true,
       engineer: true,
@@ -268,7 +268,7 @@ export const SettingsPage: React.FC = () => {
       accountant: true,
     },
     {
-      module: 'إعدادات المنظومة والأسعار (Settings & Rates)',
+      module: t('auto.إعدادات_المنظومة_والأسعار_Sett_68f789'),
       admin: true,
       pm: false,
       engineer: false,
@@ -279,29 +279,29 @@ export const SettingsPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'المنشأة والمقر',
+      label: t('auto.المنشأة_والمقر_27f3d3'),
       value: 'SACODECO',
-      helper: 'المملكة العربية السعودية',
+      helper: t('auto.المملكة_العربية_السعودية_6d9e78'),
       icon: <Building size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'العملة المحاسبية المعتمدة',
+      label: t('auto.العملة_المحاسبية_المعتمدة_47ffec'),
       value: 'SAR',
-      helper: 'ريال سعودي',
+      helper: t('auto.ريال_سعودي_ee1167'),
       icon: <DollarSign size={22} />,
       color: '#34d399',
     },
     {
-      label: 'فئات معدلات الأجور',
+      label: t('auto.فئات_معدلات_الأجور_4bc4be'),
       value: `${rates.length} فئات`,
-      helper: 'تُطبق آليًا على الحضور',
+      helper: t('auto.ت_طبق_آلي_ا_على_الحضور_37fc3f'),
       icon: <Briefcase size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'المستخدم الحالي',
-      value: user?.fullName || user?.username || 'مدير النظام',
+      label: t('auto.المستخدم_الحالي_d5b879'),
+      value: user?.fullName || user?.username || t('auto.مدير_النظام_2725af'),
       helper: `الأدوار: ${(user?.roles || []).map((r) => r.roleName || r.roleCode).join(', ') || 'admin'}`,
       icon: <Shield size={22} />,
       color: '#a78bfa',
@@ -410,7 +410,7 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <Building size={16} />
-          <span>بيانات الشركة والمنظومة</span>
+          <span>{t('auto.بيانات_الشركة_والمنظومة_171de6')}</span>
         </button>
 
         <button
@@ -430,7 +430,7 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <DollarSign size={16} />
-          <span>معدلات وتسعير أجور العمالة ({rates.length})</span>
+          <span>{t('auto.معدلات_وتسعير_أجور_العمالة_136378')}{rates.length})</span>
         </button>
 
         <button
@@ -450,7 +450,7 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <Users size={16} />
-          <span>المستخدمون ومصفوفة الصلاحيات (RBAC)</span>
+          <span>{t('auto.المستخدمون_ومصفوفة_الصلاحيات_R_325e3e')}</span>
         </button>
 
         <button
@@ -470,7 +470,7 @@ export const SettingsPage: React.FC = () => {
           }}
         >
           <Calculator size={16} color="#60a5fa" />
-          <span>معادلات الحساب والتشغيل (Calculation Settings)</span>
+          <span>{t('auto.معادلات_الحساب_والتشغيل_Calcul_2528b9')}</span>
         </button>
       </div>
 
@@ -482,7 +482,7 @@ export const SettingsPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">
                   <Building size={14} />
-                  <span>اسم الشركة الرسمي</span>
+                  <span>{t('auto.اسم_الشركة_الرسمي_4a8a8a')}</span>
                 </label>
                 <input
                   type="text"
@@ -494,7 +494,7 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">رقم السجل التجاري (CR Number)</label>
+                <label className="form-label">{t('auto.رقم_السجل_التجاري_CR_Number_208a66')}</label>
                 <input
                   type="text"
                   className="input-field"
@@ -505,7 +505,7 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">الرقم الضريبي (VAT / Tax ID)</label>
+                <label className="form-label">{t('auto.الرقم_الضريبي_VAT_Tax_ID_25a41b')}</label>
                 <input
                   type="text"
                   className="input-field"
@@ -518,7 +518,7 @@ export const SettingsPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">
                   <DollarSign size={14} />
-                  <span>العملة المحاسبية الرئيسية</span>
+                  <span>{t('auto.العملة_المحاسبية_الرئيسية_6b1e4b')}</span>
                 </label>
                 <input
                   type="text"
@@ -532,7 +532,7 @@ export const SettingsPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">
                   <Globe size={14} />
-                  <span>الدولة والمنطقة</span>
+                  <span>{t('auto.الدولة_والمنطقة_7fc2da')}</span>
                 </label>
                 <input
                   type="text"
@@ -546,7 +546,7 @@ export const SettingsPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">
                   <Clock size={14} />
-                  <span>النطاق الزمني والتوقيت</span>
+                  <span>{t('auto.النطاق_الزمني_والتوقيت_f0b7e3')}</span>
                 </label>
                 <input
                   type="text"
@@ -558,7 +558,7 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">العنوان والمقر الرئيسي</label>
+                <label className="form-label">{t('auto.العنوان_والمقر_الرئيسي_75403e')}</label>
                 <input
                   type="text"
                   className="input-field"
@@ -569,7 +569,7 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">هاتف التواصل</label>
+                <label className="form-label">{t('auto.هاتف_التواصل_209c86')}</label>
                 <input
                   type="text"
                   className="input-field"
@@ -579,7 +579,7 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">البريد الإلكتروني الرسمي</label>
+                <label className="form-label">{t('auto.البريد_الإلكتروني_الرسمي_6d10e2')}</label>
                 <input
                   type="email"
                   className="input-field"
@@ -600,7 +600,7 @@ export const SettingsPage: React.FC = () => {
             >
               <button type="submit" className="btn btn-primary" disabled={isSavingCompany} style={{ gap: '0.5rem' }}>
                 {isSavingCompany ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                <span>حفظ التعديلات العامة</span>
+                <span>{t('auto.حفظ_التعديلات_العامة_3b1bd8')}</span>
               </button>
             </div>
           </form>
@@ -619,15 +619,14 @@ export const SettingsPage: React.FC = () => {
             }}
           >
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>جدول تسعير ومعدلات ساعات وأيام العمل</h3>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{t('auto.جدول_تسعير_ومعدلات_ساعات_وأيام_630f92')}</h3>
               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                تُستخدم هذه المعدلات لاحتساب تكاليف الأجور تلقائيًا من واقع سجلات الحضور الميداني
-              </p>
+                {t('auto.ت_ستخدم_هذه_المعدلات_لاحتساب_ت_5817ed')}</p>
             </div>
 
             <button onClick={handleOpenCreateRate} className="btn btn-primary" style={{ gap: '0.4rem' }}>
               <Plus size={16} />
-              <span>إضافة معدل أجر</span>
+              <span>{t('auto.إضافة_معدل_أجر_73da77')}</span>
             </button>
           </div>
 
@@ -642,19 +641,18 @@ export const SettingsPage: React.FC = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                   <thead>
                     <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                      <th style={{ padding: '1rem' }}>فئة ونوع الأجر</th>
-                      <th style={{ padding: '1rem' }}>الأجر بالساعة (SAR/Hour)</th>
-                      <th style={{ padding: '1rem' }}>الأجر اليومي (SAR/Day)</th>
-                      <th style={{ padding: '1rem' }}>تاريخ بدء السريان</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.فئة_ونوع_الأجر_2a8bed')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.الأجر_بالساعة_SAR_Hour_1f9e77')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.الأجر_اليومي_SAR_Day_119f30')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.تاريخ_بدء_السريان_1d317f')}</th>
+                      <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rates.length === 0 ? (
                       <tr>
                         <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                          لا توجد معدلات أجور مسجلة
-                        </td>
+                          {t('auto.لا_توجد_معدلات_أجور_مسجلة_5b48d4')}</td>
                       </tr>
                     ) : (
                       rates.map((r) => (
@@ -683,7 +681,7 @@ export const SettingsPage: React.FC = () => {
                               onClick={() => handleOpenEditRate(r)}
                               className="btn btn-secondary"
                               style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                              title="تعديل المعدل"
+                              title={t('auto.تعديل_المعدل_4f288e')}
                             >
                               <Edit2 size={15} />
                             </button>
@@ -726,7 +724,7 @@ export const SettingsPage: React.FC = () => {
                   {user?.fullName || user?.username}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-                  اسم المستخدم: {user?.username} • معرف النظام: {user?.id}
+                  {t('auto.اسم_المستخدم_396786')}{user?.username} {t('auto.معرف_النظام_7f5c68')}{user?.id}
                 </div>
               </div>
             </div>
@@ -744,22 +742,21 @@ export const SettingsPage: React.FC = () => {
           {/* Permissions Matrix */}
           <div className="glass-card" style={{ overflow: 'hidden' }}>
             <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-subtle)' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>مصفوفة صلاحيات الأدوار القياسية (RBAC Matrix)</h3>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{t('auto.مصفوفة_صلاحيات_الأدوار_القياسي_65feb0')}</h3>
               <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                توزيع صلاحيات الوصول والتعديل عبر وحدات النظام بحسب المسمى الوظيفي
-              </p>
+                {t('auto.توزيع_صلاحيات_الوصول_والتعديل__31c24e')}</p>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.88rem' }}>
                 <thead>
                   <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <th style={{ padding: '1rem', textAlign: 'right' }}>الوحدة / الشاشة</th>
-                    <th style={{ padding: '1rem' }}>مدير النظام (Admin)</th>
-                    <th style={{ padding: '1rem' }}>مدير المشروع (PM)</th>
-                    <th style={{ padding: '1rem' }}>مهندس الموقع (Engineer)</th>
-                    <th style={{ padding: '1rem' }}>المشرف الميداني (Supervisor)</th>
-                    <th style={{ padding: '1rem' }}>المحاسب المالي (Accountant)</th>
+                    <th style={{ padding: '1rem', textAlign: 'right' }}>{t('auto.الوحدة_الشاشة_4ec293')}</th>
+                    <th style={{ padding: '1rem' }}>{t('auto.مدير_النظام_Admin_7feaa4')}</th>
+                    <th style={{ padding: '1rem' }}>{t('auto.مدير_المشروع_PM_7e434e')}</th>
+                    <th style={{ padding: '1rem' }}>{t('auto.مهندس_الموقع_Engineer_1a41e2')}</th>
+                    <th style={{ padding: '1rem' }}>{t('auto.المشرف_الميداني_Supervisor_34fb30')}</th>
+                    <th style={{ padding: '1rem' }}>{t('auto.المحاسب_المالي_Accountant_369374')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -847,17 +844,15 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
-                  معاملات المعادلات الحسابية والتشغيلية (Dynamic Calculation Parameters)
-                </h3>
+                  {t('auto.معاملات_المعادلات_الحسابية_وال_56ada9')}</h3>
                 <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  جميع الأرقام والمعادلات في النظام هي قيم ابتدائية قابلة للتعديل والتحكم الكامل في أي لحظة. لا توجد ثوابت مقدسة.
-                </p>
+                  {t('auto.جميع_الأرقام_والمعادلات_في_الن_c97c5c')}</p>
               </div>
             </div>
             {isLoadingCalc && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                 <Loader2 size={16} className="animate-spin" />
-                <span>جاري تحميل الإعدادات...</span>
+                <span>{t('auto.جاري_تحميل_الإعدادات_3ca3f2')}</span>
               </div>
             )}
           </div>
@@ -870,15 +865,14 @@ export const SettingsPage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <Clock size={18} color="#60a5fa" />
                   <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-                    معايير أوقات وساعات العمل
-                  </h4>
+                    {t('auto.معايير_أوقات_وساعات_العمل_769179')}</h4>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>ساعات العمل اليومية القياسية *</span>
-                      <span style={{ color: '#60a5fa', fontWeight: 700 }}>ساعة / يوم</span>
+                      <span>{t('auto.ساعات_العمل_اليومية_القياسية_3e4c16')}</span>
+                      <span style={{ color: '#60a5fa', fontWeight: 700 }}>{t('auto.ساعة_يوم_141ac2')}</span>
                     </label>
                     <input
                       type="number"
@@ -891,14 +885,13 @@ export const SettingsPage: React.FC = () => {
                       onChange={(e) => setCalcSettings({ ...calcSettings, hours_per_work_day: Number(e.target.value) })}
                     />
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
-                      تُستخدم لحساب إنتاجية الساعة الفردية (Daily Target ÷ Crew Hours) وتكلفة أجر الساعة للعمالة.
-                    </span>
+                      {t('auto.ت_ستخدم_لحساب_إنتاجية_الساعة_ا_248e3c')}</span>
                   </div>
 
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>معامل احتساب الوقت الإضافي (Overtime Multiplier) *</span>
-                      <span style={{ color: '#60a5fa', fontWeight: 700 }}>مضاعف (Multiplier)</span>
+                      <span>{t('auto.معامل_احتساب_الوقت_الإضافي_Ove_7f8841')}</span>
+                      <span style={{ color: '#60a5fa', fontWeight: 700 }}>{t('auto.مضاعف_Multiplier_698a30')}</span>
                     </label>
                     <input
                       type="number"
@@ -911,8 +904,7 @@ export const SettingsPage: React.FC = () => {
                       onChange={(e) => setCalcSettings({ ...calcSettings, overtime_multiplier: Number(e.target.value) })}
                     />
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
-                      مضاعف أجر الساعة لساعات العمل الإضافية (مثال: 1.5 يعني أجر ساعة ونصف لكل ساعة إضافية).
-                    </span>
+                      {t('auto.مضاعف_أجر_الساعة_لساعات_العمل__4c34ed')}</span>
                   </div>
                 </div>
               </div>
@@ -922,30 +914,28 @@ export const SettingsPage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <Sliders size={18} color="#34d399" />
                   <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-                    دقة الحسابات والتقريب العشري
-                  </h4>
+                    {t('auto.دقة_الحسابات_والتقريب_العشري_664eb3')}</h4>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>دقة التقريب العشري (Rounding Decimals) *</span>
-                      <span style={{ color: '#34d399', fontWeight: 700 }}>خانات عشرية</span>
+                      <span>{t('auto.دقة_التقريب_العشري_Rounding_De_24886d')}</span>
+                      <span style={{ color: '#34d399', fontWeight: 700 }}>{t('auto.خانات_عشرية_ed67cb')}</span>
                     </label>
                     <select
                       className="input-field"
                       value={calcSettings.rounding_decimals ?? 2}
                       onChange={(e) => setCalcSettings({ ...calcSettings, rounding_decimals: Number(e.target.value) })}
                     >
-                      <option value="0">0 خانات (أرقام صحيحة فقط)</option>
-                      <option value="1">1 خانة عشرية (مثال: 21.5)</option>
-                      <option value="2">2 خانات عشرية (مثال: 21.60) - قياسي معتمد</option>
-                      <option value="3">3 خانات عشرية (مثال: 21.605)</option>
-                      <option value="4">4 خانات عشرية (مثال: 21.6052)</option>
+                      <option value="0">{t('auto.0_خانات_أرقام_صحيحة_فقط_35008c')}</option>
+                      <option value="1">{t('auto.1_خانة_عشرية_مثال_21_5_4743e1')}</option>
+                      <option value="2">{t('auto.2_خانات_عشرية_مثال_21_60_قياسي_571d35')}</option>
+                      <option value="3">{t('auto.3_خانات_عشرية_مثال_21_605_48a8dd')}</option>
+                      <option value="4">{t('auto.4_خانات_عشرية_مثال_21_6052_a3d417')}</option>
                     </select>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
-                      تُحدد دقة تقريب تكاليف الوحدة، هوامش الربح، والكميات ونسب الإنجاز في بطاقات التحكم والتقارير.
-                    </span>
+                      {t('auto.ت_حدد_دقة_تقريب_تكاليف_الوحدة__990b84')}</span>
                   </div>
                 </div>
               </div>
@@ -955,13 +945,12 @@ export const SettingsPage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <HardHat size={18} color="#fbbf24" />
                   <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-                    تكوين طاقم العمل الافتراضي (Default Crew)
-                  </h4>
+                    {t('auto.تكوين_طاقم_العمل_الافتراضي_Def_60f13b')}</h4>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label">عدد الفنيين (المعلمين) *</label>
+                    <label className="form-label">{t('auto.عدد_الفنيين_المعلمين_40b645')}</label>
                     <input
                       type="number"
                       min="0"
@@ -974,7 +963,7 @@ export const SettingsPage: React.FC = () => {
                   </div>
 
                   <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label">عدد المساعدين (العمال) *</label>
+                    <label className="form-label">{t('auto.عدد_المساعدين_العمال_70fe42')}</label>
                     <input
                       type="number"
                       min="0"
@@ -987,8 +976,7 @@ export const SettingsPage: React.FC = () => {
                   </div>
                 </div>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem', display: 'block' }}>
-                  التركيبة الافتراضية لطاقم العمل في بطاقات التحكم في حال عدم تحديد تكوين مخصص للمرحلة التنفيذية.
-                </span>
+                  {t('auto.التركيبة_الافتراضية_لطاقم_العم_5d7d72')}</span>
               </div>
 
               {/* Card 4: Default Wage & Productivity Rates */}
@@ -996,15 +984,14 @@ export const SettingsPage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                   <Activity size={18} color="#a78bfa" />
                   <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-                    الإنتاجيات واليوميات القياسية المرجعية
-                  </h4>
+                    {t('auto.الإنتاجيات_واليوميات_القياسية__37030c')}</h4>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>معدل الإنتاج القياسي اليومي للبند *</span>
-                      <span style={{ color: '#a78bfa', fontWeight: 700 }}>وحدة / يوم</span>
+                      <span>{t('auto.معدل_الإنتاج_القياسي_اليومي_لل_423e65')}</span>
+                      <span style={{ color: '#a78bfa', fontWeight: 700 }}>{t('auto.وحدة_يوم_77101c')}</span>
                     </label>
                     <input
                       type="number"
@@ -1019,7 +1006,7 @@ export const SettingsPage: React.FC = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label">يومية الفني الافتراضية *</label>
+                      <label className="form-label">{t('auto.يومية_الفني_الافتراضية_44002a')}</label>
                       <input
                         type="number"
                         min="0"
@@ -1032,7 +1019,7 @@ export const SettingsPage: React.FC = () => {
                     </div>
 
                     <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label">يومية المساعد الافتراضية *</label>
+                      <label className="form-label">{t('auto.يومية_المساعد_الافتراضية_747e1e')}</label>
                       <input
                         type="number"
                         min="0"
@@ -1060,8 +1047,7 @@ export const SettingsPage: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
                 <Info size={18} color="#60a5fa" />
                 <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-                  معاينة حية لتطبيق هذه المعاملات على معادلات المنظومة الحالية
-                </h4>
+                  {t('auto.معاينة_حية_لتطبيق_هذه_المعاملا_a8e04a')}</h4>
               </div>
 
               {(() => {
@@ -1083,40 +1069,34 @@ export const SettingsPage: React.FC = () => {
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                     <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>تكلفة طاقم العمل اليومي</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('auto.تكلفة_طاقم_العمل_اليومي_45ec2c')}</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#60a5fa', marginTop: '0.25rem' }}>
-                        {crewDailyCost} ريال / يوم
-                      </div>
+                        {crewDailyCost} {t('auto.ريال_يوم_48a9da')}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                         ({skilledCrew} × {skilledWage}) + ({unskilledCrew} × {unskilledWage})
                       </div>
                     </div>
 
                     <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>تكلفة أجر العمالة للوحدة القياسية</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('auto.تكلفة_أجر_العمالة_للوحدة_القيا_162ad5')}</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399', marginTop: '0.25rem' }}>
-                        {laborCostPerUnit} ريال / م²
-                      </div>
+                        {laborCostPerUnit} {t('auto.ريال_م_7144d1')}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                        {crewDailyCost} ÷ {perDay} م²
-                      </div>
+                        {crewDailyCost} ÷ {perDay} {t('auto.م_c30d')}</div>
                     </div>
 
                     <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>إنتاجية ساعة العمل للفرد الواحد</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('auto.إنتاجية_ساعة_العمل_للفرد_الواح_235ea6')}</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '0.25rem' }}>
-                        {hourlyPerWorker} م² / (ساعة · فرد)
-                      </div>
+                        {hourlyPerWorker} {t('auto.م_ساعة_فرد_6102b6')}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                        {perDay} ÷ ({totalCrew} أفراد × {hours} ساعات)
-                      </div>
+                        {perDay} ÷ ({totalCrew} {t('auto.أفراد_5900f0')}{hours} {t('auto.ساعات_124688')}</div>
                     </div>
 
                     <div style={{ padding: '1rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>أجر ساعة الإضافي للفني</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('auto.أجر_ساعة_الإضافي_للفني_3812fd')}</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#a78bfa', marginTop: '0.25rem' }}>
-                        {overtimeHourlySkilled} ريال / ساعة
-                      </div>
+                        {overtimeHourlySkilled} {t('auto.ريال_ساعة_3363a4')}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                         ({skilledWage} ÷ {hours}) × {overtime}
                       </div>
@@ -1143,12 +1123,12 @@ export const SettingsPage: React.FC = () => {
                 {isSavingCalc ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    <span>جاري حفظ المعاملات...</span>
+                    <span>{t('auto.جاري_حفظ_المعاملات_2f915f')}</span>
                   </>
                 ) : (
                   <>
                     <Save size={18} />
-                    <span>حفظ وتطبيق جميع المعاملات الحسابية</span>
+                    <span>{t('auto.حفظ_وتطبيق_جميع_المعاملات_الحس_7dd58b')}</span>
                   </>
                 )}
               </button>
@@ -1161,7 +1141,7 @@ export const SettingsPage: React.FC = () => {
       <Modal
         isOpen={showRateModal}
         onClose={() => setShowRateModal(false)}
-        title={editingRate ? 'تعديل معدل الأجر' : 'إضافة معدل أجر جديد'}
+        title={editingRate ? t('auto.تعديل_معدل_الأجر_61efbc') : t('auto.إضافة_معدل_أجر_جديد_b6689a')}
         icon={<DollarSign size={22} color="#34d399" />}
         maxWidth="md"
         footer={
@@ -1172,11 +1152,10 @@ export const SettingsPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isSavingRate}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="labor-rate-form" className="btn btn-primary" disabled={isSavingRate}>
               {isSavingRate ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingRate ? 'حفظ التعديل' : 'إضافة المعدل'}</span>
+              <span>{editingRate ? t('auto.حفظ_التعديل_333adb') : t('auto.إضافة_المعدل_6370ef')}</span>
             </button>
           </div>
         }
@@ -1185,7 +1164,7 @@ export const SettingsPage: React.FC = () => {
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
-                <span>فئة / نوع الأجر</span>
+                <span>{t('auto.فئة_نوع_الأجر_29f36b')}</span>
                 <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <select
@@ -1193,17 +1172,17 @@ export const SettingsPage: React.FC = () => {
                 value={rateFormData.rateType}
                 onChange={(e) => setRateFormData({ ...rateFormData, rateType: e.target.value })}
               >
-                <option value="normal">ساعات العمل العادية (Normal)</option>
-                <option value="overtime">ساعات العمل الإضافية (Overtime)</option>
-                <option value="weekend">عطلات ونهاية الأسبوع (Weekend)</option>
-                <option value="supervisor">أجر الإشراف الميداني (Supervisor)</option>
+                <option value="normal">{t('auto.ساعات_العمل_العادية_Normal_29f0bb')}</option>
+                <option value="overtime">{t('auto.ساعات_العمل_الإضافية_Overtime_5ebebf')}</option>
+                <option value="weekend">{t('auto.عطلات_ونهاية_الأسبوع_Weekend_183249')}</option>
+                <option value="supervisor">{t('auto.أجر_الإشراف_الميداني_Superviso_1fdfaf')}</option>
               </select>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
                 <label className="form-label">
-                  <span>الأجر بالساعة (SAR)</span>
+                  <span>{t('auto.الأجر_بالساعة_SAR_646d5e')}</span>
                   <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -1220,7 +1199,7 @@ export const SettingsPage: React.FC = () => {
 
               <div className="form-group">
                 <label className="form-label">
-                  <span>الأجر اليومي (SAR)</span>
+                  <span>{t('auto.الأجر_اليومي_SAR_1100d0')}</span>
                   <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -1237,7 +1216,7 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">تاريخ بدء السريان</label>
+              <label className="form-label">{t('auto.تاريخ_بدء_السريان_1d317f')}</label>
               <WheelDatePicker
                 value={rateFormData.effectiveFrom || ''}
                 onChange={(val) => setRateFormData({ ...rateFormData, effectiveFrom: val })}

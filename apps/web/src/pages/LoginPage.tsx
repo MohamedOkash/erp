@@ -70,7 +70,11 @@ export const LoginPage: React.FC = () => {
 
   const handleQuickDemoLogin = (demoUsername: string) => {
     setUsername(demoUsername);
-    setPassword('123456');
+    if (demoUsername === 'admin') {
+      setPassword('Admin@2026!Secure');
+    } else {
+      setPassword('123456');
+    }
     setError(null);
   };
 
@@ -226,7 +230,7 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Quick Demo Accounts Selection */}
+        {/* Quick Demo / Role Preset Selection */}
         <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
           <p
             style={{
@@ -237,7 +241,7 @@ export const LoginPage: React.FC = () => {
               fontWeight: 600,
             }}
           >
-            {t('auth.quick_demo')} (123456)
+            {t('auth.quick_demo')}
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>

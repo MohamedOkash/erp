@@ -195,15 +195,14 @@ export const DashboardPage: React.FC = () => {
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Building2 size={20} color="#60a5fa" />
-                  <span>مشاريع التنفيذ الميدانية الجارية</span>
+                  <span>{t('auto.مشاريع_التنفيذ_الميدانية_الجار_137bca')}</span>
                 </h3>
                 <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  متابعة حالة التقدم الفعلي والميزانيات التقديرية
-                </p>
+                  {t('auto.متابعة_حالة_التقدم_الفعلي_والم_16f675')}</p>
               </div>
 
               <Link to="/projects" className="btn btn-secondary" style={{ fontSize: '0.8rem', gap: '0.3rem' }}>
-                <span>عرض الكل</span>
+                <span>{t('auto.عرض_الكل_747a4d')}</span>
                 <ArrowUpRight size={14} />
               </Link>
             </div>
@@ -212,8 +211,7 @@ export const DashboardPage: React.FC = () => {
               <CardsSkeleton count={2} />
             ) : projects.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
-                لا توجد مشاريع جارية حالياً
-              </p>
+                {t('auto.لا_توجد_مشاريع_جارية_حاليا_7c4559')}</p>
             ) : (
               <div
                 style={{
@@ -242,19 +240,19 @@ export const DashboardPage: React.FC = () => {
                           {proj.name}
                         </div>
                         <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>
-                          {proj.status === 'in_progress' ? 'قيد التنفيذ' : proj.status}
+                          {proj.status === 'in_progress' ? t('auto.قيد_التنفيذ_63bb0d') : proj.status}
                         </span>
                       </div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-                        الفرع: {proj.branchName || 'المركز الرئيسي'} {proj.code ? `• كود: ${proj.code}` : ''}
+                        {t('auto.الفرع_25243c')}{proj.branchName || t('auto.المركز_الرئيسي_2b1b66')} {proj.code ? `• كود: ${proj.code}` : ''}
                       </div>
                     </div>
 
                     <div style={{ marginTop: '0.5rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>قيمة العقد:</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{t('auto.قيمة_العقد_7d12b2')}</span>
                         <strong style={{ color: '#34d399' }}>
-                          {proj.contractValue ? `${Number(proj.contractValue).toLocaleString()} SAR` : 'غير محددة'}
+                          {proj.contractValue ? `${Number(proj.contractValue).toLocaleString()} SAR` : t('auto.غير_محددة_6870a9')}
                         </strong>
                       </div>
                     </div>
@@ -277,15 +275,14 @@ export const DashboardPage: React.FC = () => {
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Layers size={20} color="#34d399" />
-                  <span>تحليل ربحية بنود بطاقات التحكم (Control Cards)</span>
+                  <span>{t('auto.تحليل_ربحية_بنود_بطاقات_التحكم_185f9f')}</span>
                 </h3>
                 <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  سعر العقد، تكلفة الوحدة وهامش الربحية التقديري
-                </p>
+                  {t('auto.سعر_العقد_تكلفة_الوحدة_وهامش_ا_3822a4')}</p>
               </div>
 
               <Link to="/control-cards" className="btn btn-secondary" style={{ fontSize: '0.8rem', gap: '0.3rem' }}>
-                <span>كافة البطاقات</span>
+                <span>{t('auto.كافة_البطاقات_37b009')}</span>
                 <ArrowUpRight size={14} />
               </Link>
             </div>
@@ -294,18 +291,17 @@ export const DashboardPage: React.FC = () => {
               <TableSkeleton rows={4} columns={5} />
             ) : controlCards.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
-                لا توجد بنود بطاقات تحكم معرفة
-              </p>
+                {t('auto.لا_توجد_بنود_بطاقات_تحكم_معرفة_6317c4')}</p>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.88rem' }}>
                   <thead>
                     <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                      <th style={{ padding: '0.85rem' }}>اسم البند</th>
-                      <th style={{ padding: '0.85rem' }}>التصنيف</th>
-                      <th style={{ padding: '0.85rem' }}>سعر العقد (SAR)</th>
-                      <th style={{ padding: '0.85rem' }}>هامش الوحدة (SAR)</th>
-                      <th style={{ padding: '0.85rem' }}>نسبة الإنجاز</th>
+                      <th style={{ padding: '0.85rem' }}>{t('auto.اسم_البند_61a04e')}</th>
+                      <th style={{ padding: '0.85rem' }}>{t('auto.التصنيف_7f5b59')}</th>
+                      <th style={{ padding: '0.85rem' }}>{t('auto.سعر_العقد_SAR_1f80cf')}</th>
+                      <th style={{ padding: '0.85rem' }}>{t('auto.هامش_الوحدة_SAR_2af2bb')}</th>
+                      <th style={{ padding: '0.85rem' }}>{t('auto.نسبة_الإنجاز_3259d2')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -376,18 +372,17 @@ export const DashboardPage: React.FC = () => {
             >
               <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <AlertTriangle size={18} color="#f59e0b" />
-                <span>تنبيهات الموقع النشطة</span>
+                <span>{t('auto.تنبيهات_الموقع_النشطة_5c2667')}</span>
               </h3>
               <Link to="/alerts" className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>
-                <span>عرض الكل ({unreadAlertsCount})</span>
+                <span>{t('auto.عرض_الكل_3f1b81')}{unreadAlertsCount})</span>
               </Link>
             </div>
 
             {unreadAlerts.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                 <div style={{ marginBottom: '0.5rem', color: '#34d399', fontSize: '1.5rem' }}>✓</div>
-                لا توجد تنبيهات غير مقروءة حالياً
-              </div>
+                {t('auto.لا_توجد_تنبيهات_غير_مقروءة_حال_ce9bd0')}</div>
             ) : (
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 {unreadAlerts.map((alt) => (
@@ -404,7 +399,7 @@ export const DashboardPage: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                       <strong style={{ color: '#ffffff' }}>{alt.title}</strong>
                       <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
-                        {alt.type === 'alert' ? 'تنبيه عاجل' : alt.type === 'warning' ? 'تحذير' : 'إشعار'}
+                        {alt.type === 'alert' ? t('auto.تنبيه_عاجل_20e4b3') : alt.type === 'warning' ? t('auto.تحذير_59c393') : t('auto.إشعار_598069')}
                       </span>
                     </div>
                     <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
@@ -428,17 +423,16 @@ export const DashboardPage: React.FC = () => {
             >
               <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Clock size={18} color="#60a5fa" />
-                <span>أحدث مخرجات الإنتاجية</span>
+                <span>{t('auto.أحدث_مخرجات_الإنتاجية_174e25')}</span>
               </h3>
               <Link to="/production" className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>
-                <span>السجلات</span>
+                <span>{t('auto.السجلات_7fd60a')}</span>
               </Link>
             </div>
 
             {recentProduction.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem' }}>
-                لا توجد سجلات إنتاجية حديثة
-              </p>
+                {t('auto.لا_توجد_سجلات_إنتاجية_حديثة_618d7a')}</p>
             ) : (
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 {recentProduction.slice(0, 4).map((rec) => (
@@ -453,14 +447,13 @@ export const DashboardPage: React.FC = () => {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                      <strong style={{ color: '#ffffff' }}>{rec.workItemName || 'بند عمل'}</strong>
+                      <strong style={{ color: '#ffffff' }}>{rec.workItemName || t('auto.بند_عمل_4ad23b')}</strong>
                       <span style={{ color: '#34d399', fontWeight: 700 }}>
-                        {rec.actualQuantity || 0} وحدة
-                      </span>
+                        {rec.actualQuantity || 0} {t('auto.وحدة_2f2e97')}</span>
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', justifyContent: 'space-between' }}>
-                      <span>المشروع: {rec.projectName || 'عام'}</span>
-                      <span>{rec.date ? rec.date.split('T')[0] : 'اليوم'}</span>
+                      <span>{t('auto.المشروع_65f4ee')}{rec.projectName || t('auto.عام_1820f7')}</span>
+                      <span>{rec.date ? rec.date.split('T')[0] : t('auto.اليوم_59a422')}</span>
                     </div>
                   </div>
                 ))}
@@ -472,7 +465,7 @@ export const DashboardPage: React.FC = () => {
           <div className="glass-card" style={{ padding: '1.5rem' }}>
             <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Sparkles size={18} color="#f59e0b" />
-              <span>الوصول السريع للمنظومة</span>
+              <span>{t('auto.الوصول_السريع_للمنظومة_c38ea1')}</span>
             </h3>
 
             <div style={{ display: 'grid', gap: '0.5rem' }}>
@@ -482,7 +475,7 @@ export const DashboardPage: React.FC = () => {
                 style={{ justifyContent: 'flex-start', gap: '0.6rem', fontSize: '0.85rem' }}
               >
                 <Award size={16} color="#f59e0b" />
-                <span>محرك احتساب وصرف الحوافز</span>
+                <span>{t('auto.محرك_احتساب_وصرف_الحوافز_62f97f')}</span>
               </Link>
 
               <Link
@@ -491,7 +484,7 @@ export const DashboardPage: React.FC = () => {
                 style={{ justifyContent: 'flex-start', gap: '0.6rem', fontSize: '0.85rem' }}
               >
                 <Upload size={16} color="#60a5fa" />
-                <span>أرشيف المخططات والمستندات</span>
+                <span>{t('auto.أرشيف_المخططات_والمستندات_367338')}</span>
               </Link>
 
               <Link
@@ -500,7 +493,7 @@ export const DashboardPage: React.FC = () => {
                 style={{ justifyContent: 'flex-start', gap: '0.6rem', fontSize: '0.85rem' }}
               >
                 <DollarSign size={16} color="#34d399" />
-                <span>التقارير المحفوظة والمخصصة</span>
+                <span>{t('auto.التقارير_المحفوظة_والمخصصة_45943d')}</span>
               </Link>
 
               <Link
@@ -509,7 +502,7 @@ export const DashboardPage: React.FC = () => {
                 style={{ justifyContent: 'flex-start', gap: '0.6rem', fontSize: '0.85rem' }}
               >
                 <Shield size={16} color="#a78bfa" />
-                <span>إعدادات النظام وأجور العمالة</span>
+                <span>{t('auto.إعدادات_النظام_وأجور_العمالة_4a5d8b')}</span>
               </Link>
             </div>
           </div>

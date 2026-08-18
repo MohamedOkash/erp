@@ -53,7 +53,7 @@ export const DailyReportPage: React.FC = () => {
       const data = await controlCardsApi.getDailyReport(selectedProject, selectedDate);
       setReportRows(data);
     } catch (err: any) {
-      setError(err?.message || 'تعذر تحميل التقرير اليومي');
+      setError(err?.message || t('auto.تعذر_تحميل_التقرير_اليومي_7b0f98'));
     } finally {
       setLoading(false);
     }
@@ -74,19 +74,19 @@ export const DailyReportPage: React.FC = () => {
   const exportCSV = () => {
     if (reportRows.length === 0) return;
     const headers = [
-      'البند',
-      'الكود',
-      'المرحلة',
-      'الوزن %',
-      'الوحدة',
-      'الكمية المنفذة',
-      'المكافئ الموزون',
-      'عدد العمال',
-      'تكلفة العمالة (SAR)',
-      'الإنتاجية القياسية',
-      'نسبة الإنجاز %',
-      'المشرف',
-      'الحالة',
+      t('auto.البند_59a3a2'),
+      t('auto.الكود_59a408'),
+      t('auto.المرحلة_7f2a5b'),
+      t('auto.الوزن_7f0007'),
+      t('auto.الوحدة_252118'),
+      t('auto.الكمية_المنفذة_1fde49'),
+      t('auto.المكافئ_الموزون_7380c3'),
+      t('auto.عدد_العمال_3ed060'),
+      t('auto.تكلفة_العمالة_SAR_4f7c09'),
+      t('auto.الإنتاجية_القياسية_4a2268'),
+      t('auto.نسبة_الإنجاز_2fcd0c'),
+      t('auto.المشرف_25225a'),
+      t('auto.الحالة_252d72'),
     ];
 
     const rows = reportRows.map((r) => [
@@ -151,7 +151,7 @@ export const DailyReportPage: React.FC = () => {
           className="btn btn-secondary"
           style={{ gap: '0.5rem' }}
         >
-          <Download size={16} /> <span>تصدير ملف Excel / CSV</span>
+          <Download size={16} /> <span>{t('auto.تصدير_ملف_Excel_CSV_56fbb1')}</span>
         </button>
       </div>
 
@@ -169,7 +169,7 @@ export const DailyReportPage: React.FC = () => {
       >
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
-            <FolderKanban size={14} /> <span>اختر المشروع</span>
+            <FolderKanban size={14} /> <span>{t('auto.اختر_المشروع_4763b4')}</span>
           </label>
           <select
             className="input-field"
@@ -184,7 +184,7 @@ export const DailyReportPage: React.FC = () => {
 
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
-            <Calendar size={14} /> <span>تاريخ العمل اليومي</span>
+            <Calendar size={14} /> <span>{t('auto.تاريخ_العمل_اليومي_7d3f93')}</span>
           </label>
           <WheelDatePicker
             value={selectedDate}
@@ -207,7 +207,7 @@ export const DailyReportPage: React.FC = () => {
             <Layers size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>إجمالي الكميات المنفذة</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.إجمالي_الكميات_المنفذة_7c07f3')}</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>{totalActual.toLocaleString()}</div>
           </div>
         </div>
@@ -217,7 +217,7 @@ export const DailyReportPage: React.FC = () => {
             <TrendingUp size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>المكافئ الموزون النهائي</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.المكافئ_الموزون_النهائي_40f0ef')}</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#34d399' }}>{totalWeighted.toLocaleString()}</div>
           </div>
         </div>
@@ -227,8 +227,8 @@ export const DailyReportPage: React.FC = () => {
             <Users size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>إجمالي العمال المشتركين</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fbbf24' }}>{totalWorkers} عامل</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.إجمالي_العمال_المشتركين_38c697')}</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fbbf24' }}>{totalWorkers} {t('auto.عامل_2ec042')}</div>
           </div>
         </div>
 
@@ -237,8 +237,8 @@ export const DailyReportPage: React.FC = () => {
             <DollarSign size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>تكلفة عمالة اليوم</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f472b6' }}>{totalLaborCost.toLocaleString()} ريال</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.تكلفة_عمالة_اليوم_78efd5')}</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f472b6' }}>{totalLaborCost.toLocaleString()} {t('auto.ريال_2e8e0f')}</div>
           </div>
         </div>
       </div>
@@ -248,27 +248,27 @@ export const DailyReportPage: React.FC = () => {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem' }}>
             <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto', color: '#34d399' }} />
-            <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>جاري تجميع بيانات التقرير اليومي...</p>
+            <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>{t('auto.جاري_تجميع_بيانات_التقرير_اليو_2e6a05')}</p>
           </div>
         ) : error ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#f87171' }}>{error}</div>
         ) : reportRows.length === 0 ? (
           <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            لا توجد سجلات إنتاج مسجلة لهذا المشروع في تاريخ {selectedDate}
+            {t('auto.لا_توجد_سجلات_إنتاج_مسجلة_لهذا_3c129d')}{selectedDate}
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)', background: 'rgba(15, 23, 42, 0.6)' }}>
-                <th style={{ padding: '0.75rem 1rem' }}>البند وكوده</th>
-                <th style={{ padding: '0.75rem 1rem' }}>المرحلة المنفذة</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>الكمية المنفذة</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>المكافئ الموزون</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>عدد العمال</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>تكلفة العمالة</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>الإنتاجية vs القياسي</th>
-                <th style={{ padding: '0.75rem 1rem' }}>المشرف</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>الحالة</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('auto.البند_وكوده_372c75')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('auto.المرحلة_المنفذة_84025')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.الكمية_المنفذة_1fde49')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.المكافئ_الموزون_7380c3')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.عدد_العمال_3ed060')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.تكلفة_العمالة_20d3fe')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.الإنتاجية_vs_القياسي_6f728f')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('auto.المشرف_25225a')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{t('auto.الحالة_252d72')}</th>
               </tr>
             </thead>
             <tbody>
@@ -283,7 +283,7 @@ export const DailyReportPage: React.FC = () => {
                   <td style={{ padding: '0.75rem 1rem' }}>
                     <div style={{ color: '#ffffff' }}>{row.stageName}</div>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      وزن: {Math.round(row.stagePercentage * 100)}%
+                      {t('auto.وزن_2f2f91')}{Math.round(row.stagePercentage * 100)}%
                     </span>
                   </td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, color: '#ffffff' }}>
@@ -296,8 +296,7 @@ export const DailyReportPage: React.FC = () => {
                     {row.workersCount}
                   </td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 600 }}>
-                    {row.dailyLaborCost} ريال
-                  </td>
+                    {row.dailyLaborCost} {t('auto.ريال_2e8e0f')}</td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
                     <span
                       className={`badge ${
@@ -333,8 +332,7 @@ export const DailyReportPage: React.FC = () => {
                 }}
               >
                 <td colSpan={2} style={{ padding: '1rem', color: '#93c5fd' }}>
-                  الإجمالي لليوم:
-                </td>
+                  {t('auto.الإجمالي_لليوم_6fc91e')}</td>
                 <td style={{ padding: '1rem', textAlign: 'center', color: '#ffffff' }}>
                   {totalActual.toLocaleString()}
                 </td>
@@ -342,11 +340,9 @@ export const DailyReportPage: React.FC = () => {
                   {totalWeighted.toLocaleString()}
                 </td>
                 <td style={{ padding: '1rem', textAlign: 'center', color: '#fbbf24' }}>
-                  {totalWorkers} عامل
-                </td>
+                  {totalWorkers} {t('auto.عامل_2ec042')}</td>
                 <td style={{ padding: '1rem', textAlign: 'center', color: '#f472b6' }}>
-                  {totalLaborCost.toLocaleString()} ريال
-                </td>
+                  {totalLaborCost.toLocaleString()} {t('auto.ريال_2e8e0f')}</td>
                 <td colSpan={3}></td>
               </tr>
             </tfoot>

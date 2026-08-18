@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n/I18nContext';
 import React, { useState, useRef } from 'react';
 import { Modal } from './Modal';
 import { WheelTimePicker } from './WheelPicker';
@@ -30,6 +31,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
   onClose,
   onImportSuccess,
 }) => {
+  const { t } = useI18n();
   // Wizard Step: 1 = upload, 2 = editable preview & review, 3 = commit confirmation
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -66,7 +68,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setError('يرجى اختيار ملف بصمة أولاً');
+      setError(t('auto.يرجى_اختيار_ملف_بصمة_أولا_55a5d3'));
       return;
     }
     setIsUploading(true);
@@ -81,7 +83,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
       setModifiedRows({});
       setStep(2);
     } catch (err: any) {
-      setError(err.message || 'فشل قراءة وتحليل ملف البصمة');
+      setError(err.message || t('auto.فشل_قراءة_وتحليل_ملف_البصمة_3b8825'));
     } finally {
       setIsUploading(false);
     }
@@ -99,10 +101,10 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
         if (field === 'status') {
           copy.statusCode = value;
           const statusNames: { [k: string]: string } = {
-            present: 'حاضر',
-            late: 'متأخر',
-            absent: 'غائب',
-            excused: 'معذور',
+            present: t('auto.حاضر_2e68dd'),
+            late: t('auto.متأخر_5b3e7c'),
+            absent: t('auto.غائب_2ec74a'),
+            excused: t('auto.معذور_5b4582'),
           };
           copy.status = statusNames[value] || value;
         }
@@ -140,7 +142,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
       onImportSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'فشل اعتماد واستيراد سجلات البصمة');
+      setError(err.message || t('auto.فشل_اعتماد_واستيراد_سجلات_البص_7ae435'));
     } finally {
       setIsCommitting(false);
     }
@@ -175,7 +177,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="استيراد وتدقيق بصمات الحضور (Biometric Device Attendance)"
+      title={t('auto.استيراد_وتدقيق_بصمات_الحضور_Bi_6aec88')}
       icon={<Fingerprint size={22} color="#60a5fa" />}
       maxWidth="2xl"
       footer={
@@ -183,15 +185,13 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
           <div>
             {step === 2 && (
               <button type="button" onClick={handleReset} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
-                رفع ملف آخر
-              </button>
+                {t('auto.رفع_ملف_آخر_19ea5f')}</button>
             )}
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isUploading || isCommitting}>
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
 
             {step === 1 ? (
               <button
@@ -202,7 +202,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                 style={{ gap: '0.4rem' }}
               >
                 {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                <span>تحليل الملف ومطابقة السياسة</span>
+                <span>{t('auto.تحليل_الملف_ومطابقة_السياسة_60b5e1')}</span>
               </button>
             ) : (
               <button
@@ -213,7 +213,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                 style={{ gap: '0.4rem', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}
               >
                 {isCommitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                <span>اعتماد واستيراد ({rows.filter((r) => r.rowStatus === 'valid').length} سجل صالح)</span>
+                <span>{t('auto.اعتماد_واستيراد_37d661')}{rows.filter((r) => r.rowStatus === 'valid').length} {t('auto.سجل_صالح_497f87')}</span>
               </button>
             )}
           </div>
@@ -258,8 +258,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
             >
               <Info size={20} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div style={{ fontSize: '0.85rem', color: '#cbd5e1', lineHeight: '1.5' }}>
-                <strong>القاعدة الذهبية:</strong> قراءة البصمة مجرد "اقتراح حسابي" — كل المعاملات تُستنتج من سياسة الحضور المسجلة بالمنشأة، وكل صف سيكون قابلاً للمعاينة والتعديل البشري الفوري قبل الاعتماد النهائي.
-              </div>
+                <strong>{t('auto.القاعدة_الذهبية_c06943')}</strong> {t('auto.قراءة_البصمة_مجرد_اقتراح_حسابي_401ca3')}</div>
             </div>
 
             {/* Dropzone */}
@@ -293,17 +292,14 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                     {selectedFile.name}
                   </h4>
                   <p style={{ margin: 0, color: '#34d399', fontSize: '0.85rem' }}>
-                    ✓ تم اختيار الملف ({(selectedFile.size / 1024).toFixed(1)} KB) — انقر للتغيير
-                  </p>
+                    {t('auto.تم_اختيار_الملف_39de82')}{(selectedFile.size / 1024).toFixed(1)} {t('auto.KB_انقر_للتغيير_7ec5b9')}</p>
                 </div>
               ) : (
                 <div>
                   <h4 style={{ margin: '0 0 0.25rem', color: '#ffffff', fontSize: '1.05rem' }}>
-                    اسحب وأفلت شيت إكسيل البصمة هنا أو انقر للاختيار
-                  </h4>
+                    {t('auto.اسحب_وأفلت_شيت_إكسيل_البصمة_هن_56e670')}</h4>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                    يدعم ملفات أجهزة ZKTeco, Suprema, وغيرها (الصيغة اليومية المباشرة أو سجل الحركات Punch List)
-                  </p>
+                    {t('auto.يدعم_ملفات_أجهزة_ZKTeco_Suprem_76cdea')}</p>
                 </div>
               )}
             </div>
@@ -332,19 +328,19 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                   <Sparkles size={18} color="#38bdf8" />
                   <div>
                     <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ffffff' }}>
-                      السياسة المطبقة: {policyUsed.projectName}
+                      {t('auto.السياسة_المطبقة_57fb00')}{policyUsed.projectName}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginRight: '0.5rem' }}>
-                      (سارية من {policyUsed.effectiveFrom})
+                      {t('auto.سارية_من_7bcfd0')}{policyUsed.effectiveFrom})
                     </span>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: '#94a3b8' }}>
-                  <span>دوام: <strong>{policyUsed.shiftStartTime} - {policyUsed.shiftEndTime}</strong></span>
-                  <span>سماح: <strong>{policyUsed.graceMinutes} د</strong></span>
-                  <span>استراحة: <strong>{policyUsed.breakMinutes} د</strong></span>
-                  <span>إضافي بعد: <strong>{policyUsed.overtimeThresholdHours} س</strong> (×{policyUsed.overtimeMultiplier})</span>
+                  <span>{t('auto.دوام_5a1626')}<strong>{policyUsed.shiftStartTime} - {policyUsed.shiftEndTime}</strong></span>
+                  <span>{t('auto.سماح_5a4d24')}<strong>{policyUsed.graceMinutes} {t('auto.د_62f')}</strong></span>
+                  <span>{t('auto.استراحة_1780ef')}<strong>{policyUsed.breakMinutes} {t('auto.د_62f')}</strong></span>
+                  <span>{t('auto.إضافي_بعد_697d0e')}<strong>{policyUsed.overtimeThresholdHours} {t('auto.س_633')}</strong> (×{policyUsed.overtimeMultiplier})</span>
                 </div>
               </div>
             )}
@@ -359,7 +355,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                   className={`btn ${filterTab === 'all' ? 'btn-primary' : 'btn-secondary'}`}
                   style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 >
-                  الكل ({summary.total})
+                  {t('auto.الكل_2523c9')}{summary.total})
                 </button>
                 <button
                   type="button"
@@ -367,7 +363,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                   className={`btn ${filterTab === 'valid' ? 'btn-primary' : 'btn-secondary'}`}
                   style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', color: '#34d399' }}
                 >
-                  ✓ صالح للاستيراد ({summary.valid})
+                  {t('auto.صالح_للاستيراد_287694')}{summary.valid})
                 </button>
                 {(summary.duplicate > 0 || summary.invalid > 0) && (
                   <button
@@ -376,7 +372,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                     className={`btn ${filterTab === 'errors' ? 'btn-primary' : 'btn-secondary'}`}
                     style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', color: '#f87171' }}
                   >
-                    ⚠️ أخطاء وتكرار ({summary.duplicate + summary.invalid})
+                    {t('auto.أخطاء_وتكرار_5ceddc')}{summary.duplicate + summary.invalid})
                   </button>
                 )}
               </div>
@@ -387,7 +383,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="بحث بالاسم أو الكود..."
+                  placeholder={t('auto.بحث_بالاسم_أو_الكود_490251')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{ paddingRight: '2rem', paddingLeft: '0.75rem', paddingTop: '0.35rem', paddingBottom: '0.35rem', fontSize: '0.8rem' }}
@@ -408,22 +404,21 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                 <thead>
                   <tr style={{ background: 'rgba(15, 23, 42, 0.8)', borderBottom: '1px solid var(--border-subtle)', position: 'sticky', top: 0, zIndex: 5 }}>
                     <th style={{ padding: '0.6rem 0.8rem' }}>#</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>الموظف / كود البصمة</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>التاريخ</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>الحالة</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>حضور</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>انصراف</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>إضافي</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>ملاحظات / سبب التعديل</th>
-                    <th style={{ padding: '0.6rem 0.8rem' }}>حالة المطابقة</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.الموظف_كود_البصمة_7fad2a')}</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.التاريخ_7f54ad')}</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.الحالة_252d72')}</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.حضور_2e6c85')}</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.انصراف_250d7d')}</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.إضافي_598112')}</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.ملاحظات_سبب_التعديل_b1f3c9')}</th>
+                    <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.حالة_المطابقة_3937ab')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRows.length === 0 ? (
                     <tr>
                       <td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                        لا توجد سجلات مطابقة للفلاتر
-                      </td>
+                        {t('auto.لا_توجد_سجلات_مطابقة_للفلاتر_7e7ec0')}</td>
                     </tr>
                   ) : (
                     filteredRows.map((row) => {
@@ -479,10 +474,10 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                                 cursor: 'pointer',
                               }}
                             >
-                              <option value="present">حاضر</option>
-                              <option value="late">متأخر</option>
-                              <option value="absent">غائب</option>
-                              <option value="excused">معذور</option>
+                              <option value="present">{t('auto.حاضر_2e68dd')}</option>
+                              <option value="late">{t('auto.متأخر_5b3e7c')}</option>
+                              <option value="absent">{t('auto.غائب_2ec74a')}</option>
+                              <option value="excused">{t('auto.معذور_5b4582')}</option>
                             </select>
                           </td>
 
@@ -532,7 +527,7 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                           <td style={{ padding: '0.6rem 0.8rem' }}>
                             <input
                               type="text"
-                              placeholder="سبب التعديل أو إذن..."
+                              placeholder={t('auto.سبب_التعديل_أو_إذن_453e59')}
                               value={row.notes || ''}
                               onChange={(e) => handleRowChange(row.rowIndex, 'notes', e.target.value)}
                               style={{
@@ -551,20 +546,17 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                           <td style={{ padding: '0.6rem 0.8rem' }}>
                             {isInvalid ? (
                               <span className="badge badge-danger" style={{ fontSize: '0.7rem' }} title={row.errors.join(' | ')}>
-                                ✕ {row.errors[0] || 'غير صالح'}
+                                ✕ {row.errors[0] || t('auto.غير_صالح_15605e')}
                               </span>
                             ) : isDuplicate ? (
                               <span className="badge badge-warning" style={{ fontSize: '0.7rem' }} title={row.errors.join(' | ')}>
-                                ⚠️ مكرر
-                              </span>
+                                {t('auto.مكرر_36140e')}</span>
                             ) : isModified ? (
                               <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>
-                                ✎ معدل يدوياً
-                              </span>
+                                {t('auto.معدل_يدويا_98dbb7')}</span>
                             ) : (
                               <span className="badge badge-success" style={{ fontSize: '0.7rem' }}>
-                                ✓ جاهز
-                              </span>
+                                {t('auto.جاهز_4deaa7')}</span>
                             )}
                           </td>
                         </tr>
@@ -586,13 +578,11 @@ export const DeviceAttendanceImportModal: React.FC<DeviceAttendanceImportModalPr
                   style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                 />
                 <label htmlFor="autoAbsent" style={{ cursor: 'pointer', fontSize: '0.85rem', color: '#cbd5e1' }}>
-                  تسجيل غياب آلي للموظفين المقيدين بالمشروع والذين لم تظهر بصمتهم في هذا اليوم
-                </label>
+                  {t('auto.تسجيل_غياب_آلي_للموظفين_المقيد_7dee21')}</label>
               </div>
 
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                سيتم استبعاد الصفوف غير الصالحة تلقائياً عند الاعتماد
-              </span>
+                {t('auto.سيتم_استبعاد_الصفوف_غير_الصالح_b7c72c')}</span>
             </div>
           </div>
         )}

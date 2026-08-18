@@ -1,9 +1,12 @@
+import { useI18n } from '../i18n/I18nContext';
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 export const LoadingScreen: React.FC<{ message?: string }> = ({
-  message = 'جاري التحقق من بيانات الجلسة...',
+  message,
 }) => {
+  const { t } = useI18n();
+  const displayMessage = message || t('auto.جاري_التحقق_من_بيانات_الجلسة_124642');
   return (
     <div
       style={{
@@ -34,7 +37,7 @@ export const LoadingScreen: React.FC<{ message?: string }> = ({
         <Loader2 className="animate-spin" size={32} color="#3b82f6" />
       </div>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', fontWeight: 500 }}>
-        {message}
+        {displayMessage}
       </p>
     </div>
   );

@@ -80,7 +80,7 @@ export const IncentivesPage: React.FC = () => {
       const res = await incentivesApi.listRules({ limit: 100 });
       setRules(res.data || []);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل قواعد الحوافز');
+      setError(err.message || t('auto.فشل_تحميل_قواعد_الحوافز_f4c4bc'));
     } finally {
       setIsLoadingRules(false);
     }
@@ -101,7 +101,7 @@ export const IncentivesPage: React.FC = () => {
         setLedgerSummary(res.summary);
       }
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل سجل استحقاقات الحوافز');
+      setError(err.message || t('auto.فشل_تحميل_سجل_استحقاقات_الحواف_3f548f'));
     } finally {
       setIsLoadingLedger(false);
     }
@@ -126,12 +126,12 @@ export const IncentivesPage: React.FC = () => {
       // Select all by default
       setSelectedCalcIndices((res.calculations || []).map((_, i) => i));
       if (res.calculations?.length === 0) {
-        setSuccessMsg('تم احتساب الحوافز: لا توجد سجلات مستحقة تطابق شروط القواعد في هذه الفترة.');
+        setSuccessMsg(t('auto.تم_احتساب_الحوافز_لا_توجد_سجلا_1b44db'));
       } else {
         setSuccessMsg(`تم احتساب الحوافز بنجاح: تم العثور على ${res.calculations.length} استحقاق بقيمة إجمالية ${res.totalAmount} SAR.`);
       }
     } catch (err: any) {
-      setError(err.message || 'فشل احتساب الحوافز');
+      setError(err.message || t('auto.فشل_احتساب_الحوافز_7e4674'));
     } finally {
       setIsCalculating(false);
     }
@@ -139,7 +139,7 @@ export const IncentivesPage: React.FC = () => {
 
   const handleApproveCalculations = async () => {
     if (selectedCalcIndices.length === 0) {
-      setError('يرجى تحديد بند واحد على الأقل للاعتماد');
+      setError(t('auto.يرجى_تحديد_بند_واحد_على_الأقل__23e77d'));
       return;
     }
 
@@ -166,7 +166,7 @@ export const IncentivesPage: React.FC = () => {
       loadLedger();
       setActiveTab('ledger');
     } catch (err: any) {
-      setError(err.message || 'فشل اعتماد الحوافز');
+      setError(err.message || t('auto.فشل_اعتماد_الحوافز_35d173'));
     } finally {
       setIsApproving(false);
     }
@@ -177,10 +177,10 @@ export const IncentivesPage: React.FC = () => {
     setError(null);
     try {
       await incentivesApi.markPaid(id);
-      setSuccessMsg('تم تحديث حالة الاستحقاق إلى "مدفوع" بنجاح.');
+      setSuccessMsg(t('auto.تم_تحديث_حالة_الاستحقاق_إلى_مد_7ae1cf'));
       loadLedger();
     } catch (err: any) {
-      setError(err.message || 'فشل تحديث حالة الاستحقاق');
+      setError(err.message || t('auto.فشل_تحديث_حالة_الاستحقاق_502194'));
     } finally {
       setMarkingPaidId(null);
     }
@@ -213,7 +213,7 @@ export const IncentivesPage: React.FC = () => {
   const handleSaveRule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ruleFormData.name.trim()) {
-      setError('اسم القاعدة مطلوب');
+      setError(t('auto.اسم_القاعدة_مطلوب_13c570'));
       return;
     }
 
@@ -222,15 +222,15 @@ export const IncentivesPage: React.FC = () => {
     try {
       if (editingRule) {
         await incentivesApi.updateRule(editingRule.id, ruleFormData);
-        setSuccessMsg('تم تحديث قاعدة الحوافز بنجاح.');
+        setSuccessMsg(t('auto.تم_تحديث_قاعدة_الحوافز_بنجاح_35078a'));
       } else {
         await incentivesApi.createRule(ruleFormData);
-        setSuccessMsg('تم إنشاء قاعدة الحوافز الجديدة بنجاح.');
+        setSuccessMsg(t('auto.تم_إنشاء_قاعدة_الحوافز_الجديدة_148c72'));
       }
       setShowRuleModal(false);
       loadRules();
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ قاعدة الحوافز');
+      setError(err.message || t('auto.فشل_حفظ_قاعدة_الحوافز_7ad662'));
     } finally {
       setIsSavingRule(false);
     }
@@ -241,11 +241,11 @@ export const IncentivesPage: React.FC = () => {
     setIsSavingRule(true);
     try {
       await incentivesApi.deleteRule(deletingRule.id);
-      setSuccessMsg('تم حذف قاعدة الحوافز بنجاح.');
+      setSuccessMsg(t('auto.تم_حذف_قاعدة_الحوافز_بنجاح_4bb82e'));
       setDeletingRule(null);
       loadRules();
     } catch (err: any) {
-      setError(err.message || 'فشل حذف قاعدة الحوافز');
+      setError(err.message || t('auto.فشل_حذف_قاعدة_الحوافز_4ccf62'));
     } finally {
       setIsSavingRule(false);
     }
@@ -254,11 +254,11 @@ export const IncentivesPage: React.FC = () => {
   const getRuleTypeBadge = (type: string) => {
     switch (type) {
       case 'production_bonus':
-        return <span className="badge badge-primary">حافز تجاوز الإنتاجية</span>;
+        return <span className="badge badge-primary">{t('auto.حافز_تجاوز_الإنتاجية_212ad6')}</span>;
       case 'quality_bonus':
-        return <span className="badge badge-accent">مكافأة جودة وأداء</span>;
+        return <span className="badge badge-accent">{t('auto.مكافأة_جودة_وأداء_b14794')}</span>;
       case 'attendance_bonus':
-        return <span className="badge badge-success">حافز انتظام الحضور</span>;
+        return <span className="badge badge-success">{t('auto.حافز_انتظام_الحضور_6ab194')}</span>;
       default:
         return <span className="badge badge-secondary">{type}</span>;
     }
@@ -267,11 +267,11 @@ export const IncentivesPage: React.FC = () => {
   const getLedgerStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
-        return <span className="badge badge-success">تم الصرف (مدفوع)</span>;
+        return <span className="badge badge-success">{t('auto.تم_الصرف_مدفوع_26194b')}</span>;
       case 'approved':
-        return <span className="badge badge-primary">معتمد ومستحق</span>;
+        return <span className="badge badge-primary">{t('auto.معتمد_ومستحق_26fc8d')}</span>;
       default:
-        return <span className="badge badge-accent">قيد المعالجة (معلق)</span>;
+        return <span className="badge badge-accent">{t('auto.قيد_المعالجة_معلق_64bd38')}</span>;
     }
   };
 
@@ -279,28 +279,28 @@ export const IncentivesPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي الحوافز المرصودة',
+      label: t('auto.إجمالي_الحوافز_المرصودة_109256'),
       value: `${Number(ledgerSummary.grandTotal || 0).toLocaleString()} SAR`,
       helper: `${ledgerTotal} استحقاق مسجل`,
       icon: <DollarSign size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'مستحقات بانتظار الصرف',
+      label: t('auto.مستحقات_بانتظار_الصرف_13aee1'),
       value: `${Number(ledgerSummary.totalPending || 0).toLocaleString()} SAR`,
-      helper: 'معتمدة وجاهزة للتحويل',
+      helper: t('auto.معتمدة_وجاهزة_للتحويل_16bdfd'),
       icon: <Clock size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'المصروف والمسدد للعمالة',
+      label: t('auto.المصروف_والمسدد_للعمالة_5d44f3'),
       value: `${Number(ledgerSummary.totalPaid || 0).toLocaleString()} SAR`,
-      helper: 'تم تحويله لحسابات المستفيدين',
+      helper: t('auto.تم_تحويله_لحسابات_المستفيدين_35c68b'),
       icon: <CheckCircle2 size={22} />,
       color: '#34d399',
     },
     {
-      label: 'قواعد الحوافز النشطة',
+      label: t('auto.قواعد_الحوافز_النشطة_4681a9'),
       value: activeRulesCount,
       helper: `من إجمالي ${rules.length} قاعدة معرفة`,
       icon: <Award size={22} />,
@@ -343,7 +343,7 @@ export const IncentivesPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             <Calculator size={17} />
-            <span>احتساب الحوافز من الإنتاجية</span>
+            <span>{t('auto.احتساب_الحوافز_من_الإنتاجية_7a7dc8')}</span>
           </button>
 
           <button
@@ -352,7 +352,7 @@ export const IncentivesPage: React.FC = () => {
             style={{ gap: '0.4rem' }}
           >
             <Plus size={17} />
-            <span>إضافة قاعدة حوافز</span>
+            <span>{t('auto.إضافة_قاعدة_حوافز_55165a')}</span>
           </button>
         </div>
       </div>
@@ -425,7 +425,7 @@ export const IncentivesPage: React.FC = () => {
           }}
         >
           <DollarSign size={16} />
-          <span>سجل الاستحقاقات والصرف ({ledgerTotal})</span>
+          <span>{t('auto.سجل_الاستحقاقات_والصرف_6f1736')}{ledgerTotal})</span>
         </button>
 
         <button
@@ -445,7 +445,7 @@ export const IncentivesPage: React.FC = () => {
           }}
         >
           <Sparkles size={16} />
-          <span>محرك الاحتساب والاعتماد</span>
+          <span>{t('auto.محرك_الاحتساب_والاعتماد_66bf5d')}</span>
         </button>
 
         <button
@@ -465,7 +465,7 @@ export const IncentivesPage: React.FC = () => {
           }}
         >
           <Layers size={16} />
-          <span>قواعد ومعادلات الحوافز ({rules.length})</span>
+          <span>{t('auto.قواعد_ومعادلات_الحوافز_70a6eb')}{rules.length})</span>
         </button>
       </div>
 
@@ -485,7 +485,7 @@ export const IncentivesPage: React.FC = () => {
             }}
           >
             <div className="form-group" style={{ margin: 0, minWidth: '220px' }}>
-              <label className="form-label">تصفية بحسب حالة الصرف</label>
+              <label className="form-label">{t('auto.تصفية_بحسب_حالة_الصرف_3f09b9')}</label>
               <select
                 className="input-field"
                 value={ledgerStatusFilter}
@@ -494,10 +494,10 @@ export const IncentivesPage: React.FC = () => {
                   setLedgerPage(1);
                 }}
               >
-                <option value="">كافة الحالات</option>
-                <option value="approved">معتمد ومستحق (Approved)</option>
-                <option value="paid">تم الصرف (Paid)</option>
-                <option value="pending">قيد المعالجة (Pending)</option>
+                <option value="">{t('auto.كافة_الحالات_3318a9')}</option>
+                <option value="approved">{t('auto.معتمد_ومستحق_Approved_6c6240')}</option>
+                <option value="paid">{t('auto.تم_الصرف_Paid_265a6b')}</option>
+                <option value="pending">{t('auto.قيد_المعالجة_Pending_464375')}</option>
               </select>
             </div>
           </div>
@@ -514,21 +514,20 @@ export const IncentivesPage: React.FC = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                   <thead>
                     <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                      <th style={{ padding: '1rem' }}>التاريخ</th>
-                      <th style={{ padding: '1rem' }}>المستفيد / العامل</th>
-                      <th style={{ padding: '1rem' }}>المشروع</th>
-                      <th style={{ padding: '1rem' }}>القاعدة والمبرر</th>
-                      <th style={{ padding: '1rem' }}>قيمة الحافز (SAR)</th>
-                      <th style={{ padding: '1rem' }}>الحالة</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.التاريخ_7f54ad')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.المستفيد_العامل_79da69')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.المشروع_7f28ee')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.القاعدة_والمبرر_786300')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.قيمة_الحافز_SAR_59613a')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
+                      <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ledger.length === 0 ? (
                       <tr>
                         <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                          لا توجد استحقاقات مسجلة بسجل الحوافز
-                        </td>
+                          {t('auto.لا_توجد_استحقاقات_مسجلة_بسجل_ا_5c83a6')}</td>
                       </tr>
                     ) : (
                       ledger.map((item) => (
@@ -546,18 +545,18 @@ export const IncentivesPage: React.FC = () => {
                             </div>
                           </td>
                           <td style={{ padding: '1rem' }}>
-                            <div style={{ fontWeight: 700, color: '#ffffff' }}>{item.employee_name || 'عامل'}</div>
+                            <div style={{ fontWeight: 700, color: '#ffffff' }}>{item.employee_name || t('auto.عامل_2ec042')}</div>
                             {item.employee_code && (
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                                كود: {item.employee_code}
+                                {t('auto.كود_2f1031')}{item.employee_code}
                               </div>
                             )}
                           </td>
                           <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                            {item.project_name || 'عام / غير محدد'}
+                            {item.project_name || t('auto.عام_غير_محدد_360223')}
                           </td>
                           <td style={{ padding: '1rem' }}>
-                            <div style={{ fontWeight: 600, color: '#60a5fa' }}>{item.rule_name || 'حافز تشغيلي'}</div>
+                            <div style={{ fontWeight: 600, color: '#60a5fa' }}>{item.rule_name || t('auto.حافز_تشغيلي_3ae571')}</div>
                             {item.notes && (
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
                                 {item.notes}
@@ -589,10 +588,10 @@ export const IncentivesPage: React.FC = () => {
                                 ) : (
                                   <Check size={13} />
                                 )}
-                                <span>تسجيل كمدفوع</span>
+                                <span>{t('auto.تسجيل_كمدفوع_24bbf4')}</span>
                               </button>
                             ) : (
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>تم السداد ✓</span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.تم_السداد_5dbdd2')}</span>
                             )}
                           </td>
                         </tr>
@@ -615,8 +614,7 @@ export const IncentivesPage: React.FC = () => {
                 }}
               >
                 <span>
-                  عرض {startRecord}–{endRecord} من إجمالي {ledgerTotal} استحقاق
-                </span>
+                  {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{ledgerTotal} {t('auto.استحقاق_625541')}</span>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button
                     className="btn btn-secondary"
@@ -624,17 +622,15 @@ export const IncentivesPage: React.FC = () => {
                     disabled={ledgerPage <= 1}
                     onClick={() => setLedgerPage(ledgerPage - 1)}
                   >
-                    السابق
-                  </button>
-                  <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {ledgerPage}</span>
+                    {t('auto.السابق_252abb')}</button>
+                  <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{ledgerPage}</span>
                   <button
                     className="btn btn-secondary"
                     style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                     disabled={ledgerPage * ledgerLimit >= ledgerTotal}
                     onClick={() => setLedgerPage(ledgerPage + 1)}
                   >
-                    التالي
-                  </button>
+                    {t('auto.التالي_252ecf')}</button>
                 </div>
               </div>
             </div>
@@ -648,7 +644,7 @@ export const IncentivesPage: React.FC = () => {
           <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Calculator size={18} color="#60a5fa" />
-              <span>فترة احتساب الأداء والإنتاجية</span>
+              <span>{t('auto.فترة_احتساب_الأداء_والإنتاجية_46594a')}</span>
             </h3>
 
             <div
@@ -660,18 +656,18 @@ export const IncentivesPage: React.FC = () => {
               }}
             >
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">من تاريخ</label>
+                <label className="form-label">{t('auto.من_تاريخ_4c8e03')}</label>
                 <WheelDatePicker
-                  placeholder="من تاريخ..."
+                  placeholder={t('auto.من_تاريخ_3db437')}
                   value={calcFromDate}
                   onChange={(val) => setCalcFromDate(val)}
                 />
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">إلى تاريخ</label>
+                <label className="form-label">{t('auto.إلى_تاريخ_d3e6d7')}</label>
                 <WheelDatePicker
-                  placeholder="إلى تاريخ..."
+                  placeholder={t('auto.إلى_تاريخ_33c707')}
                   value={calcToDate}
                   onChange={(val) => setCalcToDate(val)}
                 />
@@ -685,7 +681,7 @@ export const IncentivesPage: React.FC = () => {
                   style={{ width: '100%', height: '42px', gap: '0.5rem' }}
                 >
                   {isCalculating ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
-                  <span>تشغيل احتساب الحوافز الآن</span>
+                  <span>{t('auto.تشغيل_احتساب_الحوافز_الآن_576581')}</span>
                 </button>
               </div>
             </div>
@@ -707,12 +703,11 @@ export const IncentivesPage: React.FC = () => {
               >
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
-                    نتائج الاحتساب: {calcResults.length} استحقاق بقيمة إجمالية{' '}
+                    {t('auto.نتائج_الاحتساب_6d5ee0')}{calcResults.length} {t('auto.استحقاق_بقيمة_إجمالية_878d04')}{' '}
                     <span style={{ color: '#34d399' }}>{calcTotalAmount.toLocaleString()} SAR</span>
                   </h3>
                   <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    حدد البنود المراد اعتمادها ثم انقر زر الاعتماد والترحيل لسجل الحوافز
-                  </p>
+                    {t('auto.حدد_البنود_المراد_اعتمادها_ثم__381afb')}</p>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -727,7 +722,7 @@ export const IncentivesPage: React.FC = () => {
                     className="btn btn-secondary"
                     style={{ fontSize: '0.8rem' }}
                   >
-                    {selectedCalcIndices.length === calcResults.length ? 'إلغاء تحديد الكل' : 'تحديد الكل'}
+                    {selectedCalcIndices.length === calcResults.length ? t('auto.إلغاء_تحديد_الكل_59e605') : t('auto.تحديد_الكل_1298a1')}
                   </button>
 
                   <button
@@ -737,7 +732,7 @@ export const IncentivesPage: React.FC = () => {
                     style={{ gap: '0.4rem', background: '#10b981' }}
                   >
                     {isApproving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                    <span>اعتماد وصرف الحوافز المحددة ({selectedCalcIndices.length})</span>
+                    <span>{t('auto.اعتماد_وصرف_الحوافز_المحددة_1fc9b3')}{selectedCalcIndices.length})</span>
                   </button>
                 </div>
               </div>
@@ -759,10 +754,10 @@ export const IncentivesPage: React.FC = () => {
                           }}
                         />
                       </th>
-                      <th style={{ padding: '1rem' }}>المستفيد / العامل</th>
-                      <th style={{ padding: '1rem' }}>القاعدة المطبقة</th>
-                      <th style={{ padding: '1rem' }}>المبرر ونسبة الإنجاز</th>
-                      <th style={{ padding: '1rem' }}>المكافأة المستحقة (SAR)</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.المستفيد_العامل_79da69')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.القاعدة_المطبقة_27c65c')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.المبرر_ونسبة_الإنجاز_612fba')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.المكافأة_المستحقة_SAR_140ae5')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -799,7 +794,7 @@ export const IncentivesPage: React.FC = () => {
                             <div>{item.reason}</div>
                             {item.percentage && (
                               <div style={{ fontSize: '0.75rem', color: '#60a5fa', marginTop: '0.2rem' }}>
-                                نسبة الإنجاز المحققة: {item.percentage}%
+                                {t('auto.نسبة_الإنجاز_المحققة_1a492e')}{item.percentage}%
                               </div>
                             )}
                           </td>
@@ -832,20 +827,19 @@ export const IncentivesPage: React.FC = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                   <thead>
                     <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                      <th style={{ padding: '1rem' }}>اسم القاعدة</th>
-                      <th style={{ padding: '1rem' }}>النوع والمسار</th>
-                      <th style={{ padding: '1rem' }}>الحد المستهدف (% أو أيام)</th>
-                      <th style={{ padding: '1rem' }}>مبلغ المكافأة (SAR)</th>
-                      <th style={{ padding: '1rem' }}>الحالة</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.اسم_القاعدة_7c288e')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.النوع_والمسار_27ccb9')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.الحد_المستهدف_أو_أيام_2ea2d1')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.مبلغ_المكافأة_SAR_147403')}</th>
+                      <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
+                      <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rules.length === 0 ? (
                       <tr>
                         <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                          لا توجد قواعد حوافز معرفة بعد. انقر "إضافة قاعدة حوافز" للبدء.
-                        </td>
+                          {t('auto.لا_توجد_قواعد_حوافز_معرفة_بعد__7efcbc')}</td>
                       </tr>
                     ) : (
                       rules.map((rule) => (
@@ -869,9 +863,9 @@ export const IncentivesPage: React.FC = () => {
                           </td>
                           <td style={{ padding: '1rem' }}>
                             {rule.is_active ? (
-                              <span className="badge badge-success">نشطة ومطبقة</span>
+                              <span className="badge badge-success">{t('auto.نشطة_ومطبقة_79b2ed')}</span>
                             ) : (
-                              <span className="badge badge-accent">معطلة مؤقتًا</span>
+                              <span className="badge badge-accent">{t('auto.معطلة_مؤقت_ا_7bbcec')}</span>
                             )}
                           </td>
                           <td style={{ padding: '1rem', textAlign: 'center' }}>
@@ -881,7 +875,7 @@ export const IncentivesPage: React.FC = () => {
                                 onClick={() => handleOpenEditRule(rule)}
                                 className="btn btn-secondary"
                                 style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                                title="تعديل القاعدة"
+                                title={t('auto.تعديل_القاعدة_6a48fd')}
                               >
                                 <Edit2 size={15} />
                               </button>
@@ -895,7 +889,7 @@ export const IncentivesPage: React.FC = () => {
                                   color: '#f87171',
                                   borderColor: 'rgba(239, 68, 68, 0.25)',
                                 }}
-                                title="حذف القاعدة"
+                                title={t('auto.حذف_القاعدة_346950')}
                               >
                                 <Trash2 size={15} />
                               </button>
@@ -916,7 +910,7 @@ export const IncentivesPage: React.FC = () => {
       <Modal
         isOpen={showRuleModal}
         onClose={() => setShowRuleModal(false)}
-        title={editingRule ? 'تعديل قاعدة الحوافز' : 'إضافة قاعدة حوافز جديدة'}
+        title={editingRule ? t('auto.تعديل_قاعدة_الحوافز_64a7e1') : t('auto.إضافة_قاعدة_حوافز_جديدة_495482')}
         icon={<Award size={22} color="#f59e0b" />}
         maxWidth="md"
         footer={
@@ -927,11 +921,10 @@ export const IncentivesPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isSavingRule}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="incentive-rule-form" className="btn btn-primary" disabled={isSavingRule}>
               {isSavingRule ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingRule ? 'حفظ التعديلات' : 'إنشاء القاعدة'}</span>
+              <span>{editingRule ? t('auto.حفظ_التعديلات_4ff313') : t('auto.إنشاء_القاعدة_71c0de')}</span>
             </button>
           </div>
         }
@@ -940,13 +933,13 @@ export const IncentivesPage: React.FC = () => {
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
-                <span>اسم القاعدة</span>
+                <span>{t('auto.اسم_القاعدة_7c288e')}</span>
                 <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="مثال: حافز إنجاز صب الخرسانة 120%"
+                placeholder={t('auto.مثال_حافز_إنجاز_صب_الخرسانة_12_50aa9e')}
                 value={ruleFormData.name}
                 onChange={(e) => setRuleFormData({ ...ruleFormData, name: e.target.value })}
                 required
@@ -955,7 +948,7 @@ export const IncentivesPage: React.FC = () => {
 
             <div className="form-group">
               <label className="form-label">
-                <span>نوع الحافز</span>
+                <span>{t('auto.نوع_الحافز_4da0eb')}</span>
                 <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <select
@@ -963,16 +956,16 @@ export const IncentivesPage: React.FC = () => {
                 value={ruleFormData.type}
                 onChange={(e) => setRuleFormData({ ...ruleFormData, type: e.target.value })}
               >
-                <option value="production_bonus">حافز تجاوز الإنتاجية (Production Bonus)</option>
-                <option value="quality_bonus">مكافأة جودة وأداء (Quality Bonus)</option>
-                <option value="attendance_bonus">حافز انتظام الحضور (Attendance Bonus)</option>
+                <option value="production_bonus">{t('auto.حافز_تجاوز_الإنتاجية_Productio_6ab11b')}</option>
+                <option value="quality_bonus">{t('auto.مكافأة_جودة_وأداء_Quality_Bonu_45e586')}</option>
+                <option value="attendance_bonus">{t('auto.حافز_انتظام_الحضور_Attendance__18bbca')}</option>
               </select>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
                 <label className="form-label">
-                  <span>الحد الأدنى المستهدف (%)</span>
+                  <span>{t('auto.الحد_الأدنى_المستهدف_1919c3')}</span>
                   <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -989,7 +982,7 @@ export const IncentivesPage: React.FC = () => {
 
               <div className="form-group">
                 <label className="form-label">
-                  <span>مبلغ المكافأة (SAR)</span>
+                  <span>{t('auto.مبلغ_المكافأة_SAR_147403')}</span>
                   <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -1013,8 +1006,7 @@ export const IncentivesPage: React.FC = () => {
                 onChange={(e) => setRuleFormData({ ...ruleFormData, enabled: e.target.checked })}
               />
               <label htmlFor="ruleEnabledCheck" style={{ margin: 0, cursor: 'pointer', fontSize: '0.9rem' }}>
-                تفعيل القاعدة في محرك الاحتساب التلقائي
-              </label>
+                {t('auto.تفعيل_القاعدة_في_محرك_الاحتساب_342da0')}</label>
             </div>
           </div>
         </form>
@@ -1024,7 +1016,7 @@ export const IncentivesPage: React.FC = () => {
       <Modal
         isOpen={!!deletingRule}
         onClose={() => setDeletingRule(null)}
-        title="تأكيد حذف قاعدة الحوافز"
+        title={t('auto.تأكيد_حذف_قاعدة_الحوافز_4e4c27')}
         icon={<Trash2 size={22} color="#f87171" />}
         maxWidth="sm"
         footer={
@@ -1035,8 +1027,7 @@ export const IncentivesPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isSavingRule}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleDeleteRule}
@@ -1045,14 +1036,13 @@ export const IncentivesPage: React.FC = () => {
               disabled={isSavingRule}
             >
               {isSavingRule ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تأكيد الحذف</span>
+              <span>{t('auto.تأكيد_الحذف_4af57e')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          هل أنت متأكد من رغبتك في حذف القاعدة <strong style={{ color: '#ffffff' }}>"{deletingRule?.name}"</strong>؟
-        </p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_47c717')}<strong style={{ color: '#ffffff' }}>"{deletingRule?.name}"</strong>{t('auto.k_61f')}</p>
       </Modal>
     </div>
   );

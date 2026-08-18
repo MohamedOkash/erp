@@ -62,7 +62,7 @@ export const NotificationsPage: React.FC = () => {
         setUnreadCount(res.unreadCount);
       }
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل الإشعارات');
+      setError(err.message || t('auto.فشل_تحميل_الإشعارات_2effeb'));
     } finally {
       setIsLoading(false);
     }
@@ -91,22 +91,22 @@ export const NotificationsPage: React.FC = () => {
     const title = (n.title || '').toLowerCase();
     const msg = (n.message || '').toLowerCase();
 
-    if (type === 'alert' || type === 'warning' || title.includes('تنبيه') || title.includes('alert') || msg.includes('تجاوز')) {
+    if (type === 'alert' || type === 'warning' || title.includes(t('auto.تنبيه_59ced2')) || title.includes('alert') || msg.includes(t('auto.تجاوز_59c2fc'))) {
       navigate('/alerts');
     } else if (
       type === 'approval_request' ||
       type === 'production' ||
       type === 'correction' ||
-      title.includes('اعتماد') ||
-      title.includes('إنتاج') ||
-      msg.includes('إنتاجية')
+      title.includes(t('auto.اعتماد_25c964')) ||
+      title.includes(t('auto.إنتاج_598860')) ||
+      msg.includes(t('auto.إنتاجية_18f1d5'))
     ) {
       navigate('/production');
-    } else if (type === 'transfer' || title.includes('نقل') || msg.includes('نقل')) {
+    } else if (type === 'transfer' || title.includes(t('auto.نقل_185508')) || msg.includes(t('auto.نقل_185508'))) {
       navigate('/transfers');
-    } else if (type === 'attendance' || title.includes('حضور') || msg.includes('بصمة')) {
+    } else if (type === 'attendance' || title.includes(t('auto.حضور_2e6c85')) || msg.includes(t('auto.بصمة_2e47e5'))) {
       navigate('/attendance');
-    } else if (title.includes('مستند') || title.includes('وثيقة')) {
+    } else if (title.includes(t('auto.مستند_5b42b1')) || title.includes(t('auto.وثيقة_5b69cc'))) {
       navigate('/documents');
     } else {
       // General / System -> Open Modal
@@ -122,10 +122,10 @@ export const NotificationsPage: React.FC = () => {
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
-      setSuccessMsg('تم تحديث حالة الإشعار إلى مقروء.');
+      setSuccessMsg(t('auto.تم_تحديث_حالة_الإشعار_إلى_مقرو_4e790c'));
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'فشل تحديث الإشعار');
+      setError(err.message || t('auto.فشل_تحديث_الإشعار_5135b4'));
     }
   };
 
@@ -136,10 +136,10 @@ export const NotificationsPage: React.FC = () => {
       await notificationsApi.markAllAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
-      setSuccessMsg('تم تعليم كافة الإشعارات كمقروءة بنجاح.');
+      setSuccessMsg(t('auto.تم_تعليم_كافة_الإشعارات_كمقروء_578c4b'));
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'فشل تعليم الإشعارات كمقروءة');
+      setError(err.message || t('auto.فشل_تعليم_الإشعارات_كمقروءة_19064e'));
     } finally {
       setIsMarkingAll(false);
     }
@@ -163,15 +163,15 @@ export const NotificationsPage: React.FC = () => {
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'alert':
-        return <span className="badge badge-accent">تنبيه عاجل</span>;
+        return <span className="badge badge-accent">{t('auto.تنبيه_عاجل_20e4b3')}</span>;
       case 'warning':
-        return <span className="badge badge-secondary" style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}>تحذير</span>;
+        return <span className="badge badge-secondary" style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}>{t('auto.تحذير_59c393')}</span>;
       case 'approval_request':
-        return <span className="badge badge-primary">طلب اعتماد</span>;
+        return <span className="badge badge-primary">{t('auto.طلب_اعتماد_2a6fca')}</span>;
       case 'transfer':
-        return <span className="badge badge-secondary" style={{ color: '#06b6d4', borderColor: 'rgba(6, 182, 212, 0.3)' }}>طلب نقل</span>;
+        return <span className="badge badge-secondary" style={{ color: '#06b6d4', borderColor: 'rgba(6, 182, 212, 0.3)' }}>{t('auto.طلب_نقل_3520e7')}</span>;
       default:
-        return <span className="badge badge-success">إشعار نظام</span>;
+        return <span className="badge badge-success">{t('auto.إشعار_نظام_31d1b3')}</span>;
     }
   };
 
@@ -198,30 +198,30 @@ export const NotificationsPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي الإشعارات المسجلة',
+      label: t('auto.إجمالي_الإشعارات_المسجلة_24d7f1'),
       value: total,
       helper: `${notifications.length} معروضة بالصفحة`,
       icon: <Bell size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'إشعارات جديدة غير مقروءة',
+      label: t('auto.إشعارات_جديدة_غير_مقروءة_7aee26'),
       value: unreadCount,
-      helper: unreadCount > 0 ? 'تتطلب اهتمام المستخدم' : 'تمت قراءة جميع الإشعارات',
+      helper: unreadCount > 0 ? t('auto.تتطلب_اهتمام_المستخدم_1b1603') : t('auto.تمت_قراءة_جميع_الإشعارات_6ef61e'),
       icon: <Clock size={22} />,
       color: unreadCount > 0 ? '#f87171' : '#34d399',
     },
     {
-      label: 'تنبيهات ومخاطر ميدانية',
+      label: t('auto.تنبيهات_ومخاطر_ميدانية_1ba579'),
       value: alertTypesCount,
-      helper: 'تحذيرات تجاوز التكاليف والإنتاجية',
+      helper: t('auto.تحذيرات_تجاوز_التكاليف_والإنتا_1f0c58'),
       icon: <AlertTriangle size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'أمان وتتبع العمليات',
-      value: 'نشط',
-      helper: 'تنبيهات فورية على مدار الساعة',
+      label: t('auto.أمان_وتتبع_العمليات_4296dc'),
+      value: t('auto.نشط_185349'),
+      helper: t('auto.تنبيهات_فورية_على_مدار_الساعة_e8ad3a'),
       icon: <Shield size={22} />,
       color: '#a78bfa',
     },
@@ -327,7 +327,7 @@ export const NotificationsPage: React.FC = () => {
         }}
       >
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">حالة القراءة</label>
+          <label className="form-label">{t('auto.حالة_القراءة_1ab7f8')}</label>
           <select
             className="input-field"
             value={statusFilter}
@@ -336,14 +336,14 @@ export const NotificationsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="all">كافة الإشعارات (المقروءة والجديدة)</option>
-            <option value="unread">غير المقروءة فقط (الجديدة)</option>
-            <option value="read">المقروءة سابقاً</option>
+            <option value="all">{t('auto.كافة_الإشعارات_المقروءة_والجدي_7ef724')}</option>
+            <option value="unread">{t('auto.غير_المقروءة_فقط_الجديدة_70cb21')}</option>
+            <option value="read">{t('auto.المقروءة_سابقا_304c80')}</option>
           </select>
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">نوع الإشعار</label>
+          <label className="form-label">{t('auto.نوع_الإشعار_66e77a')}</label>
           <select
             className="input-field"
             value={typeFilter}
@@ -352,12 +352,12 @@ export const NotificationsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الأنواع</option>
-            <option value="alert">تنبيهات عاجلة (Alerts)</option>
-            <option value="warning">تحذيرات الموقع (Warnings)</option>
-            <option value="approval_request">طلبات اعتماد (Approvals)</option>
-            <option value="transfer">طلبات نقل (Transfers)</option>
-            <option value="info">إشعارات عامة (Info)</option>
+            <option value="">{t('auto.كافة_الأنواع_33976d')}</option>
+            <option value="alert">{t('auto.تنبيهات_عاجلة_Alerts_659d81')}</option>
+            <option value="warning">{t('auto.تحذيرات_الموقع_Warnings_658f94')}</option>
+            <option value="approval_request">{t('auto.طلبات_اعتماد_Approvals_56aa71')}</option>
+            <option value="transfer">{t('auto.طلبات_نقل_Transfers_5f850d')}</option>
+            <option value="info">{t('auto.إشعارات_عامة_Info_457aff')}</option>
           </select>
         </div>
       </div>
@@ -374,19 +374,18 @@ export const NotificationsPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem', width: '50px' }}>النوع</th>
-                  <th style={{ padding: '1rem' }}>عنوان الإشعار</th>
-                  <th style={{ padding: '1rem' }}>التفاصيل والمحتوى</th>
-                  <th style={{ padding: '1rem' }}>التاريخ والتوقيت</th>
-                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                  <th style={{ padding: '1rem', width: '50px' }}>{t('auto.النوع_59a413')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.عنوان_الإشعار_3eaae3')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.التفاصيل_والمحتوى_42752b')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.التاريخ_والتوقيت_5e3aa0')}</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                 </tr>
               </thead>
               <tbody>
                 {notifications.length === 0 ? (
                   <tr>
                     <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد إشعارات مطابقة للمرشحات
-                    </td>
+                      {t('auto.لا_توجد_إشعارات_مطابقة_للمرشحا_5e72cb')}</td>
                   </tr>
                 ) : (
                   notifications.map((n) => (
@@ -443,10 +442,10 @@ export const NotificationsPage: React.FC = () => {
                                 color: '#34d399',
                                 borderColor: 'rgba(52, 211, 153, 0.3)',
                               }}
-                              title="تعليم كمقروء"
+                              title={t('auto.تعليم_كمقروء_f1bac0')}
                             >
                               <Check size={13} />
-                              <span>تحديد كمقروء</span>
+                              <span>{t('auto.تحديد_كمقروء_1342fc')}</span>
                             </button>
                           )}
                           <span style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>
@@ -474,8 +473,7 @@ export const NotificationsPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} إشعار
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.إشعار_598069')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -483,17 +481,15 @@ export const NotificationsPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -503,7 +499,7 @@ export const NotificationsPage: React.FC = () => {
       <Modal
         isOpen={!!selectedNotification}
         onClose={() => setSelectedNotification(null)}
-        title={selectedNotification?.title || 'تفاصيل الإشعار'}
+        title={selectedNotification?.title || t('auto.تفاصيل_الإشعار_35e534')}
       >
         {selectedNotification && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
@@ -529,8 +525,8 @@ export const NotificationsPage: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-              <span>النوع: {getTypeBadge(selectedNotification.type)}</span>
-              <span>التوقيت: {formatNotificationDate(selectedNotification.createdAt)}</span>
+              <span>{t('auto.النوع_2521a0')}{getTypeBadge(selectedNotification.type)}</span>
+              <span>{t('auto.التوقيت_6d19cf')}{formatNotificationDate(selectedNotification.createdAt)}</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
@@ -540,8 +536,7 @@ export const NotificationsPage: React.FC = () => {
                 onClick={() => setSelectedNotification(null)}
                 style={{ padding: '0.5rem 1.25rem' }}
               >
-                إغلاق
-              </button>
+                {t('auto.إغلاق_59834d')}</button>
             </div>
           </div>
         )}

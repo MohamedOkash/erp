@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React, { useState } from 'react';
 import type { ProductionRecord } from '../../api/production.api';
 import { productionApi } from '../../api/production.api';
@@ -35,6 +36,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
   onRecordUpdated,
   onRequestCorrection,
 }) => {
+  const { t } = useI18n();
   const { hasRole } = useAuth();
   const [isApproving, setIsApproving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,16 +48,16 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
   const actual = Number(record.actualQuantity ?? (record as any).actual_quantity ?? 0);
   const ratio = target > 0 ? Math.round((actual / target) * 100) : 0;
 
-  const projectName = record.projectName || (record as any).project_name || 'مشروع';
-  const branchName = record.branchName || (record as any).branch_name || 'فرع';
-  const workItemName = record.workItemName || (record as any).work_item_name || 'بند عمل';
+  const projectName = record.projectName || (record as any).project_name || t('auto.مشروع_5b433f');
+  const branchName = record.branchName || (record as any).branch_name || t('auto.فرع_184029');
+  const workItemName = record.workItemName || (record as any).work_item_name || t('auto.بند_عمل_4ad23b');
   const workAreaName = record.workAreaName || (record as any).work_area_name || null;
   const supervisorName = record.supervisorName || (record as any).supervisor_name || '—';
   const stageName = record.stageName || (record as any).stage_name || null;
 
   const workersList = (record.workers || []).map((w: any) => ({
     id: w.id,
-    employeeName: w.employeeName || w.employee_name || 'عامل',
+    employeeName: w.employeeName || w.employee_name || t('auto.عامل_2ec042'),
     employeeCode: w.employeeCode || w.employee_code || '—',
     workerType: w.workerType || w.worker_type || 'individual',
     individualQuantity: Number(w.individualQuantity ?? w.individual_quantity ?? 0),
@@ -72,11 +74,11 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
     setError(null);
     try {
       await productionApi.approveStep(record.id, step);
-      setSuccessMsg('تمت ترقية واعتماد مرحلة السجل بنجاح!');
+      setSuccessMsg(t('auto.تمت_ترقية_واعتماد_مرحلة_السجل__19a38e'));
       onRecordUpdated();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'فشل تنفيذ عملية الاعتماد');
+      setError(err.message || t('auto.فشل_تنفيذ_عملية_الاعتماد_787a5e'));
     } finally {
       setIsApproving(false);
     }
@@ -86,7 +88,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="تفاصيل تقرير الإنتاجية اليومي"
+      title={t('auto.تفاصيل_تقرير_الإنتاجية_اليومي_140e92')}
       subtitle={`المعرف: ${record.id}`}
       icon={<Layers size={22} />}
       maxWidth="3xl"
@@ -104,15 +106,14 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
                 style={{ gap: '0.4rem', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fbbf24' }}
               >
                 <RotateCcw size={15} />
-                <span>طلب تصحيح (Correction Request)</span>
+                <span>{t('auto.طلب_تصحيح_Correction_Request_71634a')}</span>
               </button>
             )}
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button type="button" onClick={onClose} className="btn btn-secondary">
-              إغلاق
-            </button>
+              {t('auto.إغلاق_59834d')}</button>
 
             {/* Step 1: Submit */}
             {record.status === 'draft' && (
@@ -124,7 +125,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
                 style={{ gap: '0.4rem' }}
               >
                 {isApproving ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                <span>تقديم السجل للاعتماد (Submit)</span>
+                <span>{t('auto.تقديم_السجل_للاعتماد_Submit_1fa6c1')}</span>
               </button>
             )}
 
@@ -141,10 +142,10 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
                   opacity: canSupervisorApprove ? 1 : 0.5,
                   cursor: canSupervisorApprove ? 'pointer' : 'not-allowed',
                 }}
-                title={!canSupervisorApprove ? 'يتطلب دور مشرف معتمد (Supervisor)' : ''}
+                title={!canSupervisorApprove ? t('auto.يتطلب_دور_مشرف_معتمد_Superviso_5ca054') : ''}
               >
                 {isApproving ? <Loader2 size={16} className="animate-spin" /> : <HardHat size={16} />}
-                <span>اعتماد المشرف (Supervisor Approve)</span>
+                <span>{t('auto.اعتماد_المشرف_Supervisor_Appro_691cf9')}</span>
               </button>
             )}
 
@@ -161,10 +162,10 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
                   opacity: canEngineerApprove ? 1 : 0.5,
                   cursor: canEngineerApprove ? 'pointer' : 'not-allowed',
                 }}
-                title={!canEngineerApprove ? 'يتطلب دور مهندس معتمد (Engineer)' : ''}
+                title={!canEngineerApprove ? t('auto.يتطلب_دور_مهندس_معتمد_Engineer_5c5b10') : ''}
               >
                 {isApproving ? <Loader2 size={16} className="animate-spin" /> : <Compass size={16} />}
-                <span>اعتماد المهندس (Engineer Approve)</span>
+                <span>{t('auto.اعتماد_المهندس_Engineer_Approv_11312b')}</span>
               </button>
             )}
 
@@ -181,10 +182,10 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
                   opacity: canFinalApprove ? 1 : 0.5,
                   cursor: canFinalApprove ? 'pointer' : 'not-allowed',
                 }}
-                title={!canFinalApprove ? 'يتطلب صلاحية مدير النظام (Admin)' : ''}
+                title={!canFinalApprove ? t('auto.يتطلب_صلاحية_مدير_النظام_Admin_751bd2') : ''}
               >
                 {isApproving ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-                <span>الاعتماد النهائي والإغلاق (Final Approve)</span>
+                <span>{t('auto.الاعتماد_النهائي_والإغلاق_Fina_668743')}</span>
               </button>
             )}
           </div>
@@ -241,8 +242,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
       >
         <div className="glass-card" style={{ padding: '0.85rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <Calendar size={13} /> التاريخ
-          </div>
+            <Calendar size={13} /> {t('auto.التاريخ_7f54ad')}</div>
           <div style={{ fontSize: '1rem', fontWeight: 600, color: '#ffffff', marginTop: '0.2rem' }}>
             {record.date ? record.date.split('T')[0] : '—'}
           </div>
@@ -250,8 +250,7 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
 
         <div className="glass-card" style={{ padding: '0.85rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <Building size={13} /> الفرع والمشروع
-          </div>
+            <Building size={13} /> {t('auto.الفرع_والمشروع_58ce26')}</div>
           <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.2rem' }}>
             {projectName}
           </div>
@@ -260,20 +259,18 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
 
         <div className="glass-card" style={{ padding: '0.85rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <CheckSquare size={13} /> بند وموقع العمل
-          </div>
+            <CheckSquare size={13} /> {t('auto.بند_وموقع_العمل_22a265')}</div>
           <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#60a5fa', marginTop: '0.2rem' }}>
             {workItemName}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-            {workAreaName || 'كامل الموقع'} {stageName ? `• ${stageName}` : ''}
+            {workAreaName || t('auto.كامل_الموقع_2b70b5')} {stageName ? `• ${stageName}` : ''}
           </div>
         </div>
 
         <div className="glass-card" style={{ padding: '0.85rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <HardHat size={13} /> المشرف المسؤول
-          </div>
+            <HardHat size={13} /> {t('auto.المشرف_المسؤول_178a71')}</div>
           <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.2rem' }}>
             {supervisorName}
           </div>
@@ -291,16 +288,16 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <div>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>نسبة إنجاز المستهدف: </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('auto.نسبة_إنجاز_المستهدف_6fb7e5')}</span>
             <strong style={{ fontSize: '1.2rem', color: ratio >= 100 ? '#34d399' : ratio >= 80 ? '#60a5fa' : '#f87171' }}>
               {ratio}%
             </strong>
           </div>
 
           <div style={{ fontSize: '0.9rem' }}>
-            <span style={{ color: 'var(--text-dim)' }}>الفعلي: </span>
+            <span style={{ color: 'var(--text-dim)' }}>{t('auto.الفعلي_7f5ec5')}</span>
             <strong style={{ color: '#60a5fa', fontSize: '1.1rem' }}>{actual}</strong>
-            <span style={{ color: 'var(--text-dim)' }}> / المستهدف: </span>
+            <span style={{ color: 'var(--text-dim)' }}> {t('auto.المستهدف_7b953c')}</span>
             <strong>{target}</strong>
           </div>
         </div>
@@ -336,18 +333,18 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
         <div style={{ marginBottom: '1.5rem' }}>
           <h4 style={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
             <Users size={16} color="#60a5fa" />
-            <span>توزيع حصص العمالة المشاركة (حسب السجل الميداني)</span>
+            <span>{t('auto.توزيع_حصص_العمالة_المشاركة_حسب_59be03')}</span>
           </h4>
 
           <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
               <thead style={{ background: 'rgba(15, 23, 42, 0.8)' }}>
                 <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '0.6rem 0.8rem' }}>اسم العامل</th>
-                  <th style={{ padding: '0.6rem 0.8rem' }}>الكود</th>
-                  <th style={{ padding: '0.6rem 0.8rem' }}>النوع</th>
-                  <th style={{ padding: '0.6rem 0.8rem' }}>الكمية الفردية</th>
-                  <th style={{ padding: '0.6rem 0.8rem' }}>ساعات العمل</th>
+                  <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.اسم_العامل_2d8f2a')}</th>
+                  <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.الكود_59a408')}</th>
+                  <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.النوع_59a413')}</th>
+                  <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.الكمية_الفردية_202074')}</th>
+                  <th style={{ padding: '0.6rem 0.8rem' }}>{t('auto.ساعات_العمل_51311a')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -359,13 +356,13 @@ export const ProductionDetailView: React.FC<ProductionDetailViewProps> = ({
                     </td>
                     <td style={{ padding: '0.6rem 0.8rem' }}>
                       <span className="badge badge-secondary" style={{ fontSize: '0.7rem' }}>
-                        {w.workerType === 'team' ? 'فريق' : 'فردي'}
+                        {w.workerType === 'team' ? t('auto.فريق_2efcd4') : t('auto.فردي_2efca0')}
                       </span>
                     </td>
                     <td style={{ padding: '0.6rem 0.8rem', fontWeight: 700, color: '#60a5fa' }}>
                       {w.individualQuantity}
                     </td>
-                    <td style={{ padding: '0.6rem 0.8rem' }}>{w.hoursWorked} ساعة</td>
+                    <td style={{ padding: '0.6rem 0.8rem' }}>{w.hoursWorked} {t('auto.ساعة_2e9486')}</td>
                   </tr>
                 ))}
               </tbody>

@@ -288,7 +288,7 @@ export const Layout: React.FC = () => {
             </div>
             <div>
               <h2 style={{ fontSize: '0.95rem', fontWeight: 800, whiteSpace: 'nowrap', margin: 0, color: 'var(--text-heading, #ffffff)' }}>
-                {t('header.system_edition') || 'منظومة المقاولات'}
+                {t('header.system_edition') || t('auto.منظومة_المقاولات_69af60')}
               </h2>
               <span style={{ fontSize: '0.7rem', color: 'var(--brand-accent, #f59e0b)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                 {t('header.saudi_edition') || 'Saudi Edition 🇸🇦'}
@@ -429,8 +429,7 @@ export const Layout: React.FC = () => {
                               fontWeight: 700,
                             }}
                           >
-                            قريبًا
-                          </span>
+                            {t('auto.قريب_ا_7e6db8')}</span>
                         )}
                       </NavLink>
                     ))}
@@ -456,7 +455,7 @@ export const Layout: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ color: 'var(--text-dim)' }}>{t('header.currency_label') || 'العملة'}:</span>
+            <span style={{ color: 'var(--text-dim)' }}>{t('header.currency_label') || t('auto.العملة_25278c')}:</span>
             <span style={{ fontWeight: 800, color: 'var(--brand-accent, #f59e0b)', fontFamily: 'monospace' }}>SAR 🇸🇦</span>
           </div>
 
@@ -483,7 +482,7 @@ export const Layout: React.FC = () => {
                 background: '#10b981',
               }}
             />
-            <span>{t('header.online_status') || 'متصل'}</span>
+            <span>{t('header.online_status') || t('auto.متصل_2f181f')}</span>
           </div>
         </div>
       </aside>
@@ -513,16 +512,16 @@ export const Layout: React.FC = () => {
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="btn btn-secondary"
               style={{ padding: '0.45rem', borderRadius: 'var(--radius-sm)' }}
-              title={t('header.toggle_sidebar') || 'تبديل القائمة الجانبية'}
+              title={t('header.toggle_sidebar') || t('auto.تبديل_القائمة_الجانبية_797d27')}
               aria-label="Toggle Navigation"
             >
               {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
 
             <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{t('header.company_label') || 'الشركة'}:</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{t('header.company_label') || t('auto.الشركة_252a1e')}:</span>
               <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-heading, #ffffff)' }}>
-                {t('header.company_name') || 'شركة البناء المتقدمة للتطوير والمقاولات'}
+                {t('header.company_name') || t('auto.شركة_البناء_المتقدمة_للتطوير_و_27a090')}
               </span>
             </div>
 
@@ -546,7 +545,7 @@ export const Layout: React.FC = () => {
                 <span>
                   {t('header.field_scope')}:{' '}
                   {user.scopes.length === 1
-                    ? user.scopes[0].projectName || user.scopes[0].projectCode || 'مشروع محدد'
+                    ? user.scopes[0].projectName || user.scopes[0].projectCode || t('auto.مشروع_محدد_5b4a3c')
                     : `${user.scopes.length} مشاريع`}
                 </span>
               </div>

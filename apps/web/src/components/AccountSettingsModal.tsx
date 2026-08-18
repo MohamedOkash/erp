@@ -127,7 +127,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     } catch (err: any) {
       const code = err?.response?.data?.code;
       if (code === 'WRONG_CURRENT_PASSWORD') {
-        setPasswordError('Current password is wrong / كلمة المرور الحالية غير صحيحة');
+        setPasswordError(t('auto.Current_password_is_wrong_كلمة_6abfa4'));
       } else {
         setPasswordError(
           err?.response?.data?.message || err?.message || t('common.error'),

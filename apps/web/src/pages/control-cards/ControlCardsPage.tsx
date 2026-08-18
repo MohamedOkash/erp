@@ -61,7 +61,7 @@ export const ControlCardsPage: React.FC = () => {
       });
       setCards(data);
     } catch (err: any) {
-      setError(err?.message || 'فشل تحميل بطاقات التحكم');
+      setError(err?.message || t('auto.فشل_تحميل_بطاقات_التحكم_7aba0a'));
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export const ControlCardsPage: React.FC = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span className="badge badge-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
-            <Sparkles size={14} /> <span>{cards.length} بطاقة تحكم نشطة</span>
+            <Sparkles size={14} /> <span>{cards.length} {t('auto.بطاقة_تحكم_نشطة_5f6e1f')}</span>
           </span>
         </div>
       </div>
@@ -109,7 +109,7 @@ export const ControlCardsPage: React.FC = () => {
             className={`btn ${selectedCategory === '' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
           >
-            <FolderTree size={14} /> <span>كافة الأقسام ({categories.length})</span>
+            <FolderTree size={14} /> <span>{t('auto.كافة_الأقسام_4c9181')}{categories.length})</span>
           </button>
           {categories.map((cat) => (
             <button
@@ -138,12 +138,12 @@ export const ControlCardsPage: React.FC = () => {
       >
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
-            <Search size={14} /> <span>بحث باسم البند أو الكود</span>
+            <Search size={14} /> <span>{t('auto.بحث_باسم_البند_أو_الكود_141047')}</span>
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="ابحث في بطاقات التحكم..."
+            placeholder={t('auto.ابحث_في_بطاقات_التحكم_20a59f')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -151,14 +151,14 @@ export const ControlCardsPage: React.FC = () => {
 
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
-            <FolderKanban size={14} /> <span>ربط بمشروع لمتابعة التقدم الحي</span>
+            <FolderKanban size={14} /> <span>{t('auto.ربط_بمشروع_لمتابعة_التقدم_الحي_423a1f')}</span>
           </label>
           <select
             className="input-field"
             value={selectedProject}
             onChange={(e) => setSelectedProject(e.target.value)}
           >
-            <option value="">(القيم القياسية العامة للبطاقات)</option>
+            <option value="">{t('auto.القيم_القياسية_العامة_للبطاقات_546063')}</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -170,7 +170,7 @@ export const ControlCardsPage: React.FC = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '5rem' }}>
           <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-          <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>جاري تحميل بطاقات التحكم الحية...</p>
+          <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>{t('auto.جاري_تحميل_بطاقات_التحكم_الحية_11fa66')}</p>
         </div>
       ) : error ? (
         <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', color: '#f87171' }}>
@@ -178,8 +178,7 @@ export const ControlCardsPage: React.FC = () => {
         </div>
       ) : cards.length === 0 ? (
         <div className="glass-card" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-          لا توجد بطاقات تحكم مطابقة لبحثك
-        </div>
+          {t('auto.لا_توجد_بطاقات_تحكم_مطابقة_لبح_1b525c')}</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
           {cards.map((c) => (
@@ -247,12 +246,12 @@ export const ControlCardsPage: React.FC = () => {
                   }}
                 >
                   <div>
-                    <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem', display: 'block' }}>مستهدف اليوم</span>
+                    <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem', display: 'block' }}>{t('auto.مستهدف_اليوم_79b9b9')}</span>
                     <strong style={{ color: '#ffffff', fontSize: '0.95rem' }}>{c.totalPerDay} {c.unit}</strong>
                   </div>
                   <div>
-                    <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem', display: 'block' }}>تكلفة العمالة/{c.unit}</span>
-                    <strong style={{ color: '#fbbf24', fontSize: '0.95rem' }}>{c.laborCostPerUnit} ريال</strong>
+                    <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem', display: 'block' }}>{t('auto.تكلفة_العمالة_6542d7')}{c.unit}</span>
+                    <strong style={{ color: '#fbbf24', fontSize: '0.95rem' }}>{c.laborCostPerUnit} {t('auto.ريال_2e8e0f')}</strong>
                   </div>
                 </div>
 
@@ -269,12 +268,12 @@ export const ControlCardsPage: React.FC = () => {
                   }}
                 >
                   <div>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>سعر العقد: </span>
-                    <strong style={{ color: '#34d399' }}>{c.contractPrice} ريال</strong>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{t('auto.سعر_العقد_5e1a67')}</span>
+                    <strong style={{ color: '#34d399' }}>{c.contractPrice} {t('auto.ريال_2e8e0f')}</strong>
                   </div>
                   <div>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>الهامش: </span>
-                    <strong style={{ color: '#10b981' }}>{c.marginPerUnit} ريال</strong>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{t('auto.الهامش_7f1266')}</span>
+                    <strong style={{ color: '#10b981' }}>{c.marginPerUnit} {t('auto.ريال_2e8e0f')}</strong>
                   </div>
                 </div>
               </div>
@@ -284,7 +283,7 @@ export const ControlCardsPage: React.FC = () => {
                 {selectedProject && (
                   <div style={{ marginBottom: '0.75rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-                      <span style={{ color: 'var(--text-dim)' }}>التقدم في المشروع:</span>
+                      <span style={{ color: 'var(--text-dim)' }}>{t('auto.التقدم_في_المشروع_20e42f')}</span>
                       <strong style={{ color: '#60a5fa' }}>{c.progressPct}%</strong>
                     </div>
                     <div style={{ width: '100%', height: '6px', background: 'rgba(15, 23, 42, 0.8)', borderRadius: '3px', overflow: 'hidden' }}>
@@ -311,7 +310,7 @@ export const ControlCardsPage: React.FC = () => {
                     gap: '0.4rem',
                   }}
                 >
-                  <span>عرض بطاقة التحكم الحية</span>
+                  <span>{t('auto.عرض_بطاقة_التحكم_الحية_7094fd')}</span>
                   <ArrowUpRight size={14} />
                 </button>
               </div>

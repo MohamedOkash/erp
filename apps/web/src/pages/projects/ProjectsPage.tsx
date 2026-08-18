@@ -73,7 +73,7 @@ export const ProjectsPage: React.FC = () => {
       setProjects(res.data);
       setTotal(res.total);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل بيانات المشاريع');
+      setError(err.message || t('auto.فشل_تحميل_بيانات_المشاريع_5c4301'));
     } finally {
       setIsLoading(false);
     }
@@ -103,16 +103,16 @@ export const ProjectsPage: React.FC = () => {
     try {
       if (editingProject) {
         await projectsApi.update(editingProject.id, payload);
-        setSuccessMsg('تم تحديث المشروع بنجاح');
+        setSuccessMsg(t('auto.تم_تحديث_المشروع_بنجاح_642640'));
       } else {
         await projectsApi.create(payload as CreateProjectPayload);
-        setSuccessMsg('تم إنشاء المشروع بنجاح');
+        setSuccessMsg(t('auto.تم_إنشاء_المشروع_بنجاح_3420b8'));
       }
       setIsModalOpen(false);
       loadProjects();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ بيانات المشروع');
+      setError(err.message || t('auto.فشل_حفظ_بيانات_المشروع_29001f'));
     } finally {
       setIsSaving(false);
     }
@@ -128,7 +128,7 @@ export const ProjectsPage: React.FC = () => {
       loadProjects();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حذف المشروع');
+      setError(err.message || t('auto.فشل_حذف_المشروع_37ea5e'));
     } finally {
       setIsDeleting(false);
     }
@@ -137,13 +137,13 @@ export const ProjectsPage: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'in_progress':
-        return <span className="badge badge-primary">⚡ قيد التنفيذ</span>;
+        return <span className="badge badge-primary">{t('auto.قيد_التنفيذ_32b209')}</span>;
       case 'completed':
-        return <span className="badge badge-success">✓ مكتمل</span>;
+        return <span className="badge badge-success">{t('auto.مكتمل_6dfda8')}</span>;
       case 'planned':
-        return <span className="badge badge-accent">🗓️ مخطط له</span>;
+        return <span className="badge badge-accent">{t('auto.مخطط_له_50393d')}</span>;
       case 'on_hold':
-        return <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>⏸️ معلق</span>;
+        return <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>{t('auto.معلق_465e69')}</span>;
       default:
         return <span className="badge badge-secondary">{status}</span>;
     }
@@ -156,30 +156,30 @@ export const ProjectsPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي المشاريع',
+      label: t('auto.إجمالي_المشاريع_38d9fb'),
       value: total,
       helper: `${projects.length} معروضة بالجلسة`,
       icon: <FolderKanban size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'مشاريع قيد التنفيذ',
+      label: t('auto.مشاريع_قيد_التنفيذ_17aa1e'),
       value: inProgressCount,
-      helper: 'مواقع إنتاجية نشطة',
+      helper: t('auto.مواقع_إنتاجية_نشطة_270251'),
       icon: <Activity size={22} />,
       color: '#34d399',
     },
     {
-      label: 'مشاريع مكتملة ومسلّمة',
+      label: t('auto.مشاريع_مكتملة_ومسل_مة_1fb12c'),
       value: completedCount,
       helper: `${projects.filter((p) => p.status === 'on_hold').length} متوقف أو معلق`,
       icon: <CheckCheck size={22} />,
       color: '#10b981',
     },
     {
-      label: 'إجمالي قيمة العقود',
+      label: t('auto.إجمالي_قيمة_العقود_13189c'),
       value: `${totalContractVal.toLocaleString()} SAR`,
-      helper: 'لكافة المشاريع المسجلة',
+      helper: t('auto.لكافة_المشاريع_المسجلة_ce226b'),
       icon: <DollarSign size={22} />,
       color: '#f59e0b',
     },
@@ -274,12 +274,12 @@ export const ProjectsPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Search size={14} />
-            <span>بحث باسم المشروع أو الكود</span>
+            <span>{t('auto.بحث_باسم_المشروع_أو_الكود_215401')}</span>
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="ابحث..."
+            placeholder={t('auto.ابحث_4fa1bf')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -291,7 +291,7 @@ export const ProjectsPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Filter size={14} />
-            <span>فلترة بحسب الفرع التابع</span>
+            <span>{t('auto.فلترة_بحسب_الفرع_التابع_f35b44')}</span>
           </label>
           <select
             className="input-field"
@@ -301,7 +301,7 @@ export const ProjectsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الفروع</option>
+            <option value="">{t('auto.كافة_الفروع_1a62e9')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -311,7 +311,7 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">حالة المشروع</label>
+          <label className="form-label">{t('auto.حالة_المشروع_1d74d7')}</label>
           <select
             className="input-field"
             value={selectedStatus}
@@ -320,11 +320,11 @@ export const ProjectsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الحالات</option>
-            <option value="in_progress">قيد التنفيذ</option>
-            <option value="planned">مخطط له</option>
-            <option value="completed">مكتمل</option>
-            <option value="on_hold">معلق</option>
+            <option value="">{t('auto.كافة_الحالات_3318a9')}</option>
+            <option value="in_progress">{t('auto.قيد_التنفيذ_63bb0d')}</option>
+            <option value="planned">{t('auto.مخطط_له_72934d')}</option>
+            <option value="completed">{t('auto.مكتمل_5b49f6')}</option>
+            <option value="on_hold">{t('auto.معلق_2f1bc1')}</option>
           </select>
         </div>
       </div>
@@ -341,20 +341,19 @@ export const ProjectsPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>المشروع / الكود</th>
-                  <th style={{ padding: '1rem' }}>الفرع التابع</th>
-                  <th style={{ padding: '1rem' }}>الحالة</th>
-                  <th style={{ padding: '1rem' }}>قيمة العقد (SAR)</th>
-                  <th style={{ padding: '1rem' }}>تاريخ البدء والانتهاء</th>
-                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المشروع_الكود_45c134')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الفرع_التابع_26570d')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.قيمة_العقد_SAR_57ae97')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.تاريخ_البدء_والانتهاء_41f11d')}</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                 </tr>
               </thead>
               <tbody>
                 {projects.length === 0 ? (
                   <tr>
                     <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد مشاريع مسجلة مطابقة للبحث
-                    </td>
+                      {t('auto.لا_توجد_مشاريع_مسجلة_مطابقة_لل_2af0cb')}</td>
                   </tr>
                 ) : (
                   projects.map((proj) => (
@@ -375,7 +374,7 @@ export const ProjectsPage: React.FC = () => {
                         )}
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                        {proj.branchName || 'غير محدد'}
+                        {proj.branchName || t('auto.غير_محدد_1567b8')}
                       </td>
                       <td style={{ padding: '1rem' }}>{getStatusBadge(proj.status)}</td>
                       <td style={{ padding: '1rem', fontWeight: 600 }}>
@@ -392,8 +391,8 @@ export const ProjectsPage: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                           <Clock size={13} />
                           <span>
-                            {proj.startDate ? proj.startDate.split('T')[0] : '—'} إلى{' '}
-                            {proj.endDate ? proj.endDate.split('T')[0] : 'مفتوح'}
+                            {proj.startDate ? proj.startDate.split('T')[0] : '—'} {t('auto.إلى_17d96a')}{' '}
+                            {proj.endDate ? proj.endDate.split('T')[0] : t('auto.مفتوح_5b490e')}
                           </span>
                         </div>
                       </td>
@@ -404,7 +403,7 @@ export const ProjectsPage: React.FC = () => {
                             onClick={() => handleOpenEdit(proj)}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title="تعديل المشروع"
+                            title={t('auto.تعديل_المشروع_6a18e9')}
                           >
                             <Edit2 size={15} />
                           </button>
@@ -418,7 +417,7 @@ export const ProjectsPage: React.FC = () => {
                               color: '#f87171',
                               borderColor: 'rgba(239, 68, 68, 0.25)',
                             }}
-                            title="حذف المشروع"
+                            title={t('auto.حذف_المشروع_34393c')}
                           >
                             <Trash2 size={15} />
                           </button>
@@ -444,8 +443,7 @@ export const ProjectsPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} مشروع
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.مشروع_5b433f')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -453,17 +451,15 @@ export const ProjectsPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -483,7 +479,7 @@ export const ProjectsPage: React.FC = () => {
       <Modal
         isOpen={!!deletingProject}
         onClose={() => setDeletingProject(null)}
-        title="تأكيد حذف المشروع"
+        title={t('auto.تأكيد_حذف_المشروع_3d2800')}
         icon={<Trash2 size={22} color="#f87171" />}
         maxWidth="sm"
         footer={
@@ -494,8 +490,7 @@ export const ProjectsPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeleting}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleConfirmDelete}
@@ -504,14 +499,13 @@ export const ProjectsPage: React.FC = () => {
               disabled={isDeleting}
             >
               {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تأكيد الحذف</span>
+              <span>{t('auto.تأكيد_الحذف_4af57e')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          هل أنت متأكد من رغبتك في حذف المشروع <strong style={{ color: '#ffffff' }}>"{deletingProject?.name}"</strong>؟
-        </p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_479702')}<strong style={{ color: '#ffffff' }}>"{deletingProject?.name}"</strong>{t('auto.k_61f')}</p>
       </Modal>
     </div>
   );

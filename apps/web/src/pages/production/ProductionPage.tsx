@@ -114,7 +114,7 @@ export const ProductionPage: React.FC = () => {
       setTotal(res.total);
       setViewingRecord((prev) => (prev ? res.data.find((r) => r.id === prev.id) || prev : null));
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل سجلات الإنتاج اليومي');
+      setError(err.message || t('auto.فشل_تحميل_سجلات_الإنتاج_اليومي_1a4ccc'));
     } finally {
       setIsLoading(false);
     }
@@ -133,10 +133,10 @@ export const ProductionPage: React.FC = () => {
     setError(null);
     try {
       await productionApi.exportXlsx();
-      setSuccessMsg('تم تصدير ملف إنتاجية الإكسيل بنجاح');
+      setSuccessMsg(t('auto.تم_تصدير_ملف_إنتاجية_الإكسيل_ب_e3b068'));
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل تصدير ملف الإنتاجية');
+      setError(err.message || t('auto.فشل_تصدير_ملف_الإنتاجية_6425b1'));
     } finally {
       setIsExporting(false);
     }
@@ -175,28 +175,28 @@ export const ProductionPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي السجلات (الشهر)',
+      label: t('auto.إجمالي_السجلات_الشهر_3fdbcb'),
       value: total,
       helper: `${records.length} مسجلة حالياً`,
       icon: <Layers size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'متوسط نسبة الإنجاز',
+      label: t('auto.متوسط_نسبة_الإنجاز_1204e8'),
       value: `${avgCompletion}%`,
       helper: `${totalActual.toLocaleString()} / ${totalTarget.toLocaleString()} وحدة`,
       icon: <TrendingUp size={22} />,
       color: avgCompletion >= 80 ? '#34d399' : '#f59e0b',
     },
     {
-      label: 'معتمد نهائياً ومغلق',
+      label: t('auto.معتمد_نهائيا_ومغلق_7091aa'),
       value: finalApprovedCount,
-      helper: 'جاهز للحسابات والحوافز',
+      helper: t('auto.جاهز_للحسابات_والحوافز_74aa50'),
       icon: <ShieldCheck size={22} />,
       color: '#10b981',
     },
     {
-      label: 'بانتظار الاعتماد',
+      label: t('auto.بانتظار_الاعتماد_9ee1aa'),
       value: pendingCount,
       helper: `${records.filter((r) => r.status === 'draft').length} مسودة`,
       icon: <Clock size={22} />,
@@ -207,23 +207,21 @@ export const ProductionPage: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return <span className="badge badge-secondary">مسودة (Draft)</span>;
+        return <span className="badge badge-secondary">{t('auto.مسودة_Draft_f72705')}</span>;
       case 'submitted':
-        return <span className="badge badge-accent">مقدم (Submitted)</span>;
+        return <span className="badge badge-accent">{t('auto.مقدم_Submitted_3e7c5c')}</span>;
       case 'supervisor_approved':
         return (
           <span className="badge badge-primary" style={{ background: 'rgba(217, 119, 6, 0.2)', color: '#fbbf24' }}>
-            معتمد مشرف
-          </span>
+            {t('auto.معتمد_مشرف_464ae0')}</span>
         );
       case 'engineer_approved':
         return (
           <span className="badge badge-primary" style={{ background: 'rgba(14, 165, 233, 0.2)', color: '#38bdf8' }}>
-            معتمد مهندس
-          </span>
+            {t('auto.معتمد_مهندس_7cf7d5')}</span>
         );
       case 'final_approved':
-        return <span className="badge badge-success">✓ معتمد نهائيًا</span>;
+        return <span className="badge badge-success">{t('auto.معتمد_نهائي_ا_5a4613')}</span>;
       default:
         return <span className="badge badge-secondary">{status}</span>;
     }
@@ -381,12 +379,12 @@ export const ProductionPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Search size={14} />
-            <span>بحث (بند/مشروع/مشرف)</span>
+            <span>{t('auto.بحث_بند_مشروع_مشرف_76f259')}</span>
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="ابحث..."
+            placeholder={t('auto.ابحث_4fa1bf')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -398,10 +396,10 @@ export const ProductionPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Calendar size={14} />
-            <span>من تاريخ</span>
+            <span>{t('auto.من_تاريخ_4c8e03')}</span>
           </label>
           <WheelDatePicker
-            placeholder="من تاريخ..."
+            placeholder={t('auto.من_تاريخ_3db437')}
             value={fromDate}
             onChange={(val) => {
               setFromDate(val);
@@ -413,10 +411,10 @@ export const ProductionPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Calendar size={14} />
-            <span>إلى تاريخ</span>
+            <span>{t('auto.إلى_تاريخ_d3e6d7')}</span>
           </label>
           <WheelDatePicker
-            placeholder="إلى تاريخ..."
+            placeholder={t('auto.إلى_تاريخ_33c707')}
             value={toDate}
             onChange={(val) => {
               setToDate(val);
@@ -426,7 +424,7 @@ export const ProductionPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الفرع</label>
+          <label className="form-label">{t('auto.الفرع_59a3fe')}</label>
           <select
             className="input-field"
             value={selectedBranch}
@@ -436,7 +434,7 @@ export const ProductionPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الفروع</option>
+            <option value="">{t('auto.كافة_الفروع_1a62e9')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -447,11 +445,10 @@ export const ProductionPage: React.FC = () => {
 
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>المشروع</span>
+            <span>{t('auto.المشروع_7f28ee')}</span>
             {isSingleScoped && (
               <span style={{ fontSize: '10px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <Lock size={11} /> نطاق مخصص
-              </span>
+                <Lock size={11} /> {t('auto.نطاق_مخصص_1b6320')}</span>
             )}
           </label>
           <select
@@ -464,7 +461,7 @@ export const ProductionPage: React.FC = () => {
             }}
             style={isSingleScoped ? { opacity: 0.85, cursor: 'not-allowed', borderColor: 'rgba(139, 92, 246, 0.4)' } : {}}
           >
-            {!isSingleScoped && <option value="">كافة المشاريع</option>}
+            {!isSingleScoped && <option value="">{t('auto.كافة_المشاريع_65e01c')}</option>}
             {branchProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -476,7 +473,7 @@ export const ProductionPage: React.FC = () => {
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
             <Filter size={14} />
-            <span>حالة الاعتماد</span>
+            <span>{t('auto.حالة_الاعتماد_6243e3')}</span>
           </label>
           <select
             className="input-field"
@@ -486,12 +483,12 @@ export const ProductionPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الحالات</option>
-            <option value="draft">مسودة (Draft)</option>
-            <option value="submitted">مقدم (Submitted)</option>
-            <option value="supervisor_approved">معتمد مشرف</option>
-            <option value="engineer_approved">معتمد مهندس</option>
-            <option value="final_approved">معتمد نهائيًا</option>
+            <option value="">{t('auto.كافة_الحالات_3318a9')}</option>
+            <option value="draft">{t('auto.مسودة_Draft_f72705')}</option>
+            <option value="submitted">{t('auto.مقدم_Submitted_3e7c5c')}</option>
+            <option value="supervisor_approved">{t('auto.معتمد_مشرف_464ae0')}</option>
+            <option value="engineer_approved">{t('auto.معتمد_مهندس_7cf7d5')}</option>
+            <option value="final_approved">{t('auto.معتمد_نهائي_ا_5187ee')}</option>
           </select>
         </div>
       </div>
@@ -509,24 +506,23 @@ export const ProductionPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>التاريخ</th>
-                  <th style={{ padding: '1rem' }}>المشروع / الفرع</th>
-                  <th style={{ padding: '1rem' }}>البند والمرحلة</th>
-                  <th style={{ padding: '1rem' }}>النوع والفريق</th>
-                  <th style={{ padding: '1rem' }}>المستهدف</th>
-                  <th style={{ padding: '1rem' }}>الفعلي</th>
-                  <th style={{ padding: '1rem' }}>نسبة الإنجاز</th>
-                  <th style={{ padding: '1rem' }}>المشرف</th>
-                  <th style={{ padding: '1rem' }}>الحالة</th>
-                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.التاريخ_7f54ad')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المشروع_الفرع_45c129')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.البند_والمرحلة_6d447a')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.النوع_والفريق_27ce8e')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المستهدف_660633')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الفعلي_252416')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.نسبة_الإنجاز_3259d2')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المشرف_25225a')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedRecords.length === 0 ? (
                   <tr>
                     <td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد سجلات إنتاجية مطابقة لمعايير البحث
-                    </td>
+                      {t('auto.لا_توجد_سجلات_إنتاجية_مطابقة_ل_6534d4')}</td>
                   </tr>
                 ) : (
                   paginatedRecords.map((rec) => (
@@ -546,7 +542,7 @@ export const ProductionPage: React.FC = () => {
                       <td style={{ padding: '1rem' }}>
                         <div style={{ fontWeight: 700, color: '#ffffff' }}>{rec.projectName}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                          {rec.branchName || 'فرع'} {rec.workAreaName ? `• ${rec.workAreaName}` : ''}
+                          {rec.branchName || t('auto.فرع_184029')} {rec.workAreaName ? `• ${rec.workAreaName}` : ''}
                         </div>
                       </td>
                       <td style={{ padding: '1rem' }}>
@@ -560,12 +556,11 @@ export const ProductionPage: React.FC = () => {
                       <td style={{ padding: '1rem' }}>
                         {rec.productionType === 'team' ? (
                           <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
-                            <Users size={11} /> فريق ({rec.teamCode || 'Team'})
+                            <Users size={11} /> {t('auto.فريق_6319f5')}{rec.teamCode || 'Team'})
                           </span>
                         ) : (
                           <span className="badge badge-secondary" style={{ fontSize: '0.7rem' }}>
-                            فردي ({rec.workers?.length || 0} عمال)
-                          </span>
+                            {t('auto.فردي_625775')}{rec.workers?.length || 0} {t('auto.عمال_5aa1b4')}</span>
                         )}
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{rec.targetQuantity}</td>
@@ -581,10 +576,10 @@ export const ProductionPage: React.FC = () => {
                           onClick={() => setViewingRecord(rec)}
                           className="btn btn-secondary"
                           style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', gap: '0.35rem' }}
-                          title="عرض التفاصيل ومسار الاعتماد"
+                          title={t('auto.عرض_التفاصيل_ومسار_الاعتماد_3e24f0')}
                         >
                           <Eye size={14} color="#60a5fa" />
-                          <span>عرض</span>
+                          <span>{t('auto.عرض_18221e')}</span>
                         </button>
                       </td>
                     </tr>
@@ -598,8 +593,7 @@ export const ProductionPage: React.FC = () => {
           <div className="mobile-cards-view" style={{ padding: '0.75rem' }}>
             {paginatedRecords.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                لا توجد سجلات إنتاجية مطابقة لمعايير البحث
-              </div>
+                {t('auto.لا_توجد_سجلات_إنتاجية_مطابقة_ل_6534d4')}</div>
             ) : (
               paginatedRecords.map((rec) => (
                 <div key={rec.id} className="mobile-record-card">
@@ -618,11 +612,11 @@ export const ProductionPage: React.FC = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', background: 'var(--bg-surface-elevated)', padding: '0.6rem', borderRadius: 'var(--radius-md)' }}>
                     <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>الفعلي / المستهدف</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{t('auto.الفعلي_المستهدف_761eb1')}</div>
                       <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--brand-primary)' }}>{rec.actualQuantity} / {rec.targetQuantity}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>نسبة الإنجاز</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{t('auto.نسبة_الإنجاز_3259d2')}</div>
                       <div>{getRatioBadge(Number(rec.actualQuantity), Number(rec.targetQuantity))}</div>
                     </div>
                   </div>
@@ -634,7 +628,7 @@ export const ProductionPage: React.FC = () => {
                     style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem', gap: '0.4rem', justifyContent: 'center' }}
                   >
                     <Eye size={15} color="#60a5fa" />
-                    <span>عرض التفاصيل والاعتماد</span>
+                    <span>{t('auto.عرض_التفاصيل_والاعتماد_32eb6a')}</span>
                   </button>
                 </div>
               ))
@@ -654,8 +648,7 @@ export const ProductionPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} سجل إنتاجية
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.سجل_إنتاجية_331abe')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -663,10 +656,9 @@ export const ProductionPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
+                {t('auto.السابق_252abb')}</button>
               <span style={{ padding: '0.35rem 0.5rem' }}>
-                صفحة {page} من {Math.ceil(total / limit) || 1}
+                {t('auto.صفحة_2ea914')}{page} {t('auto.من_c8a1')}{Math.ceil(total / limit) || 1}
               </span>
               <button
                 className="btn btn-secondary"
@@ -674,8 +666,7 @@ export const ProductionPage: React.FC = () => {
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -686,7 +677,7 @@ export const ProductionPage: React.FC = () => {
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
         onSuccess={() => {
-          setSuccessMsg('تم تسجيل تقرير الإنتاجية بنجاح!');
+          setSuccessMsg(t('auto.تم_تسجيل_تقرير_الإنتاجية_بنجاح_4cd4f0'));
           loadRecords();
           setTimeout(() => setSuccessMsg(null), 4000);
         }}
@@ -721,7 +712,7 @@ export const ProductionPage: React.FC = () => {
           isOpen={!!correctingRecord}
           onClose={() => setCorrectingRecord(null)}
           onSuccess={() => {
-            setSuccessMsg('تم تقديم طلب التصحيح بنجاح!');
+            setSuccessMsg(t('auto.تم_تقديم_طلب_التصحيح_بنجاح_2e852b'));
             loadRecords();
             setTimeout(() => setSuccessMsg(null), 4000);
           }}
@@ -734,7 +725,7 @@ export const ProductionPage: React.FC = () => {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onSuccess={() => {
-          setSuccessMsg('تم استيراد واعتماد سجلات الإنتاج بنجاح!');
+          setSuccessMsg(t('auto.تم_استيراد_واعتماد_سجلات_الإنت_934aa9'));
           loadRecords();
           setTimeout(() => setSuccessMsg(null), 4000);
         }}

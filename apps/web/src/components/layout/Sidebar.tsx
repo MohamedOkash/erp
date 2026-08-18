@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -19,55 +20,56 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
+  const { t } = useI18n();
   const navItems = [
     {
       to: '/dashboard',
-      label: 'الرئيسية',
+      label: t('auto.الرئيسية_772ff2'),
       icon: <LayoutDashboard size={20} />,
     },
     {
       to: '/employees',
-      label: 'العمال والموظفون',
+      label: t('auto.العمال_والموظفون_54d4fe'),
       icon: <Users size={20} />,
     },
     {
       to: '/projects',
-      label: 'المشاريع والفروع',
+      label: t('auto.المشاريع_والفروع_59c3e5'),
       icon: <FolderKanban size={20} />,
     },
     {
       to: '/boq',
-      label: 'المقايسة وتقدم التنفيذ',
+      label: t('auto.المقايسة_وتقدم_التنفيذ_77ac76'),
       icon: <FileSpreadsheet size={20} />,
     },
     {
       to: '/production',
-      label: 'الإنتاجية اليومية',
+      label: t('auto.الإنتاجية_اليومية_5b6d3f'),
       icon: <Layers size={20} />,
     },
     {
       to: '/attendance',
-      label: 'الحضور والانصراف',
+      label: t('auto.الحضور_والانصراف_7d9ff8'),
       icon: <CalendarCheck size={20} />,
     },
     {
       to: '/costs',
-      label: 'التكاليف وسجل المصروفات',
+      label: t('auto.التكاليف_وسجل_المصروفات_7b7976'),
       icon: <DollarSign size={20} />,
     },
     {
       to: '/incentives',
-      label: 'الحوافز والمكافآت',
+      label: t('auto.الحوافز_والمكافآت_52fa80'),
       icon: <Award size={20} />,
     },
     {
       to: '/documents',
-      label: 'المستندات والأرشيف',
+      label: t('auto.المستندات_والأرشيف_7b3887'),
       icon: <FileText size={20} />,
     },
     {
       to: '/alerts',
-      label: 'التنبيهات والإشعارات',
+      label: t('auto.التنبيهات_والإشعارات_dc4ebf'),
       icon: <BellRing size={20} />,
     },
   ];
@@ -116,8 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
         {!collapsed && (
           <div style={{ overflow: 'hidden' }}>
             <h2 style={{ fontSize: '1rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
-              نظام التشطيبات
-            </h2>
+              {t('auto.نظام_التشطيبات_5b7890')}</h2>
             <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
               Construction ERP
             </span>
@@ -174,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
             textAlign: 'center',
           }}
         >
-          <span>الإصدار 1.0.0 (Saudi Localization)</span>
+          <span>{t('auto.الإصدار_1_0_0_Saudi_Localizati_21e06b')}</span>
         </div>
       )}
     </aside>

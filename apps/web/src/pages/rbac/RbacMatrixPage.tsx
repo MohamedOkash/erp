@@ -27,21 +27,7 @@ import { rolesApi, type Permission, type Role } from '../../api/roles.api';
 import { useI18n } from '../../i18n/I18nContext';
 
 // Module metadata & icons configuration
-const MODULE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  production: { label: 'الإنتاجية اليومية', icon: <Layers size={18} />, color: '#3b82f6' },
-  attendance: { label: 'الحضور والانصراف', icon: <CalendarCheck size={18} />, color: '#10b981' },
-  costs: { label: 'التكاليف والمصروفات', icon: <DollarSign size={18} />, color: '#f59e0b' },
-  boq: { label: 'المقايسة وتقدم التنفيذ (BOQ)', icon: <FileSpreadsheet size={18} />, color: '#8b5cf6' },
-  employees: { label: 'الموظفون والعمال', icon: <Users size={18} />, color: '#ec4899' },
-  transfers: { label: 'نقل الكوادر والمشرفين', icon: <ArrowLeftRight size={18} />, color: '#06b6d4' },
-  documents: { label: 'المستندات والأرشيف', icon: <FileText size={18} />, color: '#14b8a6' },
-  reports: { label: 'التقارير والمؤشرات', icon: <BarChart3 size={18} />, color: '#6366f1' },
-  alerts: { label: 'التنبيهات الميدانية', icon: <BellRing size={18} />, color: '#f43f5e' },
-  incentives: { label: 'الحوافز والمكافآت', icon: <Award size={18} />, color: '#d946ef' },
-  users: { label: 'إدارة المستخدمين والحسابات', icon: <Users size={18} />, color: '#eab308' },
-  roles: { label: 'مصفوفة الصلاحيات (RBAC)', icon: <Shield size={18} />, color: '#a855f7' },
-  settings: { label: 'إعدادات النظام والمنشأة', icon: <Settings size={18} />, color: '#64748b' },
-};
+
 
 const CRITICAL_PERMISSIONS = [
   'roles.manage_permissions',
@@ -54,6 +40,23 @@ const CRITICAL_PERMISSIONS = [
 
 export const RbacMatrixPage: React.FC = () => {
   const { t } = useI18n();
+
+  const MODULE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+  production: { label: t('auto.الإنتاجية_اليومية_5b6d3f'), icon: <Layers size={18} />, color: '#3b82f6' },
+  attendance: { label: t('auto.الحضور_والانصراف_7d9ff8'), icon: <CalendarCheck size={18} />, color: '#10b981' },
+  costs: { label: t('auto.التكاليف_والمصروفات_7c40d0'), icon: <DollarSign size={18} />, color: '#f59e0b' },
+  boq: { label: t('auto.المقايسة_وتقدم_التنفيذ_BOQ_3c43b8'), icon: <FileSpreadsheet size={18} />, color: '#8b5cf6' },
+  employees: { label: t('auto.الموظفون_والعمال_478cd7'), icon: <Users size={18} />, color: '#ec4899' },
+  transfers: { label: t('auto.نقل_الكوادر_والمشرفين_1cbe4e'), icon: <ArrowLeftRight size={18} />, color: '#06b6d4' },
+  documents: { label: t('auto.المستندات_والأرشيف_7b3887'), icon: <FileText size={18} />, color: '#14b8a6' },
+  reports: { label: t('auto.التقارير_والمؤشرات_79d4c8'), icon: <BarChart3 size={18} />, color: '#6366f1' },
+  alerts: { label: t('auto.التنبيهات_الميدانية_60e589'), icon: <BellRing size={18} />, color: '#f43f5e' },
+  incentives: { label: t('auto.الحوافز_والمكافآت_52fa80'), icon: <Award size={18} />, color: '#d946ef' },
+  users: { label: t('auto.إدارة_المستخدمين_والحسابات_717598'), icon: <Users size={18} />, color: '#eab308' },
+  roles: { label: t('auto.مصفوفة_الصلاحيات_RBAC_24b3d1'), icon: <Shield size={18} />, color: '#a855f7' },
+  settings: { label: t('auto.إعدادات_النظام_والمنشأة_389e13'), icon: <Settings size={18} />, color: '#64748b' },
+};
+
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
@@ -110,7 +113,7 @@ export const RbacMatrixPage: React.FC = () => {
       setMatrixState(stateMap);
       setInitialMatrixState(initialMap);
     } catch (err: any) {
-      setErrorMessage(err?.message || 'فشل تحميل بيانات مصفوفة الصلاحيات والأدوار');
+      setErrorMessage(err?.message || t('auto.فشل_تحميل_بيانات_مصفوفة_الصلاح_17e340'));
     } finally {
       setIsLoading(false);
     }
@@ -252,7 +255,7 @@ export const RbacMatrixPage: React.FC = () => {
       setSaveSuccessMsg(`تم حفظ وتحديث صلاحيات دور "${selectedRole.name}" بنجاح.`);
       setTimeout(() => setSaveSuccessMsg(null), 3500);
     } catch (err: any) {
-      setErrorMessage(err?.response?.data?.message || err?.message || 'فشل حفظ الصلاحيات');
+      setErrorMessage(err?.response?.data?.message || err?.message || t('auto.فشل_حفظ_الصلاحيات_61e6a5'));
     } finally {
       setIsSaving(false);
     }
@@ -269,7 +272,7 @@ export const RbacMatrixPage: React.FC = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '1rem' }}>
         <Loader2 size={36} className="animate-spin" color="#3b82f6" />
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>جاري تحميل مصفوفة الصلاحيات والأدوار...</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>{t('auto.جاري_تحميل_مصفوفة_الصلاحيات_وا_ca70ff')}</span>
       </div>
     );
   }
@@ -311,13 +314,13 @@ export const RbacMatrixPage: React.FC = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Users size={16} color="#60a5fa" />
-            <span style={{ color: 'var(--text-muted)' }}>إجمالي الأدوار:</span>
+            <span style={{ color: 'var(--text-muted)' }}>{t('auto.إجمالي_الأدوار_1626db')}</span>
             <strong style={{ color: '#fff' }}>{roles.length}</strong>
           </div>
           <div style={{ width: '1px', height: '16px', background: 'var(--border-subtle)' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Sliders size={16} color="#34d399" />
-            <span style={{ color: 'var(--text-muted)' }}>إجمالي الصلاحيات:</span>
+            <span style={{ color: 'var(--text-muted)' }}>{t('auto.إجمالي_الصلاحيات_3a6109')}</span>
             <strong style={{ color: '#fff' }}>{permissions.length}</strong>
           </div>
         </div>
@@ -388,9 +391,9 @@ export const RbacMatrixPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
             <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Users size={16} color="#60a5fa" />
-              <span>الأدوار الوظيفية (Roles)</span>
+              <span>{t('auto.الأدوار_الوظيفية_Roles_1083da')}</span>
             </h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{roles.length} أدوار</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{roles.length} {t('auto.أدوار_59622d')}</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: 'calc(100vh - 220px)', overflowY: 'auto' }} className="sidebar-scroll">
@@ -440,8 +443,7 @@ export const RbacMatrixPage: React.FC = () => {
                           fontWeight: 700,
                         }}
                       >
-                        غير محفوظ
-                      </span>
+                        {t('auto.غير_محفوظ_687062')}</span>
                     )}
                   </div>
 
@@ -515,7 +517,7 @@ export const RbacMatrixPage: React.FC = () => {
                     </span>
                   </div>
                   <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    {selectedRole.description || 'تحديد الصلاحيات الممنوحة لهذا الدور في مختلف وحدات النظام'}
+                    {selectedRole.description || t('auto.تحديد_الصلاحيات_الممنوحة_لهذا__202e8d')}
                   </p>
                 </div>
               </div>
@@ -528,26 +530,24 @@ export const RbacMatrixPage: React.FC = () => {
                   className="btn btn-secondary"
                   style={{ fontSize: '0.8rem', padding: '0.5rem 0.85rem' }}
                 >
-                  تفعيل الكل
-                </button>
+                  {t('auto.تفعيل_الكل_256d2c')}</button>
                 <button
                   type="button"
                   onClick={handleRevokeAll}
                   className="btn btn-secondary"
                   style={{ fontSize: '0.8rem', padding: '0.5rem 0.85rem' }}
                 >
-                  إلغاء الكل
-                </button>
+                  {t('auto.إلغاء_الكل_3d61a0')}</button>
                 {hasUnsavedChanges && (
                   <button
                     type="button"
                     onClick={handleResetRole}
                     className="btn btn-secondary"
                     style={{ fontSize: '0.8rem', padding: '0.5rem 0.85rem', color: '#fbbf24' }}
-                    title="إلغاء التغييرات واستعادة الوضع المحفوظ"
+                    title={t('auto.إلغاء_التغييرات_واستعادة_الوضع_1d78df')}
                   >
                     <RotateCcw size={14} />
-                    <span>تراجع</span>
+                    <span>{t('auto.تراجع_59c53f')}</span>
                   </button>
                 )}
                 <button
@@ -563,7 +563,7 @@ export const RbacMatrixPage: React.FC = () => {
                   }}
                 >
                   {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                  <span>{hasUnsavedChanges ? 'حفظ التعديلات' : 'تم الحفظ'}</span>
+                  <span>{hasUnsavedChanges ? t('auto.حفظ_التعديلات_4ff313') : t('auto.تم_الحفظ_765122')}</span>
                 </button>
               </div>
             </div>
@@ -573,7 +573,7 @@ export const RbacMatrixPage: React.FC = () => {
               <input
                 type="text"
                 className="input-field"
-                placeholder="ابحث في أسماء الصلاحيات أو الرموز البرمجية (مثل: production.approve, users.create)..."
+                placeholder={t('auto.ابحث_في_أسماء_الصلاحيات_أو_الر_606a9a')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ paddingRight: '2.5rem' }}
@@ -585,8 +585,7 @@ export const RbacMatrixPage: React.FC = () => {
                   onClick={() => setSearchTerm('')}
                   style={{ position: 'absolute', left: '0.85rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
                 >
-                  مسح
-                </button>
+                  {t('auto.مسح_184f5f')}</button>
               )}
             </div>
 
@@ -595,7 +594,7 @@ export const RbacMatrixPage: React.FC = () => {
               {Object.keys(groupedPermissions).length === 0 ? (
                 <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                   <Search size={32} style={{ margin: '0 auto 0.75rem auto', opacity: 0.5 }} />
-                  <p style={{ margin: 0 }}>لا توجد صلاحيات مطابقة لكلمة البحث "{searchTerm}".</p>
+                  <p style={{ margin: 0 }}>{t('auto.لا_توجد_صلاحيات_مطابقة_لكلمة_ا_6065cd')}{searchTerm}".</p>
                 </div>
               ) : (
                 Object.entries(groupedPermissions).map(([moduleKey, modulePerms]) => {
@@ -675,7 +674,7 @@ export const RbacMatrixPage: React.FC = () => {
                               transition: 'all 0.15s ease',
                             }}
                           >
-                            {isAllGranted ? 'إلغاء الكل' : 'تفعيل الكل'}
+                            {isAllGranted ? t('auto.إلغاء_الكل_3d61a0') : t('auto.تفعيل_الكل_256d2c')}
                           </button>
 
                           <div
@@ -742,7 +741,7 @@ export const RbacMatrixPage: React.FC = () => {
                                         }}
                                       >
                                         <Lock size={10} />
-                                        <span>حساس</span>
+                                        <span>{t('auto.حساس_2e6b91')}</span>
                                       </span>
                                     )}
                                   </div>

@@ -47,7 +47,7 @@ export const DocumentsPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState('');
-  const [uploadCategory, setUploadCategory] = useState('عقود ومستندات تعاقدية');
+  const [uploadCategory, setUploadCategory] = useState(t('auto.عقود_ومستندات_تعاقدية_31ea69'));
   const [uploadProjectId, setUploadProjectId] = useState('');
   const [uploadDocNumber, setUploadDocNumber] = useState('');
   const [uploadNotes, setUploadNotes] = useState('');
@@ -93,7 +93,7 @@ export const DocumentsPage: React.FC = () => {
       setDocuments(res.data || []);
       setTotal(res.total || 0);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل قائمة المستندات');
+      setError(err.message || t('auto.فشل_تحميل_قائمة_المستندات_df4153'));
     } finally {
       setIsLoading(false);
     }
@@ -110,11 +110,11 @@ export const DocumentsPage: React.FC = () => {
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uploadFile) {
-      setError('يرجى اختيار ملف لرفعه');
+      setError(t('auto.يرجى_اختيار_ملف_لرفعه_28cdef'));
       return;
     }
     if (!uploadTitle.trim()) {
-      setError('يرجى إدخال عنوان المستند');
+      setError(t('auto.يرجى_إدخال_عنوان_المستند_631609'));
       return;
     }
 
@@ -130,7 +130,7 @@ export const DocumentsPage: React.FC = () => {
       if (uploadNotes.trim()) formData.append('notes', uploadNotes.trim());
 
       await documentsApi.upload(formData);
-      setSuccessMsg('تم رفع المستند بنجاح وأرشفته كإصدار أول (v1).');
+      setSuccessMsg(t('auto.تم_رفع_المستند_بنجاح_وأرشفته_ك_6787ee'));
       setShowUploadModal(false);
       setUploadFile(null);
       setUploadTitle('');
@@ -138,7 +138,7 @@ export const DocumentsPage: React.FC = () => {
       setUploadNotes('');
       loadDocuments();
     } catch (err: any) {
-      setError(err.message || 'فشل رفع المستند');
+      setError(err.message || t('auto.فشل_رفع_المستند_2239a6'));
     } finally {
       setIsUploading(false);
     }
@@ -151,7 +151,7 @@ export const DocumentsPage: React.FC = () => {
       const vers = await documentsApi.getVersions(doc.id);
       setDocVersions(vers || []);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل إصدارات المستند');
+      setError(err.message || t('auto.فشل_تحميل_إصدارات_المستند_769cae'));
     } finally {
       setIsLoadingVersions(false);
     }
@@ -167,7 +167,7 @@ export const DocumentsPage: React.FC = () => {
   const handleUploadNewVersionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newVersionDoc || !newVersionFile) {
-      setError('يرجى اختيار الملف الجديد');
+      setError(t('auto.يرجى_اختيار_الملف_الجديد_788f2b'));
       return;
     }
 
@@ -189,7 +189,7 @@ export const DocumentsPage: React.FC = () => {
         handleOpenVersions(newVersionDoc);
       }
     } catch (err: any) {
-      setError(err.message || 'فشل رفع الإصدار الجديد');
+      setError(err.message || t('auto.فشل_رفع_الإصدار_الجديد_456793'));
     } finally {
       setIsUploadingNewVersion(false);
     }
@@ -201,7 +201,7 @@ export const DocumentsPage: React.FC = () => {
     try {
       await documentsApi.download(docId, fileName, version);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل الملف');
+      setError(err.message || t('auto.فشل_تحميل_الملف_3e9c64'));
     } finally {
       setDownloadingId(null);
     }
@@ -217,7 +217,7 @@ export const DocumentsPage: React.FC = () => {
       setDeletingDoc(null);
       loadDocuments();
     } catch (err: any) {
-      setError(err.message || 'فشل حذف المستند');
+      setError(err.message || t('auto.فشل_حذف_المستند_37e9cf'));
     } finally {
       setIsDeleting(false);
     }
@@ -249,30 +249,30 @@ export const DocumentsPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي المستندات المؤرشفة',
+      label: t('auto.إجمالي_المستندات_المؤرشفة_1bcf18'),
       value: total,
       helper: `${documents.length} معروضة بالجلسة`,
       icon: <Folder size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'مستندات مرتبطة بمشاريع',
+      label: t('auto.مستندات_مرتبطة_بمشاريع_d20de4'),
       value: projectLinkedCount,
-      helper: 'مخططات وعقود تنفيذية',
+      helper: t('auto.مخططات_وعقود_تنفيذية_2f7f71'),
       icon: <Layers size={22} />,
       color: '#34d399',
     },
     {
-      label: 'مستندات بإصدارات متعددة',
+      label: t('auto.مستندات_بإصدارات_متعددة_26f8d5'),
       value: multiVersionCount,
-      helper: 'تم تحديثها ومراجعتها (v2+)',
+      helper: t('auto.تم_تحديثها_ومراجعتها_v2_53f39f'),
       icon: <History size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'حجم التخزين المستهلك',
+      label: t('auto.حجم_التخزين_المستهلك_8097e3'),
       value: formatFileSize(totalSizeBytes),
-      helper: 'مساحة الملفات السحابية',
+      helper: t('auto.مساحة_الملفات_السحابية_8b1d18'),
       icon: <HardDrive size={22} />,
       color: '#a78bfa',
     },
@@ -310,7 +310,7 @@ export const DocumentsPage: React.FC = () => {
           style={{ gap: '0.5rem' }}
         >
           <Upload size={18} />
-          <span>رفع مستند جديد</span>
+          <span>{t('auto.رفع_مستند_جديد_192b69')}</span>
         </button>
       </div>
 
@@ -369,7 +369,7 @@ export const DocumentsPage: React.FC = () => {
         }}
       >
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">تصفية بحسب المشروع</label>
+          <label className="form-label">{t('auto.تصفية_بحسب_المشروع_1c083e')}</label>
           <select
             className="input-field"
             value={selectedProject}
@@ -378,7 +378,7 @@ export const DocumentsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة المشاريع</option>
+            <option value="">{t('auto.كافة_المشاريع_65e01c')}</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -388,7 +388,7 @@ export const DocumentsPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">تصنيف المستند</label>
+          <label className="form-label">{t('auto.تصنيف_المستند_1adeb4')}</label>
           <select
             className="input-field"
             value={selectedCategory}
@@ -397,12 +397,12 @@ export const DocumentsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة التصنيفات</option>
-            <option value="عقود ومستندات تعاقدية">عقود ومستندات تعاقدية</option>
-            <option value="مخططات ورسومات هندسية">مخططات ورسومات هندسية</option>
-            <option value="مستخلصات ومطالبات مالية">مستخلصات ومطالبات مالية</option>
-            <option value="تقارير جودة واختبارات">تقارير جودة واختبارات</option>
-            <option value="أخرى">أخرى</option>
+            <option value="">{t('auto.كافة_التصنيفات_563586')}</option>
+            <option value={t('auto.عقود_ومستندات_تعاقدية_31ea69')}>{t('auto.عقود_ومستندات_تعاقدية_31ea69')}</option>
+            <option value={t('auto.مخططات_ورسومات_هندسية_4a2a3f')}>{t('auto.مخططات_ورسومات_هندسية_4a2a3f')}</option>
+            <option value={t('auto.مستخلصات_ومطالبات_مالية_1aeb91')}>{t('auto.مستخلصات_ومطالبات_مالية_1aeb91')}</option>
+            <option value={t('auto.تقارير_جودة_واختبارات_529be8')}>{t('auto.تقارير_جودة_واختبارات_529be8')}</option>
+            <option value={t('auto.أخرى_2e21be')}>{t('auto.أخرى_2e21be')}</option>
           </select>
         </div>
       </div>
@@ -419,21 +419,20 @@ export const DocumentsPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>عنوان المستند والملف</th>
-                  <th style={{ padding: '1rem' }}>رقم المستند</th>
-                  <th style={{ padding: '1rem' }}>التصنيف</th>
-                  <th style={{ padding: '1rem' }}>المشروع</th>
-                  <th style={{ padding: '1rem' }}>الإصدار</th>
-                  <th style={{ padding: '1rem' }}>الحجم والتاريخ</th>
-                  <th style={{ padding: '1rem', textAlign: 'center' }}>الإجراءات</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.عنوان_المستند_والملف_2b9aec')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.رقم_المستند_626b4f')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.التصنيف_7f5b59')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المشروع_7f28ee')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الإصدار_7f1489')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الحجم_والتاريخ_6937a5')}</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                 </tr>
               </thead>
               <tbody>
                 {documents.length === 0 ? (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد مستندات مسجلة مطابقة للبحث
-                    </td>
+                      {t('auto.لا_توجد_مستندات_مسجلة_مطابقة_ل_a1a7a6')}</td>
                   </tr>
                 ) : (
                   documents.map((doc) => (
@@ -461,10 +460,10 @@ export const DocumentsPage: React.FC = () => {
                         {doc.document_number || '—'}
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        <span className="badge badge-secondary">{doc.category_name || 'عام'}</span>
+                        <span className="badge badge-secondary">{doc.category_name || t('auto.عام_1820f7')}</span>
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                        {doc.project_name || 'عام / غير مقيد'}
+                        {doc.project_name || t('auto.عام_غير_مقيد_360275')}
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <span className={`badge ${doc.version > 1 ? 'badge-primary' : 'badge-secondary'}`}>
@@ -486,7 +485,7 @@ export const DocumentsPage: React.FC = () => {
                             disabled={downloadingId === doc.id}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title="تحميل الملف"
+                            title={t('auto.تحميل_الملف_554000')}
                           >
                             {downloadingId === doc.id ? (
                               <Loader2 size={15} className="animate-spin" />
@@ -500,7 +499,7 @@ export const DocumentsPage: React.FC = () => {
                             onClick={() => handleOpenVersions(doc)}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title="سجل الإصدارات"
+                            title={t('auto.سجل_الإصدارات_6f1dd7')}
                           >
                             <History size={15} color="#60a5fa" />
                           </button>
@@ -510,7 +509,7 @@ export const DocumentsPage: React.FC = () => {
                             onClick={() => handleOpenNewVersion(doc)}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title="رفع إصدار جديد"
+                            title={t('auto.رفع_إصدار_جديد_43dbd5')}
                           >
                             <Plus size={15} color="#f59e0b" />
                           </button>
@@ -525,7 +524,7 @@ export const DocumentsPage: React.FC = () => {
                               color: '#f87171',
                               borderColor: 'rgba(239, 68, 68, 0.25)',
                             }}
-                            title="حذف المستند"
+                            title={t('auto.حذف_المستند_3439ca')}
                           >
                             <Trash2 size={15} />
                           </button>
@@ -551,8 +550,7 @@ export const DocumentsPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} مستند
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.مستند_5b42b1')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -560,17 +558,15 @@ export const DocumentsPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -580,7 +576,7 @@ export const DocumentsPage: React.FC = () => {
       <Modal
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
-        title="رفع مستند جديد إلى الأرشيف"
+        title={t('auto.رفع_مستند_جديد_إلى_الأرشيف_5726a8')}
         icon={<Upload size={22} color="#60a5fa" />}
         maxWidth="md"
         footer={
@@ -591,11 +587,10 @@ export const DocumentsPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isUploading}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="upload-doc-form" className="btn btn-primary" disabled={isUploading}>
               {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              <span>بدء الرفع والأرشفة</span>
+              <span>{t('auto.بدء_الرفع_والأرشفة_1f6c30')}</span>
             </button>
           </div>
         }
@@ -604,7 +599,7 @@ export const DocumentsPage: React.FC = () => {
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
-                <span>الملف المراد رفعه</span>
+                <span>{t('auto.الملف_المراد_رفعه_28b8d2')}</span>
                 <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
@@ -626,13 +621,13 @@ export const DocumentsPage: React.FC = () => {
 
             <div className="form-group">
               <label className="form-label">
-                <span>عنوان المستند</span>
+                <span>{t('auto.عنوان_المستند_406d2b')}</span>
                 <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="مثال: عقد أعمال الحفر والردم - مشروع برج الرياض"
+                placeholder={t('auto.مثال_عقد_أعمال_الحفر_والردم_مش_152aa4')}
                 value={uploadTitle}
                 onChange={(e) => setUploadTitle(e.target.value)}
                 required
@@ -641,28 +636,28 @@ export const DocumentsPage: React.FC = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
-                <label className="form-label">تصنيف المستند</label>
+                <label className="form-label">{t('auto.تصنيف_المستند_1adeb4')}</label>
                 <select
                   className="input-field"
                   value={uploadCategory}
                   onChange={(e) => setUploadCategory(e.target.value)}
                 >
-                  <option value="عقود ومستندات تعاقدية">عقود ومستندات تعاقدية</option>
-                  <option value="مخططات ورسومات هندسية">مخططات ورسومات هندسية</option>
-                  <option value="مستخلصات ومطالبات مالية">مستخلصات ومطالبات مالية</option>
-                  <option value="تقارير جودة واختبارات">تقارير جودة واختبارات</option>
-                  <option value="أخرى">أخرى</option>
+                  <option value={t('auto.عقود_ومستندات_تعاقدية_31ea69')}>{t('auto.عقود_ومستندات_تعاقدية_31ea69')}</option>
+                  <option value={t('auto.مخططات_ورسومات_هندسية_4a2a3f')}>{t('auto.مخططات_ورسومات_هندسية_4a2a3f')}</option>
+                  <option value={t('auto.مستخلصات_ومطالبات_مالية_1aeb91')}>{t('auto.مستخلصات_ومطالبات_مالية_1aeb91')}</option>
+                  <option value={t('auto.تقارير_جودة_واختبارات_529be8')}>{t('auto.تقارير_جودة_واختبارات_529be8')}</option>
+                  <option value={t('auto.أخرى_2e21be')}>{t('auto.أخرى_2e21be')}</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label className="form-label">المشروع التابع (اختياري)</label>
+                <label className="form-label">{t('auto.المشروع_التابع_اختياري_3c403d')}</label>
                 <select
                   className="input-field"
                   value={uploadProjectId}
                   onChange={(e) => setUploadProjectId(e.target.value)}
                 >
-                  <option value="">عام / بدون مشروع محدد</option>
+                  <option value="">{t('auto.عام_بدون_مشروع_محدد_4a170d')}</option>
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
@@ -673,22 +668,22 @@ export const DocumentsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">رقم المستند / المرجع (اختياري)</label>
+              <label className="form-label">{t('auto.رقم_المستند_المرجع_اختياري_32c11d')}</label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="مثال: DOC-2026-0042"
+                placeholder={t('auto.مثال_DOC_2026_0042_29ddab')}
                 value={uploadDocNumber}
                 onChange={(e) => setUploadDocNumber(e.target.value)}
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">ملاحظات وبيان (اختياري)</label>
+              <label className="form-label">{t('auto.ملاحظات_وبيان_اختياري_49b427')}</label>
               <textarea
                 className="input-field"
                 rows={2}
-                placeholder="تفاصيل حول محتوى المستند أو شروط الاعتماد..."
+                placeholder={t('auto.تفاصيل_حول_محتوى_المستند_أو_شر_348c58')}
                 value={uploadNotes}
                 onChange={(e) => setUploadNotes(e.target.value)}
               />
@@ -707,8 +702,7 @@ export const DocumentsPage: React.FC = () => {
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
             <button type="button" onClick={() => setSelectedDocForVersions(null)} className="btn btn-secondary">
-              إغلاق
-            </button>
+              {t('auto.إغلاق_59834d')}</button>
           </div>
         }
       >
@@ -724,7 +718,7 @@ export const DocumentsPage: React.FC = () => {
             }}
           >
             <div>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>الإصدار الحالي النشط: </span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('auto.الإصدار_الحالي_النشط_598413')}</span>
               <strong style={{ color: '#60a5fa' }}>v{selectedDocForVersions?.version}</strong>
             </div>
 
@@ -738,19 +732,18 @@ export const DocumentsPage: React.FC = () => {
               style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', gap: '0.3rem' }}
             >
               <Plus size={14} />
-              <span>رفع إصدار جديد</span>
+              <span>{t('auto.رفع_إصدار_جديد_43dbd5')}</span>
             </button>
           </div>
 
           {isLoadingVersions ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <Loader2 size={28} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-              <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>جاري تحميل الإصدارات...</p>
+              <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>{t('auto.جاري_تحميل_الإصدارات_75b402')}</p>
             </div>
           ) : docVersions.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
-              لا توجد إصدارات مسجلة
-            </p>
+              {t('auto.لا_توجد_إصدارات_مسجلة_37d0ad')}</p>
           ) : (
             <div style={{ display: 'grid', gap: '0.75rem' }}>
               {docVersions.map((ver) => (
@@ -780,12 +773,12 @@ export const DocumentsPage: React.FC = () => {
                     <div>
                       <div style={{ fontWeight: 700, color: '#ffffff' }}>{ver.file_name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                        {formatFileSize(ver.file_size_bytes)} • تم الرفع:{' '}
+                        {formatFileSize(ver.file_size_bytes)} {t('auto.تم_الرفع_6deb4e')}{' '}
                         {ver.created_at ? ver.created_at.split('T')[0] : '—'}
                       </div>
                       {ver.notes && (
                         <div style={{ fontSize: '0.8rem', color: '#60a5fa', marginTop: '0.2rem' }}>
-                          ملاحظات: {ver.notes}
+                          {t('auto.ملاحظات_6d2302')}{ver.notes}
                         </div>
                       )}
                     </div>
@@ -804,7 +797,7 @@ export const DocumentsPage: React.FC = () => {
                     style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', gap: '0.35rem' }}
                   >
                     <Download size={14} color="#34d399" />
-                    <span>تحميل هذا الإصدار</span>
+                    <span>{t('auto.تحميل_هذا_الإصدار_5fd562')}</span>
                   </button>
                 </div>
               ))}
@@ -828,11 +821,10 @@ export const DocumentsPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isUploadingNewVersion}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="new-version-doc-form" className="btn btn-primary" disabled={isUploadingNewVersion}>
               {isUploadingNewVersion ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              <span>اعتماد ورفع الإصدار v{(newVersionDoc?.version || 0) + 1}</span>
+              <span>{t('auto.اعتماد_ورفع_الإصدار_v_2c608e')}{(newVersionDoc?.version || 0) + 1}</span>
             </button>
           </div>
         }
@@ -841,7 +833,7 @@ export const DocumentsPage: React.FC = () => {
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">
-                <span>الملف المحدّث</span>
+                <span>{t('auto.الملف_المحد_ث_741e52')}</span>
                 <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
@@ -857,11 +849,11 @@ export const DocumentsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">ملاحظات وبيان التعديل في هذا الإصدار</label>
+              <label className="form-label">{t('auto.ملاحظات_وبيان_التعديل_في_هذا_ا_2d12cd')}</label>
               <textarea
                 className="input-field"
                 rows={3}
-                placeholder="مثال: تعديل المخطط الإنشائي وفق ملاحظات الاستشاري..."
+                placeholder={t('auto.مثال_تعديل_المخطط_الإنشائي_وفق_1b45df')}
                 value={newVersionNotes}
                 onChange={(e) => setNewVersionNotes(e.target.value)}
               />
@@ -874,7 +866,7 @@ export const DocumentsPage: React.FC = () => {
       <Modal
         isOpen={!!deletingDoc}
         onClose={() => setDeletingDoc(null)}
-        title="تأكيد حذف المستند"
+        title={t('auto.تأكيد_حذف_المستند_3d2771')}
         icon={<Trash2 size={22} color="#f87171" />}
         maxWidth="sm"
         footer={
@@ -885,8 +877,7 @@ export const DocumentsPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeleting}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleDelete}
@@ -895,15 +886,13 @@ export const DocumentsPage: React.FC = () => {
               disabled={isDeleting}
             >
               {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تأكيد الحذف النهائي</span>
+              <span>{t('auto.تأكيد_الحذف_النهائي_70d6c3')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          هل أنت متأكد من رغبتك في حذف المستند <strong style={{ color: '#ffffff' }}>"{deletingDoc?.title}"</strong>؟
-          سيتم حذف الملف وكافة إصداراته السابقة نهائيًا.
-        </p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_479791')}<strong style={{ color: '#ffffff' }}>"{deletingDoc?.title}"</strong>{t('auto.سيتم_حذف_الملف_وكافة_إصداراته__73b427')}</p>
       </Modal>
     </div>
   );

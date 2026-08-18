@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LogOut, Bell, Menu, Shield } from 'lucide-react';
@@ -8,6 +9,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
+  const { t } = useI18n();
   const { user, logout } = useAuth();
 
   return (
@@ -32,17 +34,16 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           onClick={onToggleSidebar}
           className="btn btn-secondary"
           style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-          title="تبديل القائمة"
+          title={t('auto.تبديل_القائمة_12eac2')}
         >
           <Menu size={18} />
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span className="badge badge-accent" style={{ fontSize: '0.75rem' }}>
-            المملكة العربية السعودية 🇸🇦
-          </span>
+            {t('auto.المملكة_العربية_السعودية_4bd0f2')}</span>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>|</span>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>العملة: SAR</span>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('auto.العملة_SAR_7b639b')}</span>
         </div>
       </div>
 
@@ -56,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
             position: 'relative',
             borderRadius: 'var(--radius-md)',
           }}
-          title="الإشعارات والتنبيهات"
+          title={t('auto.الإشعارات_والتنبيهات_219801')}
         >
           <Bell size={18} />
           <span
@@ -114,10 +115,10 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               borderColor: 'rgba(239, 68, 68, 0.25)',
               gap: '0.35rem',
             }}
-            title="تسجيل الخروج"
+            title={t('auto.تسجيل_الخروج_b1a849')}
           >
             <LogOut size={14} />
-            <span>خروج</span>
+            <span>{t('auto.خروج_2e729e')}</span>
           </button>
         </div>
       </div>

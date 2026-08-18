@@ -122,7 +122,7 @@ export const CostsPage: React.FC = () => {
       setTotal(listRes.total || (listRes.data ? listRes.data.length : 0));
       setSummary(summaryRes);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل بيانات التكاليف');
+      setError(err.message || t('auto.فشل_تحميل_بيانات_التكاليف_2f03d1'));
     } finally {
       setIsLoading(false);
     }
@@ -164,12 +164,12 @@ export const CostsPage: React.FC = () => {
         projectId: formData.projectId || undefined,
         branchId: formData.branchId || undefined,
       });
-      setSuccessMsg('تم تسجيل قيد التكلفة بنجاح');
+      setSuccessMsg(t('auto.تم_تسجيل_قيد_التكلفة_بنجاح_62fd7e'));
       setShowCreateModal(false);
       loadCostsData();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ قيد التكلفة');
+      setError(err.message || t('auto.فشل_حفظ_قيد_التكلفة_3ee2b1'));
     } finally {
       setIsSaving(false);
     }
@@ -191,7 +191,7 @@ export const CostsPage: React.FC = () => {
       loadCostsData();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل احتساب أجور العمالة');
+      setError(err.message || t('auto.فشل_احتساب_أجور_العمالة_698eaa'));
     } finally {
       setIsSaving(false);
     }
@@ -199,12 +199,12 @@ export const CostsPage: React.FC = () => {
 
   const getCategoryBadge = (category: string) => {
     const map: Record<string, { label: string; bg: string; color: string }> = {
-      labor: { label: '👷 أجور عمالة', bg: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' },
-      material: { label: '🧱 مواد وخامات', bg: 'rgba(16, 185, 129, 0.15)', color: '#34d399' },
-      equipment: { label: '🚜 معدات وآليات', bg: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' },
-      subcontractor: { label: '🤝 مقاولو باطن', bg: 'rgba(236, 72, 153, 0.15)', color: '#f472b6' },
-      overhead: { label: '🏢 مصاريف إدارية', bg: 'rgba(168, 85, 247, 0.15)', color: '#c084fc' },
-      other: { label: '📌 أخرى', bg: 'rgba(148, 163, 184, 0.15)', color: '#cbd5e1' },
+      labor: { label: t('auto.أجور_عمالة_71f0f9'), bg: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' },
+      material: { label: t('auto.مواد_وخامات_69bfa5'), bg: 'rgba(16, 185, 129, 0.15)', color: '#34d399' },
+      equipment: { label: t('auto.معدات_وآليات_29956b'), bg: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' },
+      subcontractor: { label: t('auto.مقاولو_باطن_28abbd'), bg: 'rgba(236, 72, 153, 0.15)', color: '#f472b6' },
+      overhead: { label: t('auto.مصاريف_إدارية_2a2259'), bg: 'rgba(168, 85, 247, 0.15)', color: '#c084fc' },
+      other: { label: t('auto.أخرى_583aba'), bg: 'rgba(148, 163, 184, 0.15)', color: '#cbd5e1' },
     };
     const c = map[category] || { label: category, bg: 'rgba(148, 163, 184, 0.15)', color: '#cbd5e1' };
     return (
@@ -224,30 +224,30 @@ export const CostsPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي التكاليف المسجلة',
+      label: t('auto.إجمالي_التكاليف_المسجلة_28064a'),
       value: `${totalCostsAmount.toLocaleString()} SAR`,
       helper: `${total} قيد محاسبي`,
       icon: <DollarSign size={22} />,
       color: '#34d399',
     },
     {
-      label: 'تكاليف المواد والخامات',
+      label: t('auto.تكاليف_المواد_والخامات_761efd'),
       value: `${materialAmount.toLocaleString()} SAR`,
       helper: totalCostsAmount > 0 ? `${Math.round((materialAmount / totalCostsAmount) * 100)}% من الإجمالي` : '0%',
       icon: <Layers size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'أجور العمالة المحتسبة',
+      label: t('auto.أجور_العمالة_المحتسبة_42914c'),
       value: `${laborAmount.toLocaleString()} SAR`,
-      helper: 'مستخرجة من الحضور الميداني',
+      helper: t('auto.مستخرجة_من_الحضور_الميداني_76edd9'),
       icon: <HardHat size={22} />,
       color: '#f59e0b',
     },
     {
-      label: 'المعدات ومقاولو الباطن',
+      label: t('auto.المعدات_ومقاولو_الباطن_58efe9'),
       value: `${equipmentSubAmount.toLocaleString()} SAR`,
-      helper: 'آليات ومقاولي تنفيذ',
+      helper: t('auto.آليات_ومقاولي_تنفيذ_5c45cb'),
       icon: <Truck size={22} />,
       color: '#ec4899',
     },
@@ -286,12 +286,12 @@ export const CostsPage: React.FC = () => {
             style={{ gap: '0.5rem', borderColor: 'rgba(59, 130, 246, 0.4)' }}
           >
             <Calculator size={18} color="#60a5fa" />
-            <span>احتساب أجور العمالة تلقائيًا</span>
+            <span>{t('auto.احتساب_أجور_العمالة_تلقائي_ا_5bf301')}</span>
           </button>
 
           <button onClick={openCreateModal} className="btn btn-primary" style={{ gap: '0.5rem' }}>
             <Plus size={18} />
-            <span>إضافة قيد تكلفة</span>
+            <span>{t('auto.إضافة_قيد_تكلفة_b41d75')}</span>
           </button>
         </div>
       </div>
@@ -354,12 +354,11 @@ export const CostsPage: React.FC = () => {
           <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Filter size={14} />
-              <span>المشروع</span>
+              <span>{t('auto.المشروع_7f28ee')}</span>
             </div>
             {isSingleScoped && (
               <span style={{ fontSize: '10px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <Lock size={11} /> نطاق مخصص
-              </span>
+                <Lock size={11} /> {t('auto.نطاق_مخصص_1b6320')}</span>
             )}
           </label>
           <select
@@ -372,7 +371,7 @@ export const CostsPage: React.FC = () => {
             }}
             style={isSingleScoped ? { opacity: 0.85, cursor: 'not-allowed', borderColor: 'rgba(139, 92, 246, 0.4)' } : {}}
           >
-            {!isSingleScoped && <option value="">كافة المشاريع</option>}
+            {!isSingleScoped && <option value="">{t('auto.كافة_المشاريع_65e01c')}</option>}
             {scopedProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -382,7 +381,7 @@ export const CostsPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">الفرع</label>
+          <label className="form-label">{t('auto.الفرع_59a3fe')}</label>
           <select
             className="input-field"
             value={selectedBranch}
@@ -391,7 +390,7 @@ export const CostsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الفروع</option>
+            <option value="">{t('auto.كافة_الفروع_1a62e9')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -401,7 +400,7 @@ export const CostsPage: React.FC = () => {
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">نوع التكلفة</label>
+          <label className="form-label">{t('auto.نوع_التكلفة_669a06')}</label>
           <select
             className="input-field"
             value={selectedCategory}
@@ -410,12 +409,12 @@ export const CostsPage: React.FC = () => {
               setPage(1);
             }}
           >
-            <option value="">كافة الفئات</option>
-            <option value="labor">أجور عمالة (Labor)</option>
-            <option value="material">مواد وخامات (Material)</option>
-            <option value="equipment">معدات وآليات (Equipment)</option>
-            <option value="subcontractor">مقاولو باطن (Subcontractor)</option>
-            <option value="overhead">مصاريف إدارية (Overhead)</option>
+            <option value="">{t('auto.كافة_الفئات_1a6316')}</option>
+            <option value="labor">{t('auto.أجور_عمالة_Labor_3ac192')}</option>
+            <option value="material">{t('auto.مواد_وخامات_Material_4f452e')}</option>
+            <option value="equipment">{t('auto.معدات_وآليات_Equipment_660891')}</option>
+            <option value="subcontractor">{t('auto.مقاولو_باطن_Subcontractor_70a3d2')}</option>
+            <option value="overhead">{t('auto.مصاريف_إدارية_Overhead_249198')}</option>
           </select>
         </div>
       </div>
@@ -432,21 +431,20 @@ export const CostsPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>التاريخ</th>
-                  <th style={{ padding: '1rem' }}>الوصف والبيان</th>
-                  <th style={{ padding: '1rem' }}>الفئة</th>
-                  <th style={{ padding: '1rem' }}>المشروع والفرع</th>
-                  <th style={{ padding: '1rem' }}>المبلغ (SAR)</th>
-                  <th style={{ padding: '1rem' }}>الكمية × السعر</th>
-                  <th style={{ padding: '1rem' }}>المسجِّل / المصدر</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.التاريخ_7f54ad')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الوصف_والبيان_7d6019')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الفئة_59a3fc')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المشروع_والفرع_410648')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المبلغ_SAR_dfd932')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الكمية_السعر_5cdcdf')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المسج_ل_المصدر_d1edb2')}</th>
                 </tr>
               </thead>
               <tbody>
                 {costs.length === 0 ? (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد قيود تكاليف مسجلة
-                    </td>
+                      {t('auto.لا_توجد_قيود_تكاليف_مسجلة_1debdf')}</td>
                   </tr>
                 ) : (
                   costs.map((c) => (
@@ -468,7 +466,7 @@ export const CostsPage: React.FC = () => {
                       </td>
                       <td style={{ padding: '1rem' }}>{getCategoryBadge(c.category)}</td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                        <div>{c.projectName || 'عام'}</div>
+                        <div>{c.projectName || t('auto.عام_1820f7')}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{c.branchName}</div>
                       </td>
                       <td style={{ padding: '1rem', fontWeight: 700, color: '#34d399' }}>
@@ -481,7 +479,7 @@ export const CostsPage: React.FC = () => {
                       <td style={{ padding: '1rem' }}>
                         <span className="badge badge-secondary" style={{ gap: '0.25rem', fontSize: '0.72rem' }}>
                           <User size={11} />
-                          <span>قيد نظامي</span>
+                          <span>{t('auto.قيد_نظامي_3006ab')}</span>
                         </span>
                       </td>
                     </tr>
@@ -504,8 +502,7 @@ export const CostsPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} قيد تكلفة
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.قيد_تكلفة_318bd1')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -513,17 +510,15 @@ export const CostsPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>
@@ -533,17 +528,16 @@ export const CostsPage: React.FC = () => {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="إضافة قيد تكلفة جديد"
+        title={t('auto.إضافة_قيد_تكلفة_جديد_522029')}
         icon={<DollarSign size={22} color="#34d399" />}
         maxWidth="lg"
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
             <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="create-cost-form" className="btn btn-primary" disabled={isSaving}>
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>حفظ القيد</span>
+              <span>{t('auto.حفظ_القيد_262543')}</span>
             </button>
           </div>
         }
@@ -551,11 +545,11 @@ export const CostsPage: React.FC = () => {
         <form id="create-cost-form" onSubmit={handleSaveCost}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">البيان / الوصف *</label>
+              <label className="form-label">{t('auto.البيان_الوصف_bd6e15')}</label>
               <input
                 type="text"
                 required
-                placeholder="مثال: شراء إسمنت ومواد عزل للموقع"
+                placeholder={t('auto.مثال_شراء_إسمنت_ومواد_عزل_للمو_237e75')}
                 className="input-field"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -563,24 +557,24 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">الفئة *</label>
+              <label className="form-label">{t('auto.الفئة_7f688d')}</label>
               <select
                 required
                 className="input-field"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
-                <option value="material">🧱 مواد وخامات</option>
-                <option value="labor">👷 أجور عمالة</option>
-                <option value="equipment">🚜 معدات وآليات</option>
-                <option value="subcontractor">🤝 مقاول باطن</option>
-                <option value="overhead">🏢 مصاريف إدارية</option>
-                <option value="other">📌 أخرى</option>
+                <option value="material">{t('auto.مواد_وخامات_69bfa5')}</option>
+                <option value="labor">{t('auto.أجور_عمالة_71f0f9')}</option>
+                <option value="equipment">{t('auto.معدات_وآليات_29956b')}</option>
+                <option value="subcontractor">{t('auto.مقاول_باطن_5c59e5')}</option>
+                <option value="overhead">{t('auto.مصاريف_إدارية_2a2259')}</option>
+                <option value="other">{t('auto.أخرى_583aba')}</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label className="form-label">التاريخ *</label>
+              <label className="form-label">{t('auto.التاريخ_31f58d')}</label>
               <WheelDatePicker
                 required
                 value={formData.costDate}
@@ -589,13 +583,13 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">المشروع</label>
+              <label className="form-label">{t('auto.المشروع_7f28ee')}</label>
               <select
                 className="input-field"
                 value={formData.projectId || ''}
                 onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
               >
-                <option value="">بدون تخصيص مشروع</option>
+                <option value="">{t('auto.بدون_تخصيص_مشروع_34720d')}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -605,13 +599,13 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">الفرع</label>
+              <label className="form-label">{t('auto.الفرع_59a3fe')}</label>
               <select
                 className="input-field"
                 value={formData.branchId || ''}
                 onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
               >
-                <option value="">بدون تخصيص فرع</option>
+                <option value="">{t('auto.بدون_تخصيص_فرع_6b4ced')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -621,7 +615,7 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">الكمية</label>
+              <label className="form-label">{t('auto.الكمية_252300')}</label>
               <input
                 type="number"
                 min="0"
@@ -633,7 +627,7 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">سعر الوحدة (SAR)</label>
+              <label className="form-label">{t('auto.سعر_الوحدة_SAR_7869ce')}</label>
               <input
                 type="number"
                 min="0"
@@ -645,7 +639,7 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">المبلغ الإجمالي (SAR) *</label>
+              <label className="form-label">{t('auto.المبلغ_الإجمالي_SAR_2b1289')}</label>
               <input
                 type="number"
                 required
@@ -664,29 +658,27 @@ export const CostsPage: React.FC = () => {
       <Modal
         isOpen={showAutoLaborModal}
         onClose={() => setShowAutoLaborModal(false)}
-        title="احتساب أجور العمالة التلقائي"
+        title={t('auto.احتساب_أجور_العمالة_التلقائي_2fff76')}
         icon={<Calculator size={22} color="#60a5fa" />}
         maxWidth="md"
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
             <button type="button" onClick={() => setShowAutoLaborModal(false)} className="btn btn-secondary">
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="auto-labor-form" className="btn btn-primary" disabled={isSaving}>
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تشغيل الاحتساب</span>
+              <span>{t('auto.تشغيل_الاحتساب_6088be')}</span>
             </button>
           </div>
         }
       >
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem', marginTop: 0 }}>
-          يقوم النظام بحساب تكلفة الأجور تلقائيًا من سجلات الحضور وساعات العمل والإضافي لكل موظف وفق المعادلة المعتمدة.
-        </p>
+          {t('auto.يقوم_النظام_بحساب_تكلفة_الأجور_679258')}</p>
 
         <form id="auto-labor-form" onSubmit={handleLaborAutoCalculate}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">من تاريخ *</label>
+              <label className="form-label">{t('auto.من_تاريخ_611b39')}</label>
               <WheelDatePicker
                 required
                 value={calcFromDate}
@@ -695,7 +687,7 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">إلى تاريخ *</label>
+              <label className="form-label">{t('auto.إلى_تاريخ_48a6fe')}</label>
               <WheelDatePicker
                 required
                 value={calcToDate}
@@ -704,13 +696,13 @@ export const CostsPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">المشروع (اختياري)</label>
+              <label className="form-label">{t('auto.المشروع_اختياري_30dcf0')}</label>
               <select
                 className="input-field"
                 value={calcProjectId}
                 onChange={(e) => setCalcProjectId(e.target.value)}
               >
-                <option value="">كافة المشاريع</option>
+                <option value="">{t('auto.كافة_المشاريع_65e01c')}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}

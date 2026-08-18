@@ -72,7 +72,7 @@ export const BoqProgressPage: React.FC = () => {
       setBoqItems(res.data);
       setTotal(res.total);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل بيانات المقايسة');
+      setError(err.message || t('auto.فشل_تحميل_بيانات_المقايسة_5d08a5'));
     } finally {
       setIsLoading(false);
     }
@@ -101,30 +101,30 @@ export const BoqProgressPage: React.FC = () => {
 
   const statsItems = [
     {
-      label: 'إجمالي بنود المقايسة',
+      label: t('auto.إجمالي_بنود_المقايسة_7aa6d5'),
       value: total,
       helper: `${boqItems.length} بند معروض حالياً`,
       icon: <Layers size={22} />,
       color: '#60a5fa',
     },
     {
-      label: 'متوسط الإنجاز الكلي',
+      label: t('auto.متوسط_الإنجاز_الكلي_4b83b1'),
       value: `${overallProgress}%`,
-      helper: 'محسوبة تراكمياً من الإنتاج الفعلي',
+      helper: t('auto.محسوبة_تراكميا_من_الإنتاج_الفع_3e7e1b'),
       icon: <TrendingUp size={22} />,
       color: '#34d399',
     },
     {
-      label: 'بنود مكتملة بالكامل 100%',
+      label: t('auto.بنود_مكتملة_بالكامل_100_7c9359'),
       value: completedItemsCount,
-      helper: 'وصلت للكمية التعاقدية',
+      helper: t('auto.وصلت_للكمية_التعاقدية_7f77a4'),
       icon: <CheckCheck size={22} />,
       color: '#10b981',
     },
     {
-      label: 'مصدر الاحتساب المعتمد',
-      value: 'سجلات معتمدة',
-      helper: 'final_approved حصراً',
+      label: t('auto.مصدر_الاحتساب_المعتمد_59aaeb'),
+      value: t('auto.سجلات_معتمدة_6f211e'),
+      helper: t('auto.final_approved_حصرا_4201a3'),
       icon: <CheckCircle2 size={22} />,
       color: '#a78bfa',
     },
@@ -194,12 +194,11 @@ export const BoqProgressPage: React.FC = () => {
           <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Filter size={14} />
-              <span>تصفية بحسب المشروع</span>
+              <span>{t('auto.تصفية_بحسب_المشروع_1c083e')}</span>
             </div>
             {isSingleScoped && (
               <span style={{ fontSize: '10px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <Lock size={11} /> نطاق مخصص
-              </span>
+                <Lock size={11} /> {t('auto.نطاق_مخصص_1b6320')}</span>
             )}
           </label>
           <select
@@ -212,10 +211,10 @@ export const BoqProgressPage: React.FC = () => {
             }}
             style={isSingleScoped ? { opacity: 0.85, cursor: 'not-allowed', borderColor: 'rgba(139, 92, 246, 0.4)' } : {}}
           >
-            {!isSingleScoped && <option value="">كافة المشاريع</option>}
+            {!isSingleScoped && <option value="">{t('auto.كافة_المشاريع_65e01c')}</option>}
             {scopedProjects.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} ({p.code || 'بدون كود'})
+                {p.name} ({p.code || t('auto.بدون_كود_519c6b')})
               </option>
             ))}
           </select>
@@ -234,21 +233,20 @@ export const BoqProgressPage: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.7)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '1rem' }}>رقم البند / التوصيف</th>
-                  <th style={{ padding: '1rem' }}>المشروع</th>
-                  <th style={{ padding: '1rem' }}>الوحدة</th>
-                  <th style={{ padding: '1rem' }}>الكمية التعاقدية</th>
-                  <th style={{ padding: '1rem' }}>الكمية المنفذة</th>
-                  <th style={{ padding: '1rem' }}>الكمية المتبقية</th>
-                  <th style={{ padding: '1rem', minWidth: '180px' }}>نسبة الإنجاز</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.رقم_البند_التوصيف_ee0761')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.المشروع_7f28ee')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الوحدة_252118')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الكمية_التعاقدية_4d4f84')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الكمية_المنفذة_1fde49')}</th>
+                  <th style={{ padding: '1rem' }}>{t('auto.الكمية_المتبقية_227f6f')}</th>
+                  <th style={{ padding: '1rem', minWidth: '180px' }}>{t('auto.نسبة_الإنجاز_3259d2')}</th>
                 </tr>
               </thead>
               <tbody>
                 {boqItems.length === 0 ? (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      لا توجد بنود مقايسة مسجلة لهذا الاختيار
-                    </td>
+                      {t('auto.لا_توجد_بنود_مقايسة_مسجلة_لهذا_7e8325')}</td>
                   </tr>
                 ) : (
                   boqItems.map((item) => {
@@ -266,7 +264,7 @@ export const BoqProgressPage: React.FC = () => {
                         <td style={{ padding: '1rem' }}>
                           <div style={{ fontWeight: 700, color: '#ffffff' }}>
                             {item.itemNumber ? `${item.itemNumber} - ` : ''}
-                            {item.workItemName || item.description || 'بند مقايسة'}
+                            {item.workItemName || item.description || t('auto.بند_مقايسة_d822ee')}
                           </div>
                           {item.description && item.workItemName && (
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
@@ -279,7 +277,7 @@ export const BoqProgressPage: React.FC = () => {
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{item.branchName}</div>
                         </td>
                         <td style={{ padding: '1rem' }}>
-                          <span className="badge badge-secondary">{item.unitSymbol || item.unitName || 'وحدة'}</span>
+                          <span className="badge badge-secondary">{item.unitSymbol || item.unitName || t('auto.وحدة_2f2e97')}</span>
                         </td>
                         <td style={{ padding: '1rem', fontWeight: 600 }}>
                           {Number(item.totalQuantity).toLocaleString()}
@@ -337,8 +335,7 @@ export const BoqProgressPage: React.FC = () => {
             }}
           >
             <span>
-              عرض {startRecord}–{endRecord} من إجمالي {total} بند مقايسة
-            </span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.بند_مقايسة_d822ee')}</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -346,17 +343,15 @@ export const BoqProgressPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                السابق
-              </button>
-              <span style={{ padding: '0.35rem 0.5rem' }}>صفحة {page}</span>
+                {t('auto.السابق_252abb')}</button>
+              <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
                 style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                التالي
-              </button>
+                {t('auto.التالي_252ecf')}</button>
             </div>
           </div>
         </div>

@@ -121,22 +121,22 @@ export const NotificationBell: React.FC = () => {
     const title = (n.title || '').toLowerCase();
     const msg = (n.message || '').toLowerCase();
 
-    if (type === 'alert' || type === 'warning' || title.includes('تنبيه') || title.includes('alert') || msg.includes('تجاوز')) {
+    if (type === 'alert' || type === 'warning' || title.includes(t('auto.تنبيه_59ced2')) || title.includes('alert') || msg.includes(t('auto.تجاوز_59c2fc'))) {
       navigate('/alerts');
     } else if (
       type === 'approval_request' ||
       type === 'production' ||
       type === 'correction' ||
-      title.includes('اعتماد') ||
-      title.includes('إنتاج') ||
-      msg.includes('إنتاجية')
+      title.includes(t('auto.اعتماد_25c964')) ||
+      title.includes(t('auto.إنتاج_598860')) ||
+      msg.includes(t('auto.إنتاجية_18f1d5'))
     ) {
       navigate('/production');
-    } else if (type === 'transfer' || title.includes('نقل') || msg.includes('نقل')) {
+    } else if (type === 'transfer' || title.includes(t('auto.نقل_185508')) || msg.includes(t('auto.نقل_185508'))) {
       navigate('/transfers');
-    } else if (type === 'attendance' || title.includes('حضور') || msg.includes('بصمة')) {
+    } else if (type === 'attendance' || title.includes(t('auto.حضور_2e6c85')) || msg.includes(t('auto.بصمة_2e47e5'))) {
       navigate('/attendance');
-    } else if (title.includes('مستند') || title.includes('وثيقة')) {
+    } else if (title.includes(t('auto.مستند_5b42b1')) || title.includes(t('auto.وثيقة_5b69cc'))) {
       navigate('/documents');
     } else {
       navigate('/notifications');

@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React, { useState, useEffect } from 'react';
 import type { Employee, CreateEmployeePayload, UpdateEmployeePayload } from '../../api/employees.api';
 import type { Branch } from '../../api/branches.api';
@@ -34,6 +35,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   branches,
   isSaving,
 }) => {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [identityNumber, setIdentityNumber] = useState('');
   const [identityType, setIdentityType] = useState<'national_id' | 'iqama' | 'passport'>('national_id');
@@ -105,17 +107,16 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingEmployee ? 'تعديل بيانات الموظف / العامل' : 'إضافة موظف / عامل جديد'}
+      title={editingEmployee ? t('auto.تعديل_بيانات_الموظف_العامل_601c59') : t('auto.إضافة_موظف_عامل_جديد_1dfc46')}
       icon={<User size={22} color="#60a5fa" />}
       maxWidth="lg"
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
           <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSaving}>
-            إلغاء
-          </button>
+            {t('auto.إلغاء_5987b3')}</button>
           <button type="submit" form="employee-form" className="btn btn-primary" disabled={isSaving}>
             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckSquare size={16} />}
-            <span>{editingEmployee ? 'حفظ التعديلات' : 'إضافة الموظف'}</span>
+            <span>{editingEmployee ? t('auto.حفظ_التعديلات_4ff313') : t('auto.إضافة_الموظف_6370b6')}</span>
           </button>
         </div>
       }
@@ -125,13 +126,13 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <User size={14} />
-                <span>الاسم الكامل *</span>
+                <span>{t('auto.الاسم_الكامل_131b51')}</span>
               </label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder="الاسم الثلاثي..."
+                placeholder={t('auto.الاسم_الثلاثي_373f90')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -140,29 +141,29 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <CreditCard size={14} />
-                <span>نوع وثيقة الهوية *</span>
+                <span>{t('auto.نوع_وثيقة_الهوية_4c8565')}</span>
               </label>
               <select
                 className="input-field"
                 value={identityType}
                 onChange={(e) => setIdentityType(e.target.value as any)}
               >
-                <option value="national_id">هوية وطنية سعودية (National ID)</option>
-                <option value="iqama">إقامة مقيم (Iqama)</option>
-                <option value="passport">جواز سفر (Passport)</option>
+                <option value="national_id">{t('auto.هوية_وطنية_سعودية_National_ID_7990a3')}</option>
+                <option value="iqama">{t('auto.إقامة_مقيم_Iqama_6a04c9')}</option>
+                <option value="passport">{t('auto.جواز_سفر_Passport_7be31c')}</option>
               </select>
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <CreditCard size={14} />
-                <span>رقم الهوية / الإقامة / الجواز *</span>
+                <span>{t('auto.رقم_الهوية_الإقامة_الجواز_4b5ad3')}</span>
               </label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder="10xxxxxxxx أو 23xxxxxxxx"
+                placeholder={t('auto.10xxxxxxxx_أو_23xxxxxxxx_5234f4')}
                 value={identityNumber}
                 onChange={(e) => setIdentityNumber(e.target.value)}
               />
@@ -172,10 +173,10 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
               <div className="form-group animate-fade-in" style={{ margin: 0 }}>
                 <label className="form-label">
                   <Calendar size={14} />
-                  <span>تاريخ انتهاء الإقامة / الجواز *</span>
+                  <span>{t('auto.تاريخ_انتهاء_الإقامة_الجواز_7d7790')}</span>
                 </label>
                 <WheelDatePicker
-                  placeholder="تاريخ الانتهاء..."
+                  placeholder={t('auto.تاريخ_الانتهاء_6170be')}
                   value={identityExpiryDate}
                   onChange={(val) => setIdentityExpiryDate(val)}
                 />
@@ -185,12 +186,12 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Globe size={14} />
-                <span>الجنسية</span>
+                <span>{t('auto.الجنسية_7f7efb')}</span>
               </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="سعودي، مصري، هندي..."
+                placeholder={t('auto.سعودي_مصري_هندي_66c473')}
                 value={nationality}
                 onChange={(e) => setNationality(e.target.value)}
               />
@@ -199,14 +200,14 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Building size={14} />
-                <span>الفرع الأساسي</span>
+                <span>{t('auto.الفرع_الأساسي_5b1823')}</span>
               </label>
               <select
                 className="input-field"
                 value={primaryBranchId}
                 onChange={(e) => setPrimaryBranchId(e.target.value)}
               >
-                <option value="">اختر الفرع...</option>
+                <option value="">{t('auto.اختر_الفرع_53db78')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -218,24 +219,24 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <HardHat size={14} />
-                <span>الدور الوظيفي *</span>
+                <span>{t('auto.الدور_الوظيفي_160693')}</span>
               </label>
               <select
                 className="input-field"
                 value={roleType}
                 onChange={(e) => setRoleType(e.target.value)}
               >
-                <option value="worker">عامل مهني (Worker)</option>
-                <option value="supervisor">مشرف تنفيذ (Supervisor)</option>
-                <option value="engineer">مهندس موقع (Engineer)</option>
-                <option value="project_manager">مدير مشروع (Project Manager)</option>
+                <option value="worker">{t('auto.عامل_مهني_Worker_7cf52e')}</option>
+                <option value="supervisor">{t('auto.مشرف_تنفيذ_Supervisor_25caa4')}</option>
+                <option value="engineer">{t('auto.مهندس_موقع_Engineer_1676d9')}</option>
+                <option value="project_manager">{t('auto.مدير_مشروع_Project_Manager_6425fc')}</option>
               </select>
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Banknote size={14} />
-                <span>الأجر اليومي (SAR) *</span>
+                <span>{t('auto.الأجر_اليومي_SAR_2bef7a')}</span>
               </label>
               <input
                 type="number"
@@ -249,7 +250,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">كود العامل / الرقم الوظيفي</label>
+              <label className="form-label">{t('auto.كود_العامل_الرقم_الوظيفي_51657a')}</label>
               <input
                 type="text"
                 className="input-field"
@@ -262,12 +263,12 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Fingerprint size={14} color="#60a5fa" />
-                <span>كود جهاز البصمة (Device Code)</span>
+                <span>{t('auto.كود_جهاز_البصمة_Device_Code_701937')}</span>
               </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="DEV-101 أو رقم Enroll"
+                placeholder={t('auto.DEV_101_أو_رقم_Enroll_1c4f0e')}
                 value={deviceCode}
                 onChange={(e) => setDeviceCode(e.target.value)}
               />
@@ -276,7 +277,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Phone size={14} />
-                <span>رقم الجوال</span>
+                <span>{t('auto.رقم_الجوال_d4c518')}</span>
               </label>
               <input
                 type="text"
@@ -306,8 +307,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
                 style={{ width: '16px', height: '16px', cursor: 'pointer' }}
               />
               <label htmlFor="empActiveCheck" style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>
-                الموظف / العامل على رأس العمل ونشط
-              </label>
+                {t('auto.الموظف_العامل_على_رأس_العمل_ون_5f861f')}</label>
             </div>
           </div>
         </form>

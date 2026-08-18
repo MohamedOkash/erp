@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React, { useState, useEffect } from 'react';
 import { productionApi } from '../../api/production.api';
 import type { CreateProductionPayload, ProductionWorkerItem } from '../../api/production.api';
@@ -48,6 +49,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
   supervisors,
   workers,
 }) => {
+  const { t } = useI18n();
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [branchId, setBranchId] = useState<string>('');
   const [projectId, setProjectId] = useState<string>('');
@@ -178,7 +180,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
     setValidationError(null);
 
     if (!date || !branchId || !projectId || !workItemId || !supervisorId) {
-      setValidationError('يرجى ملء جميع الحقول الإجبارية');
+      setValidationError(t('auto.يرجى_ملء_جميع_الحقول_الإجبارية_3af4ff'));
       return;
     }
 
@@ -231,7 +233,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      setValidationError(err.message || 'فشل حفظ تقرير الإنتاج اليومي');
+      setValidationError(err.message || t('auto.فشل_حفظ_تقرير_الإنتاج_اليومي_1e1f48'));
     } finally {
       setIsSubmitting(false);
     }
@@ -241,17 +243,16 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="إدخال تقرير إنتاجية يومي مرحلي جديد"
+      title={t('auto.إدخال_تقرير_إنتاجية_يومي_مرحلي_50612e')}
       icon={<Layers size={22} color="#60a5fa" />}
       maxWidth="3xl"
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
           <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSubmitting}>
-            إلغاء
-          </button>
+            {t('auto.إلغاء_5987b3')}</button>
           <button type="submit" form="production-form" className="btn btn-primary" disabled={isSubmitting}>
             {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
-            <span>حفظ تقرير الإنتاج (مسودة)</span>
+            <span>{t('auto.حفظ_تقرير_الإنتاج_مسودة_12a047')}</span>
           </button>
         </div>
       }
@@ -281,7 +282,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Calendar size={14} />
-                <span>تاريخ التنفيذ *</span>
+                <span>{t('auto.تاريخ_التنفيذ_7394dc')}</span>
               </label>
               <WheelDatePicker
                 required
@@ -293,7 +294,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Building size={14} />
-                <span>الفرع *</span>
+                <span>{t('auto.الفرع_7f6350')}</span>
               </label>
               <select
                 required
@@ -301,7 +302,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
               >
-                <option value="">اختر الفرع...</option>
+                <option value="">{t('auto.اختر_الفرع_53db78')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -313,7 +314,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <FolderKanban size={14} />
-                <span>المشروع *</span>
+                <span>{t('auto.المشروع_58a8d8')}</span>
               </label>
               <select
                 required
@@ -321,7 +322,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
               >
-                <option value="">اختر المشروع...</option>
+                <option value="">{t('auto.اختر_المشروع_5429fc')}</option>
                 {filteredProjects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -333,7 +334,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <CheckSquare size={14} />
-                <span>بند العمل *</span>
+                <span>{t('auto.بند_العمل_742d53')}</span>
               </label>
               <select
                 required
@@ -341,7 +342,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 value={workItemId}
                 onChange={(e) => setWorkItemId(e.target.value)}
               >
-                <option value="">اختر بند العمل...</option>
+                <option value="">{t('auto.اختر_بند_العمل_6b0656')}</option>
                 {workItems.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name} {w.code ? `(${w.code})` : ''}
@@ -355,7 +356,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
               <div className="form-group animate-fade-in" style={{ gridColumn: 'span 2', margin: 0 }}>
                 <label className="form-label">
                   <Layers size={14} color="#818cf8" />
-                  <span style={{ color: '#818cf8', fontWeight: 700 }}>مرحلة البند المنفذة * (المعدل القياسي التلقائي)</span>
+                  <span style={{ color: '#818cf8', fontWeight: 700 }}>{t('auto.مرحلة_البند_المنفذة_المعدل_الق_731e85')}</span>
                 </label>
                 <select
                   className="input-field"
@@ -365,7 +366,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 >
                   {stages.map((stg) => (
                     <option key={stg.id} value={stg.id}>
-                      {stg.name} — (وزن: {Math.round(Number(stg.percentage) * 100)}% | إنتاجية قياسية: {stg.standard_productivity})
+                      {stg.name} {t('auto.وزن_25267a')}{Math.round(Number(stg.percentage) * 100)}{t('auto.إنتاجية_قياسية_12ab7e')}{stg.standard_productivity})
                     </option>
                   ))}
                 </select>
@@ -375,17 +376,17 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Network size={14} />
-                <span>منطقة / موقع العمل (اختياري)</span>
+                <span>{t('auto.منطقة_موقع_العمل_اختياري_414941')}</span>
               </label>
               <select
                 className="input-field"
                 value={workAreaId}
                 onChange={(e) => setWorkAreaId(e.target.value)}
               >
-                <option value="">(كامل المشروع / بدون تحديد منطقة)</option>
+                <option value="">{t('auto.كامل_المشروع_بدون_تحديد_منطقة_13b634')}</option>
                 {filteredAreas.map((a) => (
                   <option key={a.id} value={a.id}>
-                    {a.name} ({a.code || 'موقع'})
+                    {a.name} ({a.code || t('auto.موقع_2f1f41')})
                   </option>
                 ))}
               </select>
@@ -394,7 +395,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <HardHat size={14} />
-                <span>المشرف الميداني المسؤول *</span>
+                <span>{t('auto.المشرف_الميداني_المسؤول_338d88')}</span>
               </label>
               <select
                 required
@@ -402,17 +403,17 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 value={supervisorId}
                 onChange={(e) => setSupervisorId(e.target.value)}
               >
-                <option value="">اختر المشرف...</option>
+                <option value="">{t('auto.اختر_المشرف_29d2a4')}</option>
                 {supervisors.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.code || 'مشرف'})
+                    {s.name} ({s.code || t('auto.مشرف_2f1a6f')})
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">الكمية المستهدفة (Target) *</label>
+              <label className="form-label">{t('auto.الكمية_المستهدفة_Target_29ec93')}</label>
               <input
                 type="number"
                 min="0"
@@ -424,7 +425,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">الكمية الفعلية المنفذة (Actual) *</label>
+              <label className="form-label">{t('auto.الكمية_الفعلية_المنفذة_Actual_9dce50')}</label>
               <input
                 type="number"
                 min="0"
@@ -436,7 +437,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
             </div>
 
             <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
-              <label className="form-label">نمط تسجيل الإنتاجية *</label>
+              <label className="form-label">{t('auto.نمط_تسجيل_الإنتاجية_54e72c')}</label>
               <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.25rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
                   <input
@@ -446,7 +447,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                     checked={productionType === 'individual'}
                     onChange={() => setProductionType('individual')}
                   />
-                  <span>فردي (حسب إنجاز كل عامل - Rule R5)</span>
+                  <span>{t('auto.فردي_حسب_إنجاز_كل_عامل_Rule_R5_7c0433')}</span>
                 </label>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
@@ -457,19 +458,19 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                     checked={productionType === 'team'}
                     onChange={() => setProductionType('team')}
                   />
-                  <span>فريق عمل جماعي (Team)</span>
+                  <span>{t('auto.فريق_عمل_جماعي_Team_4881a8')}</span>
                 </label>
               </div>
             </div>
 
             {productionType === 'team' && (
               <div className="form-group animate-fade-in" style={{ gridColumn: 'span 2', margin: 0 }}>
-                <label className="form-label">كود / اسم الفريق الجماعي *</label>
+                <label className="form-label">{t('auto.كود_اسم_الفريق_الجماعي_6632f6')}</label>
                 <input
                   type="text"
                   required
                   className="input-field"
-                  placeholder="مثال: TEAM-PLASTER-01"
+                  placeholder={t('auto.مثال_TEAM_PLASTER_01_5bf081')}
                   value={teamCode}
                   onChange={(e) => setTeamCode(e.target.value)}
                 />
@@ -498,10 +499,10 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 <div>
                   <h4 style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <Users size={16} color="#60a5fa" />
-                    <span>توزيع إنجاز العمال المشاركين (Rule R5 + إضافي وحوافز)</span>
+                    <span>{t('auto.توزيع_إنجاز_العمال_المشاركين_R_174957')}</span>
                   </h4>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                    مجموع كميات العمال ({workerRows.reduce((a, b) => a + (Number(b.individualQuantity) || 0), 0)}) يجب أن يطابق تمامًا الكمية الفعلية ({actualQuantity})
+                    {t('auto.مجموع_كميات_العمال_7827b9')}{workerRows.reduce((a, b) => a + (Number(b.individualQuantity) || 0), 0)}{t('auto.يجب_أن_يطابق_تمام_ا_الكمية_الف_4b790b')}{actualQuantity})
                   </span>
                 </div>
 
@@ -512,7 +513,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                   style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', gap: '0.3rem' }}
                 >
                   <Plus size={14} />
-                  <span>إضافة عامل</span>
+                  <span>{t('auto.إضافة_عامل_5e3a84')}</span>
                 </button>
               </div>
 
@@ -540,7 +541,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                       >
                         {workers.map((emp) => (
                           <option key={emp.id} value={emp.id}>
-                            {emp.name} ({emp.code || 'عامل'})
+                            {emp.name} ({emp.code || t('auto.عامل_2ec042')})
                           </option>
                         ))}
                       </select>
@@ -551,12 +552,12 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         type="number"
                         min="0"
                         step="0.1"
-                        placeholder="الكمية"
+                        placeholder={t('auto.الكمية_252300')}
                         className="input-field"
                         style={{ fontSize: '0.8rem' }}
                         value={row.individualQuantity}
                         onChange={(e) => updateWorker(idx, 'individualQuantity', Number(e.target.value))}
-                        title="الكمية الفردية"
+                        title={t('auto.الكمية_الفردية_202074')}
                       />
                     </div>
 
@@ -565,12 +566,12 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         type="number"
                         min="1"
                         max="24"
-                        placeholder="ساعات أساسية"
+                        placeholder={t('auto.ساعات_أساسية_32d92b')}
                         className="input-field"
                         style={{ fontSize: '0.8rem' }}
                         value={row.hoursWorked}
                         onChange={(e) => updateWorker(idx, 'hoursWorked', Number(e.target.value))}
-                        title="ساعات العمل الأساسية (8)"
+                        title={t('auto.ساعات_العمل_الأساسية_8_33b15e')}
                       />
                     </div>
 
@@ -580,12 +581,12 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         min="0"
                         max="16"
                         step="0.5"
-                        placeholder="إضافي (ساعة)"
+                        placeholder={t('auto.إضافي_ساعة_3bc641')}
                         className="input-field"
                         style={{ fontSize: '0.8rem', borderColor: 'rgba(245, 158, 11, 0.4)' }}
                         value={row.overtimeHours || 0}
                         onChange={(e) => updateWorker(idx, 'overtimeHours', Number(e.target.value))}
-                        title="ساعات العمل الإضافية (Overtime)"
+                        title={t('auto.ساعات_العمل_الإضافية_Overtime_5ebebf')}
                       />
                     </div>
 
@@ -594,12 +595,12 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         type="number"
                         min="0"
                         max="100"
-                        placeholder="حافز %"
+                        placeholder={t('auto.حافز_1c808b')}
                         className="input-field"
                         style={{ fontSize: '0.8rem', borderColor: 'rgba(16, 185, 129, 0.4)' }}
                         value={row.bonusPercentage || 0}
                         onChange={(e) => updateWorker(idx, 'bonusPercentage', Number(e.target.value))}
-                        title="نسبة الحافز أو المكافأة %"
+                        title={t('auto.نسبة_الحافز_أو_المكافأة_19e157')}
                       />
                     </div>
 
@@ -609,10 +610,10 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         style={{ fontSize: '0.8rem' }}
                         value={row.skillLevel || 'skilled'}
                         onChange={(e) => updateWorker(idx, 'skillLevel', e.target.value)}
-                        title="المستوى المهني"
+                        title={t('auto.المستوى_المهني_3c90fa')}
                       >
-                        <option value="skilled">فني (صنايعي)</option>
-                        <option value="unskilled">مساعد (عامل)</option>
+                        <option value="skilled">{t('auto.فني_صنايعي_4e71bb')}</option>
+                        <option value="unskilled">{t('auto.مساعد_عامل_6531db')}</option>
                       </select>
                     </div>
 
@@ -627,7 +628,7 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                           cursor: 'pointer',
                           padding: '0.3rem',
                         }}
-                        title="حذف العامل"
+                        title={t('auto.حذف_العامل_2fd77c')}
                       >
                         <Trash2 size={15} />
                       </button>

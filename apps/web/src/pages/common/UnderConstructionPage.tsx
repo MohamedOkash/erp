@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -18,58 +19,60 @@ interface ModuleInfo {
   features: string[];
 }
 
-const MODULE_DATA: Record<string, ModuleInfo> = {
+export const UnderConstructionPage: React.FC = () => {
+  const { t } = useI18n();
+
+  const MODULE_DATA: Record<string, ModuleInfo> = {
   '/incentives': {
-    title: 'نظام الحوافز والمكافآت والإنتاجية',
+    title: t('auto.نظام_الحوافز_والمكافآت_والإنتا_197b65'),
     subtitle: 'Incentives & Performance Bonus Engine',
     description:
-      'نظام حساب المكافآت التلقائي للكوادر الفنية والمشرفين بناءً على تجاوز معدلات الإنتاجية القياسية ونسب إنجاز مراحل البنود في الوقت المحدد.',
-    backendStatus: 'جاهز برمجياً في الـ Backend ومربوط ببيانات الإنتاج والحضور',
+      t('auto.نظام_حساب_المكافآت_التلقائي_لل_3a50bd'),
+    backendStatus: t('auto.جاهز_برمجيا_في_الـ_Backend_ومر_437d53'),
     features: [
-      'حساب البونص التلقائي لكل متر/وحدة إضافية فوق المستهدف',
-      'صرف حوافز إنجاز المراحل الحرجة قبل الموعد التعاقدي',
-      'تقارير تفصيلية لمكافآت المشرفين والفرق الميدانية',
+      t('auto.حساب_البونص_التلقائي_لكل_متر_و_7007a8'),
+      t('auto.صرف_حوافز_إنجاز_المراحل_الحرجة_50d446'),
+      t('auto.تقارير_تفصيلية_لمكافآت_المشرفي_62822a'),
     ],
   },
   '/documents': {
-    title: 'المستندات والأرشيف السحابي والمخططات',
+    title: t('auto.المستندات_والأرشيف_السحابي_وال_61aa1b'),
     subtitle: 'Documents & Engineering Drawings Archive',
     description:
-      'أرشيف رقمي منظم لكافة مخططات الـ Shop Drawings، محاضر الاستلام، كراسات الشروط، ومستندات المشاريع مع إدارة الإصدارات والصلاحيات.',
-    backendStatus: 'جاهز برمجياً في الـ Backend مع التوثيق والمرفقات',
+      t('auto.أرشيف_رقمي_منظم_لكافة_مخططات_ا_2a4efc'),
+    backendStatus: t('auto.جاهز_برمجيا_في_الـ_Backend_مع__17fa5e'),
     features: [
-      'أرشفة مخططات الـ PDF والتصميمات المعمارية والإنشائية',
-      'إدارة أذونات ومحاضر فحص واستلام الاستشاري',
-      'ربط المستندات ببند الـ BOQ أو منطقة العمل المعنية',
+      t('auto.أرشفة_مخططات_الـ_PDF_والتصميما_706644'),
+      t('auto.إدارة_أذونات_ومحاضر_فحص_واستلا_2f203b'),
+      t('auto.ربط_المستندات_ببند_الـ_BOQ_أو__9850e5'),
     ],
   },
   '/reports': {
-    title: 'مركز التقارير المتقدمة والتحليلات الشاملة',
+    title: t('auto.مركز_التقارير_المتقدمة_والتحلي_623451'),
     subtitle: 'Advanced Analytics & Executive Reporting',
     description:
-      'مركز شامل لاستخراج التقارير المالية والإنتاجية التنفيذية، مؤشرات الأداء الرئيسية (KPIs)، وتصدير المخططات التفصيلية.',
-    backendStatus: 'التقرير اليومي متاح حالياً، وجاري تجهيز لوحة التحليلات المتقدمة',
+      t('auto.مركز_شامل_لاستخراج_التقارير_ال_65d10a'),
+    backendStatus: t('auto.التقرير_اليومي_متاح_حاليا_وجار_64952a'),
     features: [
-      'تقرير الإنتاجية والمقارنات بين المشاريع والفروع',
-      'تحليل انحراف التكاليف والموازنات التقديرية',
-      'تصدير كشوفات الإنجاز لملفات Excel و PDF متقدمة',
+      t('auto.تقرير_الإنتاجية_والمقارنات_بين_1e01c2'),
+      t('auto.تحليل_انحراف_التكاليف_والموازن_65cf73'),
+      t('auto.تصدير_كشوفات_الإنجاز_لملفات_Ex_50cdb7'),
     ],
   },
   '/settings': {
-    title: 'إعدادات النظام والتهيئة العامة',
+    title: t('auto.إعدادات_النظام_والتهيئة_العامة_21a161'),
     subtitle: 'System Configuration & Company Settings',
     description:
-      'شاشة التحكم في إعدادات المنظومة، إدارة المستخدمين، التهيئة العامة للشركة، ربط السيرفرات والنسخ الاحتياطي.',
-    backendStatus: 'إدارة الأدوار والمستخدمين مفعلة من خلال قاعدة البيانات',
+      t('auto.شاشة_التحكم_في_إعدادات_المنظوم_1bb2aa'),
+    backendStatus: t('auto.إدارة_الأدوار_والمستخدمين_مفعل_7a0992'),
     features: [
-      'تخصيص بيانات الشركة والترويسة الرسمية',
-      'إدارة صلاحيات المستخدمين وهيكل الأدوار الهرمي',
-      'تهيئة أوقات الدوام الرسمي ومعدلات الإضافي والتنبيهات',
+      t('auto.تخصيص_بيانات_الشركة_والترويسة__fd76d9'),
+      t('auto.إدارة_صلاحيات_المستخدمين_وهيكل_475d00'),
+      t('auto.تهيئة_أوقات_الدوام_الرسمي_ومعد_2b882e'),
     ],
   },
 };
 
-export const UnderConstructionPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -77,9 +80,9 @@ export const UnderConstructionPage: React.FC = () => {
     title: 'الصفحة قيد التطوير والتجهيز',
     subtitle: 'Module Under Construction',
     description:
-      'هذه الوحدة البرمجية قيد التجهيز والتطوير لتوفير أفضل تجربة مستخدم ومطابقة متطلبات العمل بدقة.',
-    backendStatus: 'مجدولة ضمن خطة التطوير',
-    features: ['واجهة تفاعلية حديثة', 'ربط مباشر مع قاعدة البيانات', 'تصدير التقارير والإحصائيات'],
+      t('auto.هذه_الوحدة_البرمجية_قيد_التجهي_7b182a'),
+    backendStatus: t('auto.مجدولة_ضمن_خطة_التطوير_65a732'),
+    features: [t('auto.واجهة_تفاعلية_حديثة_17839d'), t('auto.ربط_مباشر_مع_قاعدة_البيانات_530d21'), t('auto.تصدير_التقارير_والإحصائيات_329afd')],
   };
 
   return (
@@ -119,7 +122,7 @@ export const UnderConstructionPage: React.FC = () => {
         {/* Status Badge */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.9rem', borderRadius: '9999px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1rem' }}>
           <Clock size={14} />
-          <span>الوحدة قيد التجهيز والتطوير (Work in Progress)</span>
+          <span>{t('auto.الوحدة_قيد_التجهيز_والتطوير_Wo_48ac30')}</span>
         </div>
 
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.5rem', color: '#ffffff' }}>
@@ -146,7 +149,7 @@ export const UnderConstructionPage: React.FC = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#a78bfa', fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.75rem' }}>
             <Sparkles size={16} />
-            <span>الميزات المخططة لهذه الشاشة:</span>
+            <span>{t('auto.الميزات_المخططة_لهذه_الشاشة_2973fb')}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {moduleInfo.features.map((feat, idx) => (
@@ -158,7 +161,7 @@ export const UnderConstructionPage: React.FC = () => {
           </div>
 
           <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', fontSize: '0.8rem', color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <strong>حالة المحرك الخلفي:</strong>
+            <strong>{t('auto.حالة_المحرك_الخلفي_2155a4')}</strong>
             <span>{moduleInfo.backendStatus}</span>
           </div>
         </div>
@@ -172,7 +175,7 @@ export const UnderConstructionPage: React.FC = () => {
             style={{ gap: '0.5rem', padding: '0.65rem 1.5rem' }}
           >
             <LayoutDashboard size={18} />
-            <span>العودة للوحة التحكم</span>
+            <span>{t('auto.العودة_للوحة_التحكم_2d987b')}</span>
           </button>
 
           <button
@@ -182,7 +185,7 @@ export const UnderConstructionPage: React.FC = () => {
             style={{ gap: '0.5rem', padding: '0.65rem 1.5rem' }}
           >
             <FileSpreadsheet size={18} />
-            <span>التقرير اليومي الشامل</span>
+            <span>{t('auto.التقرير_اليومي_الشامل_e194e9')}</span>
           </button>
 
           <button
@@ -192,7 +195,7 @@ export const UnderConstructionPage: React.FC = () => {
             style={{ gap: '0.5rem', padding: '0.65rem 1.5rem' }}
           >
             <Layers size={18} />
-            <span>تسجيل الإنتاجية</span>
+            <span>{t('auto.تسجيل_الإنتاجية_234014')}</span>
           </button>
         </div>
       </div>

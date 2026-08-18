@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n/I18nContext';
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,6 +11,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+  const { t } = useI18n();
   const { isAuthenticated, isLoading, user, hasRole } = useAuth();
   const location = useLocation();
 
@@ -49,10 +51,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
         >
           <ShieldAlert size={32} />
         </div>
-        <h2>عذرًا! ليس لديك صلاحية للوصول</h2>
+        <h2>{t('auto.عذر_ا_ليس_لديك_صلاحية_للوصول_42f60c')}</h2>
         <p style={{ color: 'var(--text-muted)', maxWidth: '480px' }}>
-          حسابك الحالي لا يمتلك الصلاحيات المطلوبة لعرض هذه الصفحة. يرجى التواصل مع مدير النظام.
-        </p>
+          {t('auto.حسابك_الحالي_لا_يمتلك_الصلاحيا_4768cf')}</p>
       </div>
     );
   }

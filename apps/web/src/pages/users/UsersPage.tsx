@@ -126,7 +126,7 @@ export const UsersPage: React.FC = () => {
       setUsersList(res.data);
       setTotalCount(res.total);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل تحميل بيانات المستخدمين');
+      setErrorMsg(err?.message || t('auto.فشل_تحميل_بيانات_المستخدمين_278cf6'));
     } finally {
       setIsLoading(false);
     }
@@ -189,23 +189,23 @@ export const UsersPage: React.FC = () => {
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formUsername.trim()) {
-      setErrorMsg('اسم المستخدم مطلوب');
+      setErrorMsg(t('auto.اسم_المستخدم_مطلوب_3933f4'));
       return;
     }
     if (!formPassword || formPassword.length < 6) {
-      setErrorMsg('كلمة المرور يجب أن لا تقل عن 6 أحرف');
+      setErrorMsg(t('auto.كلمة_المرور_يجب_أن_لا_تقل_عن_6_cfc7c4'));
       return;
     }
     if (!formFullName.trim()) {
-      setErrorMsg('الاسم الكامل مطلوب');
+      setErrorMsg(t('auto.الاسم_الكامل_مطلوب_1fb4fc'));
       return;
     }
     if (formRoleCodes.length === 0) {
-      setErrorMsg('يرجى اختيار دور وظيفي واحد على الأقل للمستخدم');
+      setErrorMsg(t('auto.يرجى_اختيار_دور_وظيفي_واحد_على_2e5061'));
       return;
     }
     if (!isUnrestrictedFormRole && formSelectedProjectIds.length === 0) {
-      setErrorMsg('يجب تحديد نطاق مشروع واحد على الأقل للمستخدم الميداني / غير الشامل');
+      setErrorMsg(t('auto.يجب_تحديد_نطاق_مشروع_واحد_على__40ba53'));
       return;
     }
 
@@ -236,7 +236,7 @@ export const UsersPage: React.FC = () => {
       setCreateModalOpen(false);
       loadUsers();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل إنشاء حساب المستخدم');
+      setErrorMsg(err?.message || t('auto.فشل_إنشاء_حساب_المستخدم_1a34ae'));
     } finally {
       setFormSubmitting(false);
     }
@@ -247,15 +247,15 @@ export const UsersPage: React.FC = () => {
     e.preventDefault();
     if (!editModalUser) return;
     if (!formFullName.trim()) {
-      setErrorMsg('الاسم الكامل مطلوب');
+      setErrorMsg(t('auto.الاسم_الكامل_مطلوب_1fb4fc'));
       return;
     }
     if (formRoleCodes.length === 0) {
-      setErrorMsg('يرجى اختيار دور وظيفي واحد على الأقل للمستخدم');
+      setErrorMsg(t('auto.يرجى_اختيار_دور_وظيفي_واحد_على_2e5061'));
       return;
     }
     if (!isUnrestrictedFormRole && formSelectedProjectIds.length === 0) {
-      setErrorMsg('يجب تحديد نطاق مشروع واحد على الأقل للمستخدم الميداني / غير الشامل');
+      setErrorMsg(t('auto.يجب_تحديد_نطاق_مشروع_واحد_على__40ba53'));
       return;
     }
 
@@ -284,7 +284,7 @@ export const UsersPage: React.FC = () => {
       setEditModalUser(null);
       loadUsers();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل تحديث بيانات المستخدم');
+      setErrorMsg(err?.message || t('auto.فشل_تحديث_بيانات_المستخدم_3104db'));
     } finally {
       setFormSubmitting(false);
     }
@@ -301,7 +301,7 @@ export const UsersPage: React.FC = () => {
       );
       loadUsers();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل تعديل حالة الحساب');
+      setErrorMsg(err?.message || t('auto.فشل_تعديل_حالة_الحساب_8855e5'));
     }
   };
 
@@ -314,7 +314,7 @@ export const UsersPage: React.FC = () => {
       setDeleteConfirmUser(null);
       loadUsers();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل تعطيل حساب المستخدم');
+      setErrorMsg(err?.message || t('auto.فشل_تعطيل_حساب_المستخدم_350e92'));
     }
   };
 
@@ -333,7 +333,7 @@ export const UsersPage: React.FC = () => {
       }
       setCurrentOverridesMap(map);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل جلب استثناءات الصلاحيات');
+      setErrorMsg(err?.message || t('auto.فشل_جلب_استثناءات_الصلاحيات_5e4ab6'));
     } finally {
       setLoadingOverrides(false);
     }
@@ -372,7 +372,7 @@ export const UsersPage: React.FC = () => {
       setOverridesModalUser(null);
       loadUsers();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل حفظ استثناءات الصلاحيات');
+      setErrorMsg(err?.message || t('auto.فشل_حفظ_استثناءات_الصلاحيات_21e50b'));
     } finally {
       setSavingOverrides(false);
     }
@@ -383,11 +383,11 @@ export const UsersPage: React.FC = () => {
     e.preventDefault();
     if (!resetPassModalUser) return;
     if (!newPassword || newPassword.length < 6) {
-      setErrorMsg('كلمة المرور الجديدة يجب أن لا تقل عن 6 أحرف');
+      setErrorMsg(t('auto.كلمة_المرور_الجديدة_يجب_أن_لا__37afaf'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setErrorMsg('كلمتا المرور غير متطابقتين');
+      setErrorMsg(t('auto.كلمتا_المرور_غير_متطابقتين_54c0c6'));
       return;
     }
 
@@ -400,7 +400,7 @@ export const UsersPage: React.FC = () => {
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      setErrorMsg(err?.message || 'فشل إعادة تعيين كلمة المرور');
+      setErrorMsg(err?.message || t('auto.فشل_إعادة_تعيين_كلمة_المرور_6ee39f'));
     } finally {
       setResettingPassword(false);
     }
@@ -569,7 +569,7 @@ export const UsersPage: React.FC = () => {
             <Users size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>إجمالي حسابات المستخدمين</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('auto.إجمالي_حسابات_المستخدمين_1b59eb')}</div>
             <div style={{ fontSize: '22px', fontWeight: 800 }}>{kpis.total}</div>
           </div>
         </div>
@@ -600,7 +600,7 @@ export const UsersPage: React.FC = () => {
             <UserCheck size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>الحسابات النشطة</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('auto.الحسابات_النشطة_5e2b7a')}</div>
             <div style={{ fontSize: '22px', fontWeight: 800 }}>{kpis.active}</div>
           </div>
         </div>
@@ -631,7 +631,7 @@ export const UsersPage: React.FC = () => {
             <FolderKanban size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>حسابات بنطاق مشاريع محدد</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('auto.حسابات_بنطاق_مشاريع_محدد_61aa54')}</div>
             <div style={{ fontSize: '22px', fontWeight: 800 }}>{kpis.scoped}</div>
           </div>
         </div>
@@ -662,7 +662,7 @@ export const UsersPage: React.FC = () => {
             <Shield size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>مديرو النظام الشامل</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('auto.مديرو_النظام_الشامل_41a60d')}</div>
             <div style={{ fontSize: '22px', fontWeight: 800 }}>{kpis.admins}</div>
           </div>
         </div>
@@ -698,7 +698,7 @@ export const UsersPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث بالاسم، اسم المستخدم، البريد..."
+            placeholder={t('auto.بحث_بالاسم_اسم_المستخدم_البريد_710b1a')}
             style={{
               width: '100%',
               padding: '9px 38px 9px 12px',
@@ -727,7 +727,7 @@ export const UsersPage: React.FC = () => {
             cursor: 'pointer',
           }}
         >
-          <option value="all">كافة الأدوار الوظيفية</option>
+          <option value="all">{t('auto.كافة_الأدوار_الوظيفية_1a1381')}</option>
           {roles.map((r) => (
             <option key={r.code} value={r.code}>
               {r.name}
@@ -750,7 +750,7 @@ export const UsersPage: React.FC = () => {
             cursor: 'pointer',
           }}
         >
-          <option value="all">كافة الفروع</option>
+          <option value="all">{t('auto.كافة_الفروع_1a62e9')}</option>
           {branches.map((b) => (
             <option key={b.id} value={b.id}>
               {b.name}
@@ -773,7 +773,7 @@ export const UsersPage: React.FC = () => {
             cursor: 'pointer',
           }}
         >
-          <option value="all">كافة المشاريع</option>
+          <option value="all">{t('auto.كافة_المشاريع_65e01c')}</option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -796,9 +796,9 @@ export const UsersPage: React.FC = () => {
             cursor: 'pointer',
           }}
         >
-          <option value="all">كافة الحالات</option>
-          <option value="active">نشط فقط</option>
-          <option value="inactive">معطل فقط</option>
+          <option value="all">{t('auto.كافة_الحالات_3318a9')}</option>
+          <option value="active">{t('auto.نشط_فقط_361dab')}</option>
+          <option value="inactive">{t('auto.معطل_فقط_66c560')}</option>
         </select>
 
         <button
@@ -816,11 +816,10 @@ export const UsersPage: React.FC = () => {
             gap: '6px',
             fontSize: '13px',
           }}
-          title="تحديث القائمة"
+          title={t('auto.تحديث_القائمة_414bd9')}
         >
           <RefreshCw size={15} />
-          تحديث
-        </button>
+          {t('auto.تحديث_59c38f')}</button>
       </div>
 
       {/* Users Table */}
@@ -846,7 +845,7 @@ export const UsersPage: React.FC = () => {
               marginBottom: '16px',
             }}
           />
-          <div style={{ fontSize: '15px', fontWeight: 600 }}>جاري تحميل حسابات المستخدمين...</div>
+          <div style={{ fontSize: '15px', fontWeight: 600 }}>{t('auto.جاري_تحميل_حسابات_المستخدمين_493734')}</div>
         </div>
       ) : usersList.length === 0 ? (
         <div
@@ -859,10 +858,9 @@ export const UsersPage: React.FC = () => {
           }}
         >
           <Users size={40} style={{ color: 'var(--text-muted)', marginBottom: '12px' }} />
-          <h3 style={{ fontSize: '18px', margin: '0 0 6px' }}>لا يوجد مستخدمون مطابقون للبحث</h3>
+          <h3 style={{ fontSize: '18px', margin: '0 0 6px' }}>{t('auto.لا_يوجد_مستخدمون_مطابقون_للبحث_227da1')}</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '0 0 16px' }}>
-            يمكنك إنشاء حساب مستخدم جديد أو تعديل خيارات الفلترة.
-          </p>
+            {t('auto.يمكنك_إنشاء_حساب_مستخدم_جديد_أ_1f257f')}</p>
           <button
             type="button"
             onClick={openCreateModal}
@@ -877,8 +875,7 @@ export const UsersPage: React.FC = () => {
               fontSize: '13px',
             }}
           >
-            + إنشاء حساب جديد
-          </button>
+            {t('auto.إنشاء_حساب_جديد_64e538')}</button>
         </div>
       ) : (
         <div
@@ -910,13 +907,13 @@ export const UsersPage: React.FC = () => {
                     fontWeight: 700,
                   }}
                 >
-                  <th style={{ padding: '16px 20px' }}>المستخدم</th>
-                  <th style={{ padding: '16px 14px' }}>الموظف المرتبط</th>
-                  <th style={{ padding: '16px 14px' }}>الأدوار الوظيفية</th>
-                  <th style={{ padding: '16px 14px' }}>نطاق المشاريع المعزول</th>
-                  <th style={{ padding: '16px 14px' }}>الحالة</th>
-                  <th style={{ padding: '16px 14px' }}>تاريخ الإنشاء</th>
-                  <th style={{ padding: '16px 20px', textAlign: 'center' }}>الإجراءات</th>
+                  <th style={{ padding: '16px 20px' }}>{t('auto.المستخدم_660690')}</th>
+                  <th style={{ padding: '16px 14px' }}>{t('auto.الموظف_المرتبط_6769aa')}</th>
+                  <th style={{ padding: '16px 14px' }}>{t('auto.الأدوار_الوظيفية_42fdb3')}</th>
+                  <th style={{ padding: '16px 14px' }}>{t('auto.نطاق_المشاريع_المعزول_1dd919')}</th>
+                  <th style={{ padding: '16px 14px' }}>{t('auto.الحالة_252d72')}</th>
+                  <th style={{ padding: '16px 14px' }}>{t('auto.تاريخ_الإنشاء_759697')}</th>
+                  <th style={{ padding: '16px 20px', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -997,7 +994,7 @@ export const UsersPage: React.FC = () => {
                             </span>
                           </div>
                         ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>غير مرتبط</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{t('auto.غير_مرتبط_686eeb')}</span>
                         )}
                       </td>
 
@@ -1048,8 +1045,7 @@ export const UsersPage: React.FC = () => {
                             }}
                           >
                             <Building size={13} />
-                            صلاحية شاملة (كافة المشاريع)
-                          </span>
+                            {t('auto.صلاحية_شاملة_كافة_المشاريع_415bbc')}</span>
                         ) : u.scopes && u.scopes.length > 0 ? (
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                             {u.scopes.map((sc) => (
@@ -1065,7 +1061,7 @@ export const UsersPage: React.FC = () => {
                                   border: '1px solid rgba(139, 92, 246, 0.3)',
                                 }}
                               >
-                                {sc.projectName || sc.projectCode || 'مشروع محدد'}
+                                {sc.projectName || sc.projectCode || t('auto.مشروع_محدد_5b4a3c')}
                               </span>
                             ))}
                           </div>
@@ -1079,8 +1075,7 @@ export const UsersPage: React.FC = () => {
                               color: 'var(--text-muted)',
                             }}
                           >
-                            عام (كافة مشاريع الشركة)
-                          </span>
+                            {t('auto.عام_كافة_مشاريع_الشركة_6c568c')}</span>
                         )}
                       </td>
 
@@ -1089,7 +1084,7 @@ export const UsersPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleToggleActive(u)}
-                          title="انقر لتغيير حالة الحساب"
+                          title={t('auto.انقر_لتغيير_حالة_الحساب_7223b6')}
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1111,13 +1106,11 @@ export const UsersPage: React.FC = () => {
                           {u.isActive ? (
                             <>
                               <CheckCircle2 size={12} />
-                              نشط
-                            </>
+                              {t('auto.نشط_185349')}</>
                           ) : (
                             <>
                               <XCircle size={12} />
-                              معطل
-                            </>
+                              {t('auto.معطل_2f1ba8')}</>
                           )}
                         </button>
                       </td>
@@ -1133,7 +1126,7 @@ export const UsersPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => openEditModal(u)}
-                            title="تعديل الأدوار والنطاقات"
+                            title={t('auto.تعديل_الأدوار_والنطاقات_3de73e')}
                             style={{
                               padding: '6px 10px',
                               borderRadius: '6px',
@@ -1149,7 +1142,7 @@ export const UsersPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => openOverridesModal(u)}
-                            title="استثناءات الصلاحيات المباشرة"
+                            title={t('auto.استثناءات_الصلاحيات_المباشرة_66234c')}
                             style={{
                               padding: '6px 10px',
                               borderRadius: '6px',
@@ -1169,7 +1162,7 @@ export const UsersPage: React.FC = () => {
                               setNewPassword('');
                               setConfirmPassword('');
                             }}
-                            title="إعادة تعيين كلمة المرور"
+                            title={t('auto.إعادة_تعيين_كلمة_المرور_19c958')}
                             style={{
                               padding: '6px 10px',
                               borderRadius: '6px',
@@ -1185,7 +1178,7 @@ export const UsersPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setDeleteConfirmUser(u)}
-                            title="تعطيل وحذف الجلسات"
+                            title={t('auto.تعطيل_وحذف_الجلسات_440100')}
                             style={{
                               padding: '6px 10px',
                               borderRadius: '6px',
@@ -1220,8 +1213,7 @@ export const UsersPage: React.FC = () => {
               }}
             >
               <div>
-                عرض {(page - 1) * limit + 1} إلى {Math.min(page * limit, totalCount)} من إجمالي {totalCount} مستخدم
-              </div>
+                {t('auto.عرض_18221e')}{(page - 1) * limit + 1} {t('auto.إلى_17d96a')}{Math.min(page * limit, totalCount)} {t('auto.من_إجمالي_4d6b95')}{totalCount} {t('auto.مستخدم_d131bc')}</div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
@@ -1240,8 +1232,7 @@ export const UsersPage: React.FC = () => {
                   }}
                 >
                   <ChevronRight size={14} />
-                  السابق
-                </button>
+                  {t('auto.السابق_252abb')}</button>
                 <button
                   type="button"
                   disabled={page * limit >= totalCount}
@@ -1258,8 +1249,7 @@ export const UsersPage: React.FC = () => {
                     gap: '4px',
                   }}
                 >
-                  التالي
-                  <ChevronLeft size={14} />
+                  {t('auto.التالي_252ecf')}<ChevronLeft size={14} />
                 </button>
               </div>
             </div>
@@ -1313,7 +1303,7 @@ export const UsersPage: React.FC = () => {
                   <UserPlus size={20} />
                 </div>
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
-                  {createModalOpen ? 'إنشاء حساب مستخدم جديد' : `تعديل حساب "${editModalUser?.username}"`}
+                  {createModalOpen ? t('auto.إنشاء_حساب_مستخدم_جديد_36bee7') : `تعديل حساب "${editModalUser?.username}"`}
                 </h3>
               </div>
               <button
@@ -1332,8 +1322,7 @@ export const UsersPage: React.FC = () => {
               {/* Linked Employee */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                  ربط بموظف من السجل (اختياري)
-                </label>
+                  {t('auto.ربط_بموظف_من_السجل_اختياري_48fe0c')}</label>
                 <select
                   value={formEmployeeId}
                   onChange={(e) => handleEmployeeChange(e.target.value)}
@@ -1348,10 +1337,10 @@ export const UsersPage: React.FC = () => {
                     outline: 'none',
                   }}
                 >
-                  <option value="">-- بدون ربط بموظف --</option>
+                  <option value="">{t('auto.بدون_ربط_بموظف_4730ee')}</option>
                   {employees.map((e) => (
                     <option key={e.id} value={e.id}>
-                      {e.name} ({e.code || e.identityNumber}) - {e.roleType || 'موظف'}
+                      {e.name} ({e.code || e.identityNumber}) - {e.roleType || t('auto.موظف_2f1f2e')}
                     </option>
                   ))}
                 </select>
@@ -1361,14 +1350,13 @@ export const UsersPage: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                    اسم المستخدم (Username) *
-                  </label>
+                    {t('auto.اسم_المستخدم_Username_7420d8')}</label>
                   <input
                     type="text"
                     disabled={!createModalOpen}
                     value={formUsername}
                     onChange={(e) => setFormUsername(e.target.value)}
-                    placeholder="مثال: eng_ahmed"
+                    placeholder={t('auto.مثال_eng_ahmed_73ceb1')}
                     required
                     style={{
                       width: '100%',
@@ -1385,13 +1373,12 @@ export const UsersPage: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                    الاسم الكامل *
-                  </label>
+                    {t('auto.الاسم_الكامل_131b51')}</label>
                   <input
                     type="text"
                     value={formFullName}
                     onChange={(e) => setFormFullName(e.target.value)}
-                    placeholder="مثال: م. أحمد خالد"
+                    placeholder={t('auto.مثال_م_أحمد_خالد_1fd06d')}
                     required
                     style={{
                       width: '100%',
@@ -1411,8 +1398,7 @@ export const UsersPage: React.FC = () => {
               {createModalOpen && (
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                    كلمة المرور * (6 أحرف على الأقل)
-                  </label>
+                    {t('auto.كلمة_المرور_6_أحرف_على_الأقل_3959bd')}</label>
                   <input
                     type="password"
                     value={formPassword}
@@ -1437,8 +1423,7 @@ export const UsersPage: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                    البريد الإلكتروني
-                  </label>
+                    {t('auto.البريد_الإلكتروني_1f05e4')}</label>
                   <input
                     type="email"
                     value={formEmail}
@@ -1459,8 +1444,7 @@ export const UsersPage: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                    رقم الهاتف
-                  </label>
+                    {t('auto.رقم_الهاتف_d581c0')}</label>
                   <input
                     type="text"
                     value={formPhone}
@@ -1485,10 +1469,10 @@ export const UsersPage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, margin: 0 }}>
                     <Shield size={16} color="#60a5fa" />
-                    <span>الأدوار الوظيفية المعتمدة (Roles) *</span>
+                    <span>{t('auto.الأدوار_الوظيفية_المعتمدة_Role_18852e')}</span>
                   </label>
                   <span style={{ fontSize: '11px', color: formRoleCodes.length > 0 ? '#93c5fd' : '#f87171', fontWeight: 600 }}>
-                    {formRoleCodes.length > 0 ? `تم اختيار ${formRoleCodes.length} أدوار` : 'مطلوب دور واحد على الأقل'}
+                    {formRoleCodes.length > 0 ? `تم اختيار ${formRoleCodes.length} أدوار` : t('auto.مطلوب_دور_واحد_على_الأقل_299157')}
                   </span>
                 </div>
 
@@ -1570,7 +1554,7 @@ export const UsersPage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, margin: 0 }}>
                     <FolderKanban size={16} color="#c084fc" />
-                    <span>نطاق المشاريع المعزول (Project Scope Checklist)</span>
+                    <span>{t('auto.نطاق_المشاريع_المعزول_Project__2f7a5d')}</span>
                   </label>
 
                   {!isUnrestrictedFormRole && projects.length > 0 && (
@@ -1588,8 +1572,7 @@ export const UsersPage: React.FC = () => {
                           padding: 0,
                         }}
                       >
-                        تحديد كافة المشاريع
-                      </button>
+                        {t('auto.تحديد_كافة_المشاريع_7ed983')}</button>
                       <span style={{ color: 'var(--text-dim)', fontSize: '11px' }}>|</span>
                       <button
                         type="button"
@@ -1604,8 +1587,7 @@ export const UsersPage: React.FC = () => {
                           padding: 0,
                         }}
                       >
-                        إلغاء التحديد
-                      </button>
+                        {t('auto.إلغاء_التحديد_517951')}</button>
                     </div>
                   )}
                 </div>
@@ -1626,8 +1608,7 @@ export const UsersPage: React.FC = () => {
                   >
                     <Building size={18} />
                     <span>
-                      الأدوار الإدارية العليا المحددة (Admin / Program Manager) تمنح وصولاً شاملاً لكافة مشاريع وفروع المنشأة تلقائياً.
-                    </span>
+                      {t('auto.الأدوار_الإدارية_العليا_المحدد_7c6e07')}</span>
                   </div>
                 ) : (
                   <div>
@@ -1683,7 +1664,7 @@ export const UsersPage: React.FC = () => {
                                 </span>
                                 {branch && (
                                   <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
-                                    فرع: {branch.name}
+                                    {t('auto.فرع_2efc53')}{branch.name}
                                   </span>
                                 )}
                               </div>
@@ -1696,7 +1677,7 @@ export const UsersPage: React.FC = () => {
                       })}
                     </div>
                     <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-dim)' }}>
-                      المشاريع المحددة: {formSelectedProjectIds.length} من {projects.length}
+                      {t('auto.المشاريع_المحددة_441121')}{formSelectedProjectIds.length} {t('auto.من_c8a1')}{projects.length}
                     </div>
                   </div>
                 )}
@@ -1711,7 +1692,7 @@ export const UsersPage: React.FC = () => {
                     onChange={(e) => setFormIsActive(e.target.checked)}
                     style={{ accentColor: '#10b981' }}
                   />
-                  <span style={{ fontSize: '13px', fontWeight: 600 }}>الحساب نشط ويمكنه تسجيل الدخول</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>{t('auto.الحساب_نشط_ويمكنه_تسجيل_الدخول_f73e77')}</span>
                 </label>
               </div>
 
@@ -1733,8 +1714,7 @@ export const UsersPage: React.FC = () => {
                     fontWeight: 600,
                   }}
                 >
-                  إلغاء
-                </button>
+                  {t('auto.إلغاء_5987b3')}</button>
                 <button
                   type="submit"
                   disabled={formSubmitting}
@@ -1748,7 +1728,7 @@ export const UsersPage: React.FC = () => {
                     cursor: formSubmitting ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  {formSubmitting ? 'جاري الحفظ...' : createModalOpen ? 'إنشاء الحساب' : 'حفظ التعديلات'}
+                  {formSubmitting ? t('auto.جاري_الحفظ_6d43e6') : createModalOpen ? t('auto.إنشاء_الحساب_48d4d5') : t('auto.حفظ_التعديلات_4ff313')}
                 </button>
               </div>
             </form>
@@ -1805,10 +1785,9 @@ export const UsersPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
-                    استثناءات الصلاحيات المباشرة للمستخدم (Permission Overrides)
-                  </h3>
+                    {t('auto.استثناءات_الصلاحيات_المباشرة_ل_604831')}</h3>
                   <p style={{ margin: '3px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                    المستخدم: <strong style={{ color: '#fff' }}>{overridesModalUser.fullName}</strong> (@{overridesModalUser.username})
+                    {t('auto.المستخدم_5acb8e')}<strong style={{ color: '#fff' }}>{overridesModalUser.fullName}</strong> (@{overridesModalUser.username})
                   </p>
                 </div>
               </div>
@@ -1834,13 +1813,13 @@ export const UsersPage: React.FC = () => {
                 lineHeight: '1.5',
               }}
             >
-              الصلاحيات الفعلية = <strong>(صلاحيات الأدوار ∪ استثناءات المنح Grant) ∖ استثناءات الحجب Deny</strong>
+              {t('auto.الصلاحيات_الفعلية_3f6c6c')}<strong>{t('auto.صلاحيات_الأدوار_استثناءات_المن_d5dc0c')}</strong>
             </div>
 
             {/* Permissions Overrides List */}
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '20px', paddingRight: '4px' }}>
               {loadingOverrides ? (
-                <div style={{ padding: '40px', textAlign: 'center' }}>جاري التحميل...</div>
+                <div style={{ padding: '40px', textAlign: 'center' }}>{t('auto.جاري_التحميل_16785e')}</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {allPermissions.map((perm) => {
@@ -1888,8 +1867,7 @@ export const UsersPage: React.FC = () => {
                                   color: '#60a5fa',
                                 }}
                               >
-                                ممنوحة من الدور
-                              </span>
+                                {t('auto.ممنوحة_من_الدور_555bb3')}</span>
                             )}
                           </div>
                         </div>
@@ -1913,8 +1891,7 @@ export const UsersPage: React.FC = () => {
                               color: currentOverride === 'grant' ? '#fff' : '#34d399',
                             }}
                           >
-                            + منح (Grant)
-                          </button>
+                            {t('auto.منح_Grant_7323d5')}</button>
 
                           <button
                             type="button"
@@ -1933,8 +1910,7 @@ export const UsersPage: React.FC = () => {
                               color: currentOverride === 'deny' ? '#fff' : '#f87171',
                             }}
                           >
-                            - حجب (Deny)
-                          </button>
+                            {t('auto.حجب_Deny_1df071')}</button>
                         </div>
                       </div>
                     );
@@ -1958,8 +1934,7 @@ export const UsersPage: React.FC = () => {
                   fontWeight: 600,
                 }}
               >
-                إلغاء
-              </button>
+                {t('auto.إلغاء_5987b3')}</button>
               <button
                 type="button"
                 onClick={handleSaveOverrides}
@@ -1974,7 +1949,7 @@ export const UsersPage: React.FC = () => {
                   cursor: savingOverrides ? 'not-allowed' : 'pointer',
                 }}
               >
-                {savingOverrides ? 'جاري الحفظ...' : 'حفظ استثناءات الصلاحيات'}
+                {savingOverrides ? t('auto.جاري_الحفظ_6d43e6') : t('auto.حفظ_استثناءات_الصلاحيات_76ff51')}
               </button>
             </div>
           </div>
@@ -2024,7 +1999,7 @@ export const UsersPage: React.FC = () => {
                 >
                   <KeyRound size={20} />
                 </div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>إعادة تعيين كلمة المرور</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>{t('auto.إعادة_تعيين_كلمة_المرور_19c958')}</h3>
               </div>
               <button
                 type="button"
@@ -2038,8 +2013,7 @@ export const UsersPage: React.FC = () => {
             <form onSubmit={handleResetPasswordSubmit}>
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                  كلمة المرور الجديدة *
-                </label>
+                  {t('auto.كلمة_المرور_الجديدة_637a91')}</label>
                 <input
                   type="password"
                   value={newPassword}
@@ -2061,8 +2035,7 @@ export const UsersPage: React.FC = () => {
 
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                  تأكيد كلمة المرور الجديدة *
-                </label>
+                  {t('auto.تأكيد_كلمة_المرور_الجديدة_3f7d9f')}</label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -2096,8 +2069,7 @@ export const UsersPage: React.FC = () => {
                     fontWeight: 600,
                   }}
                 >
-                  إلغاء
-                </button>
+                  {t('auto.إلغاء_5987b3')}</button>
                 <button
                   type="submit"
                   disabled={resettingPassword}
@@ -2111,7 +2083,7 @@ export const UsersPage: React.FC = () => {
                     cursor: resettingPassword ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  {resettingPassword ? 'جاري الحفظ...' : 'تحديث كلمة المرور'}
+                  {resettingPassword ? t('auto.جاري_الحفظ_6d43e6') : t('auto.تحديث_كلمة_المرور_64e5f4')}
                 </button>
               </div>
             </form>
@@ -2163,17 +2135,14 @@ export const UsersPage: React.FC = () => {
               </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#f87171' }}>
-                  تأكيد تعطيل حساب المستخدم
-                </h3>
+                  {t('auto.تأكيد_تعطيل_حساب_المستخدم_6051ea')}</h3>
                 <p style={{ margin: '3px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                  سيتم إلغاء كافة الجلسات النشطة للمستخدم فوراً
-                </p>
+                  {t('auto.سيتم_إلغاء_كافة_الجلسات_النشطة_75ba00')}</p>
               </div>
             </div>
 
             <p style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.6', marginBottom: '22px' }}>
-              هل أنت متأكد من رغبتك في تعطيل حساب <strong style={{ color: '#fff' }}>"{deleteConfirmUser.fullName}"</strong> (@{deleteConfirmUser.username})؟ لن يتمكن المستخدم من تسجيل الدخول حتى تتم إعادة تنشيطه.
-            </p>
+              {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_b8d5c7')}<strong style={{ color: '#fff' }}>"{deleteConfirmUser.fullName}"</strong> (@{deleteConfirmUser.username}{t('auto.لن_يتمكن_المستخدم_من_تسجيل_الد_a0837c')}</p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button
@@ -2189,8 +2158,7 @@ export const UsersPage: React.FC = () => {
                   fontWeight: 600,
                 }}
               >
-                إلغاء
-              </button>
+                {t('auto.إلغاء_5987b3')}</button>
               <button
                 type="button"
                 onClick={handleDeleteSubmit}
@@ -2204,8 +2172,7 @@ export const UsersPage: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                تأكيد التعطيل
-              </button>
+                {t('auto.تأكيد_التعطيل_63699e')}</button>
             </div>
           </div>
         </div>

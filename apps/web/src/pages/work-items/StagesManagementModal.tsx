@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React, { useState, useEffect } from 'react';
 import type { WorkItemStage } from '../../api/work-categories.api';
 import { workItemStagesApi } from '../../api/work-categories.api';
@@ -31,6 +32,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
   workItem,
   onStagesUpdated,
 }) => {
+  const { t } = useI18n();
   const [stages, setStages] = useState<WorkItemStage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
       const data = await workItemStagesApi.listByItem(workItem.id);
       setStages(data || []);
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'تعذر تحميل مراحل البند');
+      setError(err?.response?.data?.message || t('auto.تعذر_تحميل_مراحل_البند_4d6ad6'));
     } finally {
       setLoading(false);
     }
@@ -105,20 +107,20 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
     try {
       if (editingStageId) {
         await workItemStagesApi.update(editingStageId, payload);
-        setSuccessMsg('تم تحديث بيانات المرحلة بنجاح');
+        setSuccessMsg(t('auto.تم_تحديث_بيانات_المرحلة_بنجاح_1c08ec'));
       } else {
         await workItemStagesApi.create(workItem.id, {
           ...payload,
           sortOrder: stages.length + 1,
         });
-        setSuccessMsg('تمت إضافة المرحلة الجديدة بنجاح');
+        setSuccessMsg(t('auto.تمت_إضافة_المرحلة_الجديدة_بنجا_5fe2aa'));
       }
       resetForm();
       await loadStages();
       onStagesUpdated?.();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'تعذر حفظ المرحلة');
+      setError(err?.response?.data?.message || t('auto.تعذر_حفظ_المرحلة_6288c5'));
     } finally {
       setSubmitting(false);
     }
@@ -131,7 +133,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
       await loadStages();
       onStagesUpdated?.();
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'تعذر حذف المرحلة');
+      setError(err?.response?.data?.message || t('auto.تعذر_حذف_المرحلة_650161'));
     }
   };
 
@@ -156,7 +158,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
       await loadStages();
       onStagesUpdated?.();
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'تعذر إعادة ترتيب المراحل');
+      setError(err?.response?.data?.message || t('auto.تعذر_إعادة_ترتيب_المراحل_5d74e1'));
     }
   };
 
@@ -187,8 +189,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
           className="btn btn-secondary"
           style={{ padding: '0.45rem 1.5rem', fontSize: '0.85rem' }}
         >
-          إغلاق
-        </button>
+          {t('auto.إغلاق_59834d')}</button>
       }
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -245,7 +246,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Percent size={16} color={getStatusColor()} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff' }}>مجموع نسب المراحل التنفيذية:</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff' }}>{t('auto.مجموع_نسب_المراحل_التنفيذية_7a1b24')}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span
@@ -270,9 +271,9 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                 }}
               >
                 {totalPercentage === 100
-                  ? '✓ مكتمل ومثالي (100%)'
+                  ? t('auto.مكتمل_ومثالي_100_9b5080')
                   : totalPercentage > 100
-                  ? '⚠️ تجاوز 100% (تجاوزت الحد)'
+                  ? t('auto.تجاوز_100_تجاوزت_الحد_433e53')
                   : `⚠️ متبقي ${100 - totalPercentage}% للوصول إلى 100%`}
               </span>
             </div>
@@ -331,12 +332,12 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
               {editingStageId ? (
                 <>
                   <Edit2 size={16} color="#60a5fa" />
-                  <span>تعديل المرحلة الحالية</span>
+                  <span>{t('auto.تعديل_المرحلة_الحالية_63d671')}</span>
                 </>
               ) : (
                 <>
                   <Plus size={16} color="var(--accent-primary)" />
-                  <span>إضافة مرحلة تنفيذية جديدة</span>
+                  <span>{t('auto.إضافة_مرحلة_تنفيذية_جديدة_693880')}</span>
                 </>
               )}
             </h4>
@@ -355,26 +356,25 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                   gap: '0.25rem',
                 }}
               >
-                <X size={14} /> إلغاء التعديل
-              </button>
+                <X size={14} /> {t('auto.إلغاء_التعديل_512208')}</button>
             )}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">اسم المرحلة التنفيذية *</label>
+              <label className="form-label">{t('auto.اسم_المرحلة_التنفيذية_25cd5a')}</label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder="مثال: البؤج والأوتار، الطرطشة، اللياسة..."
+                placeholder={t('auto.مثال_البؤج_والأوتار_الطرطشة_ال_1dec57')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">كود المرحلة (اختياري)</label>
+              <label className="form-label">{t('auto.كود_المرحلة_اختياري_76b7c0')}</label>
               <input
                 type="text"
                 className="input-field"
@@ -385,7 +385,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">الوزن النسبي للمرحلة (%) *</label>
+              <label className="form-label">{t('auto.الوزن_النسبي_للمرحلة_26e671')}</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="number"
@@ -414,13 +414,13 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">الإنتاجية القياسية اليومية</label>
+              <label className="form-label">{t('auto.الإنتاجية_القياسية_اليومية_aa02ba')}</label>
               <input
                 type="number"
                 min="0"
                 step="0.5"
                 className="input-field"
-                placeholder="مثال: 20"
+                placeholder={t('auto.مثال_20_66d4a6')}
                 value={standardProductivity}
                 onChange={(e) => setStandardProductivity(Number(e.target.value))}
               />
@@ -435,8 +435,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                 className="btn btn-secondary"
                 style={{ fontSize: '0.8rem', padding: '0.4rem 1rem' }}
               >
-                إلغاء
-              </button>
+                {t('auto.إلغاء_5987b3')}</button>
             )}
             <button
               type="submit"
@@ -451,17 +450,17 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
               {submitting ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
-                  <span>جاري الحفظ...</span>
+                  <span>{t('auto.جاري_الحفظ_6d43e6')}</span>
                 </>
               ) : editingStageId ? (
                 <>
                   <Check size={14} />
-                  <span>تحديث المرحلة</span>
+                  <span>{t('auto.تحديث_المرحلة_411ced')}</span>
                 </>
               ) : (
                 <>
                   <Plus size={14} />
-                  <span>إضافة المرحلة</span>
+                  <span>{t('auto.إضافة_المرحلة_ab0ab9')}</span>
                 </>
               )}
             </button>
@@ -472,14 +471,14 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
             <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-              المراحل المسجلة ({stages.length})
+              {t('auto.المراحل_المسجلة_6984bc')}{stages.length})
             </h4>
           </div>
 
           {loading ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
               <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto 0.5rem' }} />
-              <div>جاري تحميل المراحل...</div>
+              <div>{t('auto.جاري_تحميل_المراحل_5c06d9')}</div>
             </div>
           ) : stages.length === 0 ? (
             <div
@@ -492,8 +491,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                 background: 'rgba(0, 0, 0, 0.2)',
               }}
             >
-              لا توجد مراحل مسجلة لهذا البند بعد. استخدم النموذج أعلاه لإضافة المراحل بنسب متكاملة.
-            </div>
+              {t('auto.لا_توجد_مراحل_مسجلة_لهذا_البند_3ab97e')}</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {stages.map((stg, idx) => {
@@ -546,7 +544,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                           )}
                           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                             <TrendingUp size={12} color="#60a5fa" />
-                            <span>الإنتاجية القياسية: <strong style={{ color: '#ffffff' }}>{stg.standard_productivity}</strong></span>
+                            <span>{t('auto.الإنتاجية_القياسية_705d56')}<strong style={{ color: '#ffffff' }}>{stg.standard_productivity}</strong></span>
                           </span>
                         </div>
                       </div>
@@ -583,7 +581,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                             padding: '2px',
                             lineHeight: 1,
                           }}
-                          title="تحريك لأعلى"
+                          title={t('auto.تحريك_لأعلى_73756a')}
                         >
                           <ChevronUp size={14} />
                         </button>
@@ -599,7 +597,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                             padding: '2px',
                             lineHeight: 1,
                           }}
-                          title="تحريك لأسفل"
+                          title={t('auto.تحريك_لأسفل_737581')}
                         >
                           <ChevronDown size={14} />
                         </button>
@@ -620,7 +618,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}
-                        title="تعديل المرحلة"
+                        title={t('auto.تعديل_المرحلة_6a1a55')}
                       >
                         <Edit2 size={14} />
                       </button>
@@ -640,7 +638,7 @@ export const StagesManagementModal: React.FC<StagesManagementModalProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}
-                        title="حذف المرحلة"
+                        title={t('auto.حذف_المرحلة_343aa8')}
                       >
                         <Trash2 size={14} />
                       </button>

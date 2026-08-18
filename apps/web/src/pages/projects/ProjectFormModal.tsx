@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React, { useState, useEffect } from 'react';
 import type { Project, CreateProjectPayload, UpdateProjectPayload } from '../../api/projects.api';
 import type { Branch } from '../../api/branches.api';
@@ -22,6 +23,7 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
   branches,
   isSaving,
 }) => {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [branchId, setBranchId] = useState('');
@@ -75,17 +77,16 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingProject ? 'تعديل بيانات المشروع' : 'إنشاء مشروع جديد'}
+      title={editingProject ? t('auto.تعديل_بيانات_المشروع_394a64') : t('auto.إنشاء_مشروع_جديد_57445e')}
       icon={<FolderKanban size={22} color="#60a5fa" />}
       maxWidth="lg"
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
           <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSaving}>
-            إلغاء
-          </button>
+            {t('auto.إلغاء_5987b3')}</button>
           <button type="submit" form="project-form" className="btn btn-primary" disabled={isSaving}>
             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckSquare size={16} />}
-            <span>{editingProject ? 'حفظ التعديلات' : 'إنشاء المشروع'}</span>
+            <span>{editingProject ? t('auto.حفظ_التعديلات_4ff313') : t('auto.إنشاء_المشروع_7190ca')}</span>
           </button>
         </div>
       }
@@ -95,13 +96,13 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
               <label className="form-label">
                 <FolderKanban size={14} />
-                <span>اسم المشروع *</span>
+                <span>{t('auto.اسم_المشروع_3744d0')}</span>
               </label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder="مثال: تشطيبات برج الرياض التجاري"
+                placeholder={t('auto.مثال_تشطيبات_برج_الرياض_التجار_323cf1')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -110,7 +111,7 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Building size={14} />
-                <span>الفرع التابع *</span>
+                <span>{t('auto.الفرع_التابع_1334ea')}</span>
               </label>
               <select
                 required
@@ -118,7 +119,7 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
               >
-                <option value="">اختر الفرع...</option>
+                <option value="">{t('auto.اختر_الفرع_53db78')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -130,35 +131,35 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Hash size={14} />
-                <span>كود المشروع</span>
+                <span>{t('auto.كود_المشروع_1180ed')}</span>
               </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="مثال: PRJ-RYD-01"
+                placeholder={t('auto.مثال_PRJ_RYD_01_6f7427')}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">حالة المشروع</label>
+              <label className="form-label">{t('auto.حالة_المشروع_1d74d7')}</label>
               <select
                 className="input-field"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="in_progress">قيد التنفيذ (In Progress)</option>
-                <option value="planned">مخطط له (Planned)</option>
-                <option value="completed">مكتمل (Completed)</option>
-                <option value="on_hold">معلق (On Hold)</option>
+                <option value="in_progress">{t('auto.قيد_التنفيذ_In_Progress_dafbd2')}</option>
+                <option value="planned">{t('auto.مخطط_له_Planned_53635e')}</option>
+                <option value="completed">{t('auto.مكتمل_Completed_20d037')}</option>
+                <option value="on_hold">{t('auto.معلق_On_Hold_12e520')}</option>
               </select>
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Banknote size={14} />
-                <span>قيمة العقد (SAR)</span>
+                <span>{t('auto.قيمة_العقد_SAR_57ae97')}</span>
               </label>
               <input
                 type="number"
@@ -173,10 +174,10 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Calendar size={14} />
-                <span>تاريخ البدء</span>
+                <span>{t('auto.تاريخ_البدء_7a6526')}</span>
               </label>
               <WheelDatePicker
-                placeholder="تاريخ البدء..."
+                placeholder={t('auto.تاريخ_البدء_40f6fb')}
                 value={startDate}
                 onChange={(val) => setStartDate(val)}
               />
@@ -185,22 +186,22 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">
                 <Calendar size={14} />
-                <span>تاريخ الانتهاء المتوقع</span>
+                <span>{t('auto.تاريخ_الانتهاء_المتوقع_43825f')}</span>
               </label>
               <WheelDatePicker
-                placeholder="تاريخ الانتهاء..."
+                placeholder={t('auto.تاريخ_الانتهاء_6170be')}
                 value={endDate}
                 onChange={(val) => setEndDate(val)}
               />
             </div>
 
             <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
-              <label className="form-label">وصف المشروع وملاحظات التعاقد</label>
+              <label className="form-label">{t('auto.وصف_المشروع_وملاحظات_التعاقد_2b3a83')}</label>
               <textarea
                 rows={3}
                 className="input-field"
                 style={{ resize: 'vertical' }}
-                placeholder="تفاصيل العقد والموقع..."
+                placeholder={t('auto.تفاصيل_العقد_والموقع_4960d7')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />

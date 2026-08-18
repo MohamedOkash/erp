@@ -74,7 +74,7 @@ export const WorkAreasPage: React.FC = () => {
       });
       setAreas(res.data);
     } catch (err: any) {
-      setError(err.message || 'فشل تحميل مناطق العمل');
+      setError(err.message || t('auto.فشل_تحميل_مناطق_العمل_432ced'));
     } finally {
       setIsLoading(false);
     }
@@ -160,7 +160,7 @@ export const WorkAreasPage: React.FC = () => {
           sortOrder: Number(formSortOrder) || 0,
         };
         await workAreasApi.update(editingArea.id, payload);
-        setSuccessMsg('تم تحديث منطقة العمل بنجاح');
+        setSuccessMsg(t('auto.تم_تحديث_منطقة_العمل_بنجاح_496db5'));
       } else {
         const payload: CreateWorkAreaPayload = {
           projectId: selectedProject,
@@ -170,13 +170,13 @@ export const WorkAreasPage: React.FC = () => {
           sortOrder: Number(formSortOrder) || 0,
         };
         await workAreasApi.create(payload);
-        setSuccessMsg('تم إنشاء منطقة العمل بنجاح');
+        setSuccessMsg(t('auto.تم_إنشاء_منطقة_العمل_بنجاح_3fe2c1'));
       }
       setIsModalOpen(false);
       loadAreas();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حفظ منطقة العمل');
+      setError(err.message || t('auto.فشل_حفظ_منطقة_العمل_2f5c07'));
     } finally {
       setIsSaving(false);
     }
@@ -192,7 +192,7 @@ export const WorkAreasPage: React.FC = () => {
       loadAreas();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'فشل حذف المنطقة');
+      setError(err.message || t('auto.فشل_حذف_المنطقة_37f2a3'));
     } finally {
       setIsDeleting(false);
     }
@@ -267,7 +267,7 @@ export const WorkAreasPage: React.FC = () => {
                 color: depth === 0 ? '#60a5fa' : '#38bdf8',
               }}
             >
-              مستوى {node.level ?? depth + 1}
+              {t('auto.مستوى_5b42b1')}{node.level ?? depth + 1}
             </span>
           </div>
 
@@ -278,10 +278,10 @@ export const WorkAreasPage: React.FC = () => {
               onClick={() => openCreateChild(node)}
               className="btn btn-secondary"
               style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', gap: '0.3rem' }}
-              title="إضافة منطقة فرعية تابعة"
+              title={t('auto.إضافة_منطقة_فرعية_تابعة_10271f')}
             >
               <CornerDownLeft size={13} />
-              <span>فرعية</span>
+              <span>{t('auto.فرعية_5b09a3')}</span>
             </button>
 
             <button
@@ -289,7 +289,7 @@ export const WorkAreasPage: React.FC = () => {
               onClick={() => openEdit(node)}
               className="btn btn-secondary"
               style={{ padding: '0.35rem', borderRadius: 'var(--radius-sm)' }}
-              title="تعديل المنطقة"
+              title={t('auto.تعديل_المنطقة_6a10a4')}
             >
               <Edit2 size={14} />
             </button>
@@ -304,7 +304,7 @@ export const WorkAreasPage: React.FC = () => {
                 color: '#f87171',
                 borderColor: 'rgba(239, 68, 68, 0.25)',
               }}
-              title="حذف المنطقة"
+              title={t('auto.حذف_المنطقة_3430f7')}
             >
               <Trash2 size={14} />
             </button>
@@ -411,8 +411,7 @@ export const WorkAreasPage: React.FC = () => {
           <FolderTree size={20} color="#60a5fa" />
           <div style={{ flex: 1 }}>
             <label className="form-label" style={{ marginBottom: '0.25rem' }}>
-              المشروع الميداني المستهدف *
-            </label>
+              {t('auto.المشروع_الميداني_المستهدف_458674')}</label>
             <select
               className="input-field"
               value={selectedProject}
@@ -420,7 +419,7 @@ export const WorkAreasPage: React.FC = () => {
             >
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({p.code || 'بدون كود'}) - {p.branchName || 'فرع'}
+                  {p.name} ({p.code || t('auto.بدون_كود_519c6b')}) - {p.branchName || t('auto.فرع_184029')}
                 </option>
               ))}
             </select>
@@ -428,7 +427,7 @@ export const WorkAreasPage: React.FC = () => {
         </div>
 
         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          إجمالي المناطق المسجلة بالمشروع: <strong style={{ color: '#ffffff' }}>{areas.length}</strong>
+          {t('auto.إجمالي_المناطق_المسجلة_بالمشرو_58b775')}<strong style={{ color: '#ffffff' }}>{areas.length}</strong>
         </div>
       </div>
 
@@ -437,29 +436,28 @@ export const WorkAreasPage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h3 style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Network size={18} color="#60a5fa" />
-            <span>الشجرة الهرمية لمواقع العمل</span>
+            <span>{t('auto.الشجرة_الهرمية_لمواقع_العمل_235d47')}</span>
           </h3>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-            يمكنك طي وفرز المستويات بالضغط على الأسهم
-          </span>
+            {t('auto.يمكنك_طي_وفرز_المستويات_بالضغط_783b78')}</span>
         </div>
 
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '3rem' }}>
             <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-            <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>جاري بناء الشجرة الهرمية...</p>
+            <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>{t('auto.جاري_بناء_الشجرة_الهرمية_6559dd')}</p>
           </div>
         ) : areaTree.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
             <FolderTree size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-            <p>لا توجد مناطق عمل مسجلة لهذا المشروع حتى الآن</p>
+            <p>{t('auto.لا_توجد_مناطق_عمل_مسجلة_لهذا_ا_ee7848')}</p>
             <button
               onClick={openCreateRoot}
               className="btn btn-primary"
               style={{ marginTop: '1rem', gap: '0.5rem' }}
             >
               <Plus size={16} />
-              <span>إضافة أول منطقة رئيسية (مثل: مبنى A)</span>
+              <span>{t('auto.إضافة_أول_منطقة_رئيسية_مثل_مبن_291783')}</span>
             </button>
           </div>
         ) : (
@@ -475,10 +473,10 @@ export const WorkAreasPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         title={
           editingArea
-            ? 'تعديل منطقة العمل'
+            ? t('auto.تعديل_منطقة_العمل_550089')
             : modalParentId
-            ? 'إضافة منطقة فرعية تابعة'
-            : 'إضافة منطقة رئيسية'
+            ? t('auto.إضافة_منطقة_فرعية_تابعة_10271f')
+            : t('auto.إضافة_منطقة_رئيسية_75ff10')
         }
         icon={<Network size={22} color="#60a5fa" />}
         maxWidth="md"
@@ -490,11 +488,10 @@ export const WorkAreasPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isSaving}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button type="submit" form="work-area-form" className="btn btn-primary" disabled={isSaving}>
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingArea ? 'حفظ التعديلات' : 'إنشاء المنطقة'}</span>
+              <span>{editingArea ? t('auto.حفظ_التعديلات_4ff313') : t('auto.إنشاء_المنطقة_718885')}</span>
             </button>
           </div>
         }
@@ -502,48 +499,48 @@ export const WorkAreasPage: React.FC = () => {
         <form id="work-area-form" onSubmit={handleSave}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">المنطقة الأب (Parent Area)</label>
+              <label className="form-label">{t('auto.المنطقة_الأب_Parent_Area_25741f')}</label>
               <select
                 className="input-field"
                 value={modalParentId || ''}
                 onChange={(e) => setModalParentId(e.target.value || null)}
               >
-                <option value="">(منطقة رئيسية - الجذر Root)</option>
+                <option value="">{t('auto.منطقة_رئيسية_الجذر_Root_3d585a')}</option>
                 {areas
                   .filter((a) => !editingArea || a.id !== editingArea.id)
                   .map((a) => (
                     <option key={a.id} value={a.id}>
-                      {'— '.repeat(a.level || 0)} {a.name} ({a.code || 'بدون كود'})
+                      {'— '.repeat(a.level || 0)} {a.name} ({a.code || t('auto.بدون_كود_519c6b')})
                     </option>
                   ))}
               </select>
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">اسم منطقة العمل *</label>
+              <label className="form-label">{t('auto.اسم_منطقة_العمل_448fb6')}</label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder="مثال: الدور الأرضي / الجناح الشرقي..."
+                placeholder={t('auto.مثال_الدور_الأرضي_الجناح_الشرق_7e69e0')}
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
               />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">كود المنطقة</label>
+              <label className="form-label">{t('auto.كود_المنطقة_118931')}</label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="مثال: GF-E1"
+                placeholder={t('auto.مثال_GF_E1_7a7cf4')}
                 value={formCode}
                 onChange={(e) => setFormCode(e.target.value)}
               />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">ترتيب العرض (Sort Order)</label>
+              <label className="form-label">{t('auto.ترتيب_العرض_Sort_Order_f3727a')}</label>
               <input
                 type="number"
                 min="0"
@@ -560,7 +557,7 @@ export const WorkAreasPage: React.FC = () => {
       <Modal
         isOpen={!!deletingArea}
         onClose={() => setDeletingArea(null)}
-        title="تأكيد حذف منطقة العمل"
+        title={t('auto.تأكيد_حذف_منطقة_العمل_3273a1')}
         icon={<Trash2 size={22} color="#f87171" />}
         maxWidth="sm"
         footer={
@@ -571,8 +568,7 @@ export const WorkAreasPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeleting}
             >
-              إلغاء
-            </button>
+              {t('auto.إلغاء_5987b3')}</button>
             <button
               type="button"
               onClick={handleConfirmDelete}
@@ -581,14 +577,13 @@ export const WorkAreasPage: React.FC = () => {
               disabled={isDeleting}
             >
               {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>تأكيد الحذف</span>
+              <span>{t('auto.تأكيد_الحذف_4af57e')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          هل أنت متأكد من رغبتك في حذف المنطقة <strong style={{ color: '#ffffff' }}>"{deletingArea?.name}"</strong>؟ سيتم حذف أو فصل كافة المناطق الفرعية التابعة لها.
-        </p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_478ebe')}<strong style={{ color: '#ffffff' }}>"{deletingArea?.name}"</strong>{t('auto.سيتم_حذف_أو_فصل_كافة_المناطق_ا_351564')}</p>
       </Modal>
     </div>
   );

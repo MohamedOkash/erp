@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/I18nContext';
 import React, { useState, useEffect } from 'react';
 import type { Branch, CreateBranchPayload, UpdateBranchPayload } from '../../api/branches.api';
 import { Modal } from '../../components/Modal';
@@ -18,6 +19,7 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
   editingBranch,
   isSaving,
 }) => {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [location, setLocation] = useState('');
@@ -57,17 +59,16 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingBranch ? 'تعديل بيانات الفرع' : 'إضافة فرع جديد'}
+      title={editingBranch ? t('auto.تعديل_بيانات_الفرع_28048b') : t('auto.إضافة_فرع_جديد_159414')}
       icon={<Building size={22} color="#60a5fa" />}
       maxWidth="md"
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
           <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isSaving}>
-            إلغاء
-          </button>
+            {t('auto.إلغاء_5987b3')}</button>
           <button type="submit" form="branch-form" className="btn btn-primary" disabled={isSaving}>
             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckSquare size={16} />}
-            <span>{editingBranch ? 'حفظ التعديلات' : 'إنشاء الفرع'}</span>
+            <span>{editingBranch ? t('auto.حفظ_التعديلات_4ff313') : t('auto.إنشاء_الفرع_25e1d9')}</span>
           </button>
         </div>
       }
@@ -77,13 +78,13 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
               <Building size={14} />
-              <span>اسم الفرع / الإقليم *</span>
+              <span>{t('auto.اسم_الفرع_الإقليم_6a9f27')}</span>
             </label>
             <input
               type="text"
               required
               className="input-field"
-              placeholder="مثال: فرع الرياض أو فرع جدة..."
+              placeholder={t('auto.مثال_فرع_الرياض_أو_فرع_جدة_26e36f')}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -92,14 +93,14 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
               <Hash size={14} />
-              <span>كود الفرع الفريد *</span>
+              <span>{t('auto.كود_الفرع_الفريد_2c11c8')}</span>
             </label>
             <input
               type="text"
               required
               disabled={!!editingBranch}
               className="input-field"
-              placeholder="مثال: RUH أو JED..."
+              placeholder={t('auto.مثال_RUH_أو_JED_15bfb8')}
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
             />
@@ -108,12 +109,12 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
               <MapPin size={14} />
-              <span>موقع / عنوان الفرع</span>
+              <span>{t('auto.موقع_عنوان_الفرع_5ca11a')}</span>
             </label>
             <input
               type="text"
               className="input-field"
-              placeholder="المدينة، الحي..."
+              placeholder={t('auto.المدينة_الحي_12b1b4')}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -122,7 +123,7 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
               <Phone size={14} />
-              <span>رقم هاتف الفرع</span>
+              <span>{t('auto.رقم_هاتف_الفرع_37966c')}</span>
             </label>
             <input
               type="text"
@@ -151,8 +152,7 @@ export const BranchFormModal: React.FC<BranchFormModalProps> = ({
               style={{ width: '16px', height: '16px', cursor: 'pointer' }}
             />
             <label htmlFor="isActiveCheck" style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#ffffff' }}>
-              فرع نشط ومتاح للعمليات
-            </label>
+              {t('auto.فرع_نشط_ومتاح_للعمليات_c5c33b')}</label>
           </div>
         </div>
       </form>
