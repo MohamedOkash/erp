@@ -154,6 +154,8 @@ export class ControlCardsService {
         `SELECT id, name, code, percentage, standard_productivity,
                 COALESCE(crew_skilled_count, 1) AS crew_skilled_count,
                 COALESCE(crew_unskilled_count, 1) AS crew_unskilled_count,
+                COALESCE(cost_distribution_mode, 'split_to_skilled') AS cost_distribution_mode,
+                COALESCE(material_price_per_unit, 0) AS material_price_per_unit,
                 sort_order
          FROM work_item_stages
          WHERE work_item_id = $1 AND company_id = $2 AND is_active = true
@@ -200,6 +202,7 @@ export class ControlCardsService {
         const percentage = Number(stg.percentage) || 0;
         const standardProductivity = Number(stg.standard_productivity) || perDay;
         const actualTotalProductivity = Number((percentage * perDay).toFixed(decimals));
+        const stageMaterialPrice = Number(stg.material_price_per_unit || 0);
         return {
           id: stg.id,
           name: stg.name,
@@ -207,6 +210,8 @@ export class ControlCardsService {
           percentage,
           standardProductivity,
           actualTotalProductivity,
+          costDistributionMode: stg.cost_distribution_mode,
+          materialPricePerUnit: stageMaterialPrice,
           crew: {
             skilled: Number(stg.crew_skilled_count) || defaultSkilledCrew,
             unskilled: Number(stg.crew_unskilled_count) || defaultUnskilledCrew,
@@ -402,5 +407,122 @@ export class ControlCardsService {
         };
       });
     });
+  }
+
+  /**
+   * 4) Cost Distribution Engine for Helper Labor Splitting (SACODECO Logic)
+   */
+  calculateLaborCostDistribution(input: {
+    crewType: 'A' | 'B';
+    skilled1Wage: number;
+    skilled2Wage?: number;
+    helperWage: number;
+    skilled1Meters: number;
+    skilled2Meters?: number;
+    costDistributionMode?: 'split_to_skilled' | 'direct';
+    materialPricePerUnit?: number;
+  }) {
+    const mode = input.costDistributionMode || 'split_to_skilled';
+    const skilled1Wage = Number(input.skilled1Wage || 0);
+    const skilled2Wage = Number(input.skilled2Wage || 0);
+    const helperWage = Number(input.helperWage || 0);
+    const skilled1Meters = Number(input.skilled1Meters || 0);
+    const skilled2Meters = Number(input.skilled2Meters || 0);
+    const materialPrice = Number(input.materialPricePerUnit || 0);
+
+    if (input.crewType === 'A') {
+      const totalMeters = skilled1Meters + skilled2Meters;
+      const totalCrewDailyLabor = skilled1Wage + skilled2Wage + helperWage;
+
+      if (mode === 'split_to_skilled') {
+        const helperShare = helperWage / 2;
+        const skilled1TotalLabor = skilled1Wage + helperShare;
+        const skilled2TotalLabor = skilled2Wage + helperShare;
+
+        const skilled1UnitLaborCost = skilled1Meters > 0 ? Number((skilled1TotalLabor / skilled1Meters).toFixed(2)) : 0;
+        const skilled2UnitLaborCost = skilled2Meters > 0 ? Number((skilled2TotalLabor / skilled2Meters).toFixed(2)) : 0;
+        const averageUnitLaborCost = totalMeters > 0 ? Number((totalCrewDailyLabor / totalMeters).toFixed(2)) : 0;
+
+        return {
+          crewType: 'A' as const,
+          costDistributionMode: 'split_to_skilled' as const,
+          totalCrewDailyLabor,
+          totalMeters,
+          helperSharePerSkilled: helperShare,
+          skilled1: {
+            baseWage: skilled1Wage,
+            allocatedHelperWage: helperShare,
+            totalLaborCost: skilled1TotalLabor,
+            meters: skilled1Meters,
+            unitLaborCost: skilled1UnitLaborCost,
+            totalUnitCostWithMaterial: Number((skilled1UnitLaborCost + materialPrice).toFixed(2)),
+          },
+          skilled2: {
+            baseWage: skilled2Wage,
+            allocatedHelperWage: helperShare,
+            totalLaborCost: skilled2TotalLabor,
+            meters: skilled2Meters,
+            unitLaborCost: skilled2UnitLaborCost,
+            totalUnitCostWithMaterial: Number((skilled2UnitLaborCost + materialPrice).toFixed(2)),
+          },
+          averageUnitLaborCost,
+          combinedTotalUnitCost: Number((averageUnitLaborCost + materialPrice).toFixed(2)),
+        };
+      } else {
+        // Direct mode: helper is tracked separately
+        const skilled1UnitLaborCost = skilled1Meters > 0 ? Number((skilled1Wage / skilled1Meters).toFixed(2)) : 0;
+        const skilled2UnitLaborCost = skilled2Meters > 0 ? Number((skilled2Wage / skilled2Meters).toFixed(2)) : 0;
+        const averageUnitLaborCost = totalMeters > 0 ? Number((totalCrewDailyLabor / totalMeters).toFixed(2)) : 0;
+
+        return {
+          crewType: 'A' as const,
+          costDistributionMode: 'direct' as const,
+          totalCrewDailyLabor,
+          totalMeters,
+          helperSharePerSkilled: 0,
+          helperDailyLabor: helperWage,
+          skilled1: {
+            baseWage: skilled1Wage,
+            allocatedHelperWage: 0,
+            totalLaborCost: skilled1Wage,
+            meters: skilled1Meters,
+            unitLaborCost: skilled1UnitLaborCost,
+            totalUnitCostWithMaterial: Number((skilled1UnitLaborCost + materialPrice).toFixed(2)),
+          },
+          skilled2: {
+            baseWage: skilled2Wage,
+            allocatedHelperWage: 0,
+            totalLaborCost: skilled2Wage,
+            meters: skilled2Meters,
+            unitLaborCost: skilled2UnitLaborCost,
+            totalUnitCostWithMaterial: Number((skilled2UnitLaborCost + materialPrice).toFixed(2)),
+          },
+          averageUnitLaborCost,
+          combinedTotalUnitCost: Number((averageUnitLaborCost + materialPrice).toFixed(2)),
+        };
+      }
+    } else {
+      // Crew B: 1 Skilled + 1 Helper
+      const totalCrewDailyLabor = skilled1Wage + helperWage;
+      const unitLaborCost = skilled1Meters > 0 ? Number((totalCrewDailyLabor / skilled1Meters).toFixed(2)) : 0;
+
+      return {
+        crewType: 'B' as const,
+        costDistributionMode: mode,
+        totalCrewDailyLabor,
+        totalMeters: skilled1Meters,
+        helperSharePerSkilled: helperWage,
+        skilled1: {
+          baseWage: skilled1Wage,
+          allocatedHelperWage: helperWage,
+          totalLaborCost: totalCrewDailyLabor,
+          meters: skilled1Meters,
+          unitLaborCost,
+          totalUnitCostWithMaterial: Number((unitLaborCost + materialPrice).toFixed(2)),
+        },
+        averageUnitLaborCost: unitLaborCost,
+        combinedTotalUnitCost: Number((unitLaborCost + materialPrice).toFixed(2)),
+      };
+    }
   }
 }
