@@ -7,6 +7,7 @@ import { productionApi, type ProductionRecord } from '../../api/production.api';
 import { WheelDatePicker } from '../../components/WheelPicker';
 import { Modal } from '../../components/Modal';
 import { TableSkeleton } from '../../components/skeletons';
+import { formatUnit } from '../../lib/format';
 import {
   CheckCircle2,
   XCircle,
@@ -19,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export const ProductionReviewPage: React.FC = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { user } = useAuth();
 
   const [records, setRecords] = useState<ProductionRecord[]>([]);
@@ -584,9 +585,9 @@ export const ProductionReviewPage: React.FC = () => {
                       )}
                     </td>
                     <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 800 }}>
-                      {actual.toFixed(2)} {t('auto.م_c30d')}</td>
+                      {actual.toFixed(2)} {formatUnit('م²', language)}</td>
                     <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                      {target > 0 ? `${target.toFixed(2)} م²` : '—'}
+                      {target > 0 ? `${target.toFixed(2)} ${formatUnit('م²', language)}` : '—'}
                     </td>
                     {/* Performance Rating Badge */}
                     <td style={{ padding: '12px 16px', textAlign: 'center' }}>

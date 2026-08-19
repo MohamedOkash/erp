@@ -9,6 +9,7 @@ import { StagesManagementModal } from './StagesManagementModal';
 import { PricesManagementModal } from './PricesManagementModal';
 import { Modal } from '../../components/Modal';
 import { useI18n } from '../../i18n/I18nContext';
+import { formatUnit, formatCurrency } from '../../lib/format';
 import {
   CheckSquare,
   Plus,
@@ -59,7 +60,7 @@ function getDepartmentIcon(code?: string, name?: string) {
 }
 
 export const WorkItemsPage: React.FC = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [items, setItems] = useState<WorkItem[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [categories, setCategories] = useState<WorkCategory[]>([]);
@@ -610,7 +611,7 @@ export const WorkItemsPage: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Target size={18} color="#f59e0b" />
                 <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f8fafc' }}>
-                  {metrics.avgTarget > 0 ? `${metrics.avgTarget} وحدة/يوم` : '—'}
+                  {metrics.avgTarget > 0 ? `${metrics.avgTarget} ${formatUnit('وحدة/يوم', language)}` : '—'}
                 </span>
               </div>
             </div>
@@ -823,7 +824,7 @@ export const WorkItemsPage: React.FC = () => {
 
                             {/* Contract Unit Rate */}
                             <td style={{ padding: '0.9rem 1rem', color: '#34d399', fontWeight: 700, fontSize: '0.9rem' }}>
-                              {unitRate ? `${Number(unitRate).toLocaleString()} ريال` : '—'}
+                              {unitRate ? formatCurrency(unitRate, language) : '—'}
                             </td>
 
                             {/* Sub-stages summary badge */}
@@ -1102,7 +1103,7 @@ export const WorkItemsPage: React.FC = () => {
                                           >
                                             <span>{t('auto.المستهدف_القياسي_39819d')}</span>
                                             <span style={{ fontWeight: 700, color: '#f59e0b' }}>
-                                              {stage.standard_productivity ? `${stage.standard_productivity} وحدة/يوم` : t('auto.حسب_المستهدف_العام_7a261a')}
+                                              {stage.standard_productivity ? `${stage.standard_productivity} ${formatUnit('وحدة/يوم', language)}` : t('auto.حسب_المستهدف_العام_7a261a')}
                                             </span>
                                           </div>
                                         </div>
