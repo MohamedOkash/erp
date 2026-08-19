@@ -13,26 +13,37 @@ const dictionaries: Record<Language, any> = {
 function resolveKeyInDictionary(dict: any, rawKey: string): string | undefined {
   if (!dict || typeof dict !== 'object' || typeof rawKey !== 'string') return undefined;
   const key = rawKey.trim();
+  if (!key) return undefined;
 
   // 1. Direct flat key match (e.g. "kpis.title" or "common.save")
   if (typeof dict[key] === 'string') {
     return dict[key].trim();
   }
+  // Whitespace-resilient flat match
+  for (const [k, v] of Object.entries(dict)) {
+    if (k.trim() === key && typeof v === 'string') {
+      return v.trim();
+    }
+  }
 
   // 2. Nested path traversal (e.g. dict.kpis.title)
-  const parts = key.split('.');
+  const parts = key.split('.').map((p) => p.trim()).filter(Boolean);
   let current: any = dict;
-  for (const rawPart of parts) {
-    const part = rawPart.trim();
+  for (const part of parts) {
     if (current && typeof current === 'object') {
-      if (part in current) {
+      if (typeof current[part] !== 'undefined') {
         current = current[part];
       } else {
         // Dual defense: check if any key matches after trimming
-        const foundKey = Object.keys(current).find((k) => k.trim() === part);
-        if (foundKey) {
-          current = current[foundKey];
-        } else {
+        let found = false;
+        for (const [k, v] of Object.entries(current)) {
+          if (k.trim() === part) {
+            current = v;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
           current = undefined;
           break;
         }
