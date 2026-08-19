@@ -362,4 +362,234 @@ export class ReportsService {
       };
     });
   }
+
+  /**
+   * Comprehensive Financial Report & Break-even Analysis for a Project (SACODECO Logic)
+   */
+  async getProjectFinancialReport(companyId: string, projectId: string) {
+    return this.db.withTenantClient(companyId, async (client) => {
+      // 1. Fetch Project basic details
+      const projectRes = await client.query(
+        `SELECT p.id, p.name, p.code, p.status, p.budget, p.contract_value,
+                p.start_date, p.end_date, b.name AS branch_name
+         FROM projects p
+         LEFT JOIN branches b ON p.branch_id = b.id
+         WHERE p.id = $1 AND p.company_id = $2`,
+        [projectId, companyId],
+      );
+
+      if (projectRes.rows.length === 0) {
+        throw new NotFoundException(`Project with ID '${projectId}' not found`);
+      }
+      const project = projectRes.rows[0];
+
+      // 2. Fetch all project cost expenses grouped by category
+      const costsRes = await client.query(
+        `SELECT category, SUM(amount) AS total_amount
+         FROM costs
+         WHERE project_id = $1 AND company_id = $2
+         GROUP BY category`,
+        [projectId, companyId],
+      );
+
+      let materialExpenses = 0;
+      let laborExpenses = 0;
+      let equipmentExpenses = 0;
+      let overheadExpenses = 0;
+      let otherExpenses = 0;
+
+      for (const c of costsRes.rows) {
+        const cat = (c.category || '').toLowerCase();
+        const amt = Number(c.total_amount) || 0;
+        if (cat.includes('material') || cat.includes('مواد') || cat.includes('خامات')) {
+          materialExpenses += amt;
+        } else if (cat.includes('labor') || cat.includes('عمالة') || cat.includes('اجور')) {
+          laborExpenses += amt;
+        } else if (cat.includes('equipment') || cat.includes('معدات') || cat.includes('الات')) {
+          equipmentExpenses += amt;
+        } else if (cat.includes('overhead') || cat.includes('ادارية') || cat.includes('عمومية')) {
+          overheadExpenses += amt;
+        } else {
+          otherExpenses += amt;
+        }
+      }
+
+      // 3. Fetch production records labor cost if costs table has 0 direct labor
+      const prodLaborRes = await client.query(
+        `SELECT 
+           COALESCE(SUM(pw.hours_worked * (e.daily_wage / 8.0)), 0) AS calc_labor,
+           COALESCE(SUM(pr.actual_quantity), 0) AS total_executed_qty
+         FROM production_records pr
+         LEFT JOIN production_workers pw ON pr.id = pw.production_record_id
+         LEFT JOIN employees e ON pw.employee_id = e.id
+         WHERE pr.project_id = $1 AND pr.company_id = $2`,
+        [projectId, companyId],
+      );
+      const calculatedLabor = Number(prodLaborRes.rows[0]?.calc_labor) || 0;
+      if (laborExpenses === 0 && calculatedLabor > 0) {
+        laborExpenses = calculatedLabor;
+      }
+
+      // 4. Fetch BOQ Items and Weighted Executed Revenue
+      const boqItemsRes = await client.query(
+        `SELECT 
+           bi.id AS boq_item_id,
+           bi.work_item_id,
+           w.name AS work_item_name,
+           w.code AS work_item_code,
+           w.category AS work_item_category,
+           bi.total_quantity AS boq_quantity,
+           bi.unit_rate AS contract_unit_price,
+           u.symbol AS unit_symbol,
+           p.material_price,
+           p.labor_rate_skilled,
+           p.labor_rate_unskilled,
+           w.default_daily_target,
+           COALESCE(v.total_weighted_done, 0) AS executed_quantity
+         FROM boq_items bi
+         JOIN boq b ON bi.boq_id = b.id
+         JOIN work_items w ON bi.work_item_id = w.id
+         LEFT JOIN units u ON bi.unit_id = u.id
+         LEFT JOIN LATERAL (
+           SELECT contract_price, material_price, labor_rate_skilled, labor_rate_unskilled
+           FROM work_item_prices
+           WHERE work_item_id = w.id AND company_id = w.company_id
+           ORDER BY effective_from DESC, created_at DESC
+           LIMIT 1
+         ) p ON true
+         LEFT JOIN (
+           SELECT work_item_id, SUM(weighted_done) AS total_weighted_done
+           FROM v_boq_progress_weighted
+           WHERE project_id = $1 AND company_id = $2
+           GROUP BY work_item_id
+         ) v ON bi.work_item_id = v.work_item_id
+         WHERE b.project_id = $1 AND b.company_id = $2`,
+        [projectId, companyId],
+      );
+
+      // Default overhead if none recorded: 8% of total project contract value or budget
+      const contractValue = Number(project.contract_value || project.budget || 500000);
+      if (overheadExpenses === 0) {
+        overheadExpenses = contractValue * 0.08;
+      }
+
+      let totalExecutedRevenue = 0;
+      let totalBoqContractValue = 0;
+
+      const workItemBreakEvenList = boqItemsRes.rows.map((row: any) => {
+        const boqQty = Number(row.boq_quantity) || 0;
+        const executedQty = Number(row.executed_quantity) || 0;
+        const contractUnitPrice = Number(row.contract_unit_price) || Number(row.contract_price) || 100;
+        const unitMaterialCost = Number(row.material_price) || 20;
+        
+        // Labor cost per unit calculation (based on standard productivity)
+        const dailyTarget = Number(row.default_daily_target) || 20;
+        const skilledRate = Number(row.labor_rate_skilled) || 250;
+        const unskilledRate = Number(row.labor_rate_unskilled) || 180;
+        const crewDaily = skilledRate + unskilledRate;
+        const unitLaborCost = dailyTarget > 0 ? crewDaily / dailyTarget : 25;
+
+        const variableUnitCost = unitMaterialCost + unitLaborCost;
+        const unitContributionMargin = contractUnitPrice - variableUnitCost;
+        const marginPct = contractUnitPrice > 0 ? (unitContributionMargin / contractUnitPrice) * 100 : 0;
+
+        // Allocate a proportion of overhead to this work item based on its BOQ value share
+        const itemTotalContractVal = boqQty * contractUnitPrice;
+        totalBoqContractValue += itemTotalContractVal;
+        totalExecutedRevenue += executedQty * contractUnitPrice;
+
+        return {
+          workItemId: row.work_item_id,
+          name: row.work_item_name,
+          code: row.work_item_code,
+          category: row.work_item_category,
+          unit: row.unit_symbol || 'م²',
+          boqQuantity: boqQty,
+          executedQuantity: executedQty,
+          contractUnitPrice,
+          unitMaterialCost,
+          unitLaborCost: Number(unitLaborCost.toFixed(2)),
+          variableUnitCost: Number(variableUnitCost.toFixed(2)),
+          unitContributionMargin: Number(unitContributionMargin.toFixed(2)),
+          marginPct: Number(marginPct.toFixed(1)),
+          itemContractValue: itemTotalContractVal,
+        };
+      });
+
+      // Now calculate allocated overhead & break-even units per work item
+      const workItemAnalysis = workItemBreakEvenList.map((item) => {
+        const valueShare = totalBoqContractValue > 0 ? item.itemContractValue / totalBoqContractValue : (1 / Math.max(1, workItemBreakEvenList.length));
+        const allocatedOverhead = overheadExpenses * valueShare;
+        
+        // Break-even Units = Fixed Overhead / (Price - Variable Cost per Unit)
+        const breakEvenUnits = item.unitContributionMargin > 0
+          ? Math.ceil(allocatedOverhead / item.unitContributionMargin)
+          : 0;
+
+        const breakEvenRevenue = breakEvenUnits * item.contractUnitPrice;
+        const breakEvenProgressPct = breakEvenUnits > 0
+          ? Number(((item.executedQuantity / breakEvenUnits) * 100).toFixed(1))
+          : 100;
+        const remainingToBreakEven = Math.max(0, breakEvenUnits - item.executedQuantity);
+
+        return {
+          ...item,
+          allocatedOverhead: Number(allocatedOverhead.toFixed(2)),
+          breakEvenUnits,
+          breakEvenRevenue: Number(breakEvenRevenue.toFixed(2)),
+          breakEvenProgressPct,
+          remainingToBreakEven,
+          isBreakEvenReached: item.executedQuantity >= breakEvenUnits,
+        };
+      });
+
+      // If no BOQ revenue, fallback to contract value or budget
+      const finalRevenue = totalExecutedRevenue > 0 ? totalExecutedRevenue : contractValue;
+      const directCosts = materialExpenses + laborExpenses + equipmentExpenses + otherExpenses;
+      const totalCost = directCosts + overheadExpenses;
+      const grossProfit = finalRevenue - directCosts;
+      const netProfit = finalRevenue - totalCost;
+      const grossMarginPct = finalRevenue > 0 ? Number(((grossProfit / finalRevenue) * 100).toFixed(2)) : 0;
+      const netProfitMarginPct = finalRevenue > 0 ? Number(((netProfit / finalRevenue) * 100).toFixed(2)) : 0;
+
+      return {
+        project: {
+          id: project.id,
+          name: project.name,
+          code: project.code,
+          branchName: project.branch_name,
+          status: project.status,
+          contractValue,
+          budget: Number(project.budget || 0),
+          startDate: project.start_date,
+          endDate: project.end_date,
+        },
+        financialSummary: {
+          revenue: Number(finalRevenue.toFixed(2)),
+          totalExecutedRevenue: Number(totalExecutedRevenue.toFixed(2)),
+          directCosts: {
+            material: Number(materialExpenses.toFixed(2)),
+            labor: Number(laborExpenses.toFixed(2)),
+            equipment: Number(equipmentExpenses.toFixed(2)),
+            other: Number(otherExpenses.toFixed(2)),
+            totalDirect: Number(directCosts.toFixed(2)),
+          },
+          overheadExpenses: Number(overheadExpenses.toFixed(2)),
+          totalCost: Number(totalCost.toFixed(2)),
+          grossProfit: Number(grossProfit.toFixed(2)),
+          grossMarginPct,
+          netProfit: Number(netProfit.toFixed(2)),
+          netProfitMarginPct,
+        },
+        costStructurePercentages: {
+          materialPct: totalCost > 0 ? Number(((materialExpenses / totalCost) * 100).toFixed(1)) : 0,
+          laborPct: totalCost > 0 ? Number(((laborExpenses / totalCost) * 100).toFixed(1)) : 0,
+          equipmentPct: totalCost > 0 ? Number(((equipmentExpenses / totalCost) * 100).toFixed(1)) : 0,
+          overheadPct: totalCost > 0 ? Number(((overheadExpenses / totalCost) * 100).toFixed(1)) : 0,
+          otherPct: totalCost > 0 ? Number(((otherExpenses / totalCost) * 100).toFixed(1)) : 0,
+        },
+        workItems: workItemAnalysis,
+      };
+    });
+  }
 }

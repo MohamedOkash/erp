@@ -21,6 +21,7 @@ import { AlertsPage } from './pages/alerts/AlertsPage';
 import { IncentivesPage } from './pages/incentives/IncentivesPage';
 import { DocumentsPage } from './pages/documents/DocumentsPage';
 import { SavedReportsPage } from './pages/reports/SavedReportsPage';
+import { FinancialReportsPage } from './pages/reports/FinancialReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { RbacMatrixPage } from './pages/rbac/RbacMatrixPage';
@@ -58,6 +59,7 @@ export const App: React.FC = () => {
         <Route path="/boq" element={<BoqProgressPage />} />
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/costs" element={<CostsPage />} />
+        <Route path="/financial-reports" element={<FinancialReportsPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/incentives" element={<IncentivesPage />} />

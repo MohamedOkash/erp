@@ -99,6 +99,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     color: '#a78bfa',
     links: [
       { to: '/costs', key: 'costs', defaultLabel: 'التكاليف والمصروفات الميدانية', icon: <DollarSign size={18} /> },
+      { to: '/financial-reports', key: 'financial_reports', defaultLabel: 'التقارير المالية ونقطة التعادل', icon: <BarChart3 size={18} /> },
       { to: '/incentives', key: 'incentives', defaultLabel: 'الحوافز والمكافآت', icon: <Award size={18} /> },
     ],
   },
