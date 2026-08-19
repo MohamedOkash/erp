@@ -97,6 +97,18 @@ export class CreateProductionDto {
   @IsString()
   teamCode?: string;
 
+  @IsOptional()
+  @IsString()
+  crewId?: string;
+
+  @IsOptional()
+  @IsString()
+  foremanId?: string;
+
+  @IsOptional()
+  @IsString()
+  engineerNotes?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductionWorkerItemDto)

@@ -20,4 +20,12 @@ export class QueryProductionDto {
   @IsOptional()
   @IsString()
   status?: string;
+
+  @IsOptional()
+  @IsString()
+  crewId?: string;
+
+  @IsOptional()
+  @IsString()
+  workAreaId?: string;
 }

@@ -68,11 +68,11 @@ export class ProductionService {
         `INSERT INTO production_records (
           company_id, branch_id, project_id, work_item_id, work_item_stage_id, work_area_id,
           date, production_type, actual_quantity, target_quantity, team_code,
-          supervisor_id, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'draft')
+          supervisor_id, crew_id, foreman_id, engineer_notes, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'draft')
         RETURNING id, company_id, branch_id, project_id, work_item_id, work_item_stage_id, work_area_id,
                   date, production_type, actual_quantity, target_quantity, team_code,
-                  supervisor_id, engineer_id, status, created_at, updated_at`,
+                  supervisor_id, crew_id, foreman_id, engineer_notes, engineer_id, status, created_at, updated_at`,
         [
           companyId,
           dto.branchId,
@@ -86,6 +86,9 @@ export class ProductionService {
           targetQuantity,
           dto.teamCode || null,
           dto.supervisorId,
+          dto.crewId || null,
+          dto.foremanId || null,
+          dto.engineerNotes || null,
         ],
       );
 
@@ -161,36 +164,51 @@ export class ProductionService {
         params.push(projectScope);
       }
 
-      if (query.fromDate) {
-        conditions.push(`pr.date >= $${paramIdx++}`);
-        params.push(query.fromDate);
-      }
-      if (query.toDate) {
-        conditions.push(`pr.date <= $${paramIdx++}`);
-        params.push(query.toDate);
-      }
-      if (query.branchId) {
-        conditions.push(`pr.branch_id = $${paramIdx++}`);
-        params.push(query.branchId);
-      }
       if (query.projectId) {
         conditions.push(`pr.project_id = $${paramIdx++}`);
         params.push(query.projectId);
       }
+
+      if (query.branchId) {
+        conditions.push(`pr.branch_id = $${paramIdx++}`);
+        params.push(query.branchId);
+      }
+
+      if (query.fromDate) {
+        conditions.push(`pr.date >= $${paramIdx++}`);
+        params.push(query.fromDate);
+      }
+
+      if (query.toDate) {
+        conditions.push(`pr.date <= $${paramIdx++}`);
+        params.push(query.toDate);
+      }
+
       if (query.status) {
         conditions.push(`pr.status = $${paramIdx++}`);
         params.push(query.status);
+      }
+
+      if (query.crewId) {
+        conditions.push(`pr.crew_id = $${paramIdx++}`);
+        params.push(query.crewId);
+      }
+
+      if (query.workAreaId) {
+        conditions.push(`pr.work_area_id = $${paramIdx++}`);
+        params.push(query.workAreaId);
       }
 
       const sql = `
         SELECT pr.id, pr.company_id, pr.branch_id, b.name AS branch_name,
                pr.project_id, p.name AS project_name,
                pr.work_item_id, wi.name AS work_item_name, wi.code AS work_item_code,
-               pr.work_item_stage_id, wis.name AS stage_name, wis.code AS stage_code, wis.percentage AS stage_percentage,
+               pr.work_item_stage_id, wis.name AS stage_name, wis.code AS stage_code, wis.percentage AS stage_percentage, wis.cost_distribution_mode,
                pr.work_area_id, wa.name AS work_area_name,
                pr.date, pr.production_type, pr.actual_quantity, pr.target_quantity,
-               pr.team_code, pr.supervisor_id, sup.name AS supervisor_name,
-               pr.engineer_id, eng.name AS engineer_name,
+               pr.team_code, pr.crew_id, c.code AS crew_code, c.crew_type,
+               pr.foreman_id, pr.supervisor_id, sup.name AS supervisor_name,
+               pr.engineer_id, eng.name AS engineer_name, pr.engineer_notes,
                pr.status, pr.rejection_reason, pr.submitted_at,
                pr.supervisor_approved_at, pr.engineer_approved_at, pr.final_approved_at,
                pr.created_at, pr.updated_at
@@ -200,6 +218,7 @@ export class ProductionService {
         JOIN work_items wi ON pr.work_item_id = wi.id AND pr.company_id = wi.company_id
         LEFT JOIN work_item_stages wis ON pr.work_item_stage_id = wis.id AND pr.company_id = wis.company_id
         LEFT JOIN work_areas wa ON pr.work_area_id = wa.id AND pr.company_id = wa.company_id
+        LEFT JOIN crews c ON pr.crew_id = c.id
         LEFT JOIN employees sup ON pr.supervisor_id = sup.id AND pr.company_id = sup.company_id
         LEFT JOIN employees eng ON pr.engineer_id = eng.id AND pr.company_id = eng.company_id
         WHERE ${conditions.join(' AND ')}

@@ -13,6 +13,8 @@ export interface Employee {
   companyId: string;
   identityNumber: string;
   nationalId?: string;
+  companyEmployeeId?: string | null;
+  projectEmployeeId?: string | null;
   deviceCode?: string | null;
   identityType?: 'national_id' | 'iqama' | 'passport';
   identityExpiryDate?: string | null;

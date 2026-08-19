@@ -30,6 +30,7 @@ import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { CompanySettingsModule } from './company-settings/company-settings.module';
+import { CrewsModule } from './crews/crews.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -43,6 +44,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     RolesModule,
     BranchesModule,
     ProjectsModule,
+    CrewsModule,
     WorkItemsModule,
     WorkAreasModule,
     BoqModule,
