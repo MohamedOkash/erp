@@ -443,13 +443,20 @@ function main() {
     ...Object.keys(dictionaries.ur || {})
   ]));
 
+  const authenticUrduWords = new Set(['دن', 'سال', 'آج', 'مہینہ', 'ہفتہ', 'کل', 'وقت', 'ہاں', 'نہیں', 'شامل', 'منظور', 'کام']);
   for (const k of allDictKeys) {
     const arVal = dictionaries.ar[k] || '';
     const enVal = dictionaries.en[k] || '';
     const urVal = dictionaries.ur[k] || '';
 
     if (enVal && arabicRegex.test(enVal)) untranslatedEnCount++;
-    if (urVal && arVal && (urVal.trim() === arVal.trim() || (!urduDistinctRegex.test(urVal) && arabicRegex.test(urVal)))) untranslatedUrCount++;
+    if (urVal && arVal) {
+      if (urVal.trim() === arVal.trim()) {
+        untranslatedUrCount++;
+      } else if (!authenticUrduWords.has(urVal.trim()) && !urduDistinctRegex.test(urVal) && arabicRegex.test(urVal)) {
+        untranslatedUrCount++;
+      }
+    }
     if (arVal && hasDisallowedLatin(arVal)) wrongArCount++;
   }
 

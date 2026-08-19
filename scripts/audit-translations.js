@@ -84,11 +84,12 @@ for (const key of allKeys) {
     untranslated_en.push({ key, value: enVal });
   }
 
-  // 3. Untranslated UR (identical to AR or contains Arabic script without distinct Urdu markers)
+  // 3. Untranslated UR (identical to AR or lacks authentic Urdu character/vocabulary)
+  const authenticUrduWords = new Set(['دن', 'سال', 'آج', 'مہینہ', 'ہفتہ', 'کل', 'وقت', 'ہاں', 'نہیں', 'شامل', 'منظور', 'کام']);
   if (urVal !== undefined && arVal !== undefined) {
-    if (urVal.trim() === arVal.trim() && arVal.trim().length > 0 && arabicRegex.test(arVal)) {
+    if (urVal.trim() === arVal.trim()) {
       untranslated_ur.push({ key, value: urVal, reason: 'Identical to Arabic string' });
-    } else if (urVal.trim().length > 0 && arabicRegex.test(urVal) && !urduDistinctRegex.test(urVal)) {
+    } else if (urVal.trim().length > 0 && !authenticUrduWords.has(urVal.trim()) && !urduDistinctRegex.test(urVal) && arabicRegex.test(urVal)) {
       untranslated_ur.push({ key, value: urVal, reason: 'Lacks distinct Urdu characters' });
     }
   }
