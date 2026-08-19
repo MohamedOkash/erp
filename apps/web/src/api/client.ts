@@ -31,11 +31,16 @@ class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    let sanitizedEndpoint = endpoint;
+    if (sanitizedEndpoint.includes('limit=')) {
+      sanitizedEndpoint = sanitizedEndpoint.replace(/([?&]limit=)(\d+)/g, (match, prefix, val) => {
+        const num = parseInt(val, 10);
+        if (num > 100) return `${prefix}100`;
+        return match;
+      });
     }
 
-    const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    const url = `${this.baseUrl}${sanitizedEndpoint.startsWith('/') ? sanitizedEndpoint : `/${sanitizedEndpoint}`}`;
 
     try {
       const response = await fetch(url, {

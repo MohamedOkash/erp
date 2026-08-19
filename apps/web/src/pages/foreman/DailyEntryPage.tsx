@@ -74,8 +74,8 @@ export const DailyEntryPage: React.FC = () => {
       try {
         const [projRes, empRes, wiRes] = await Promise.all([
           projectsApi.getProjects({ limit: 100 }),
-          employeesApi.getEmployees({ limit: 500, isActive: true }),
-          workItemsApi.getWorkItems({ limit: 200, isActive: true }),
+          employeesApi.getEmployees({ limit: 100, isActive: true }),
+          workItemsApi.getWorkItems({ limit: 100, isActive: true }),
         ]);
         setProjects(projRes.data || []);
         setAllEmployees(empRes.data || []);

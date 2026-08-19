@@ -92,8 +92,8 @@ export const UsersPage: React.FC = () => {
       try {
         const [rolesRes, empRes, projRes, branchRes, permRes] = await Promise.all([
           rolesApi.listRoles(),
-          employeesApi.getEmployees({ limit: 500 }),
-          projectsApi.getProjects({ limit: 200 }),
+          employeesApi.getEmployees({ limit: 100 }),
+          projectsApi.getProjects({ limit: 100 }),
           branchesApi.getBranches({ limit: 100 }),
           rolesApi.listPermissions(),
         ]);
