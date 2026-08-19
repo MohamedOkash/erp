@@ -9,7 +9,7 @@ import { StagesManagementModal } from './StagesManagementModal';
 import { PricesManagementModal } from './PricesManagementModal';
 import { Modal } from '../../components/Modal';
 import { useI18n } from '../../i18n/I18nContext';
-import { formatUnit, formatCurrency } from '../../lib/format';
+import { formatUnit, formatCurrency, getLocaleName, getLocaleDescription } from '../../lib/format';
 import {
   CheckSquare,
   Plus,
@@ -528,9 +528,9 @@ export const WorkItemsPage: React.FC = () => {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                       }}
-                      title={language === 'en' ? (cat.name_en || cat.name) : language === 'ur' ? (cat.name_ur || cat.name) : cat.name}
+                      title={getLocaleName(cat, language)}
                     >
-                      {language === 'en' ? (cat.name_en || cat.name) : language === 'ur' ? (cat.name_ur || cat.name) : cat.name}
+                      {getLocaleName(cat, language)}
                     </span>
                   </div>
 
@@ -777,11 +777,11 @@ export const WorkItemsPage: React.FC = () => {
                             <td style={{ padding: '0.9rem 1rem' }}>
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span style={{ fontWeight: 700, color: '#f8fafc', fontSize: '0.92rem' }}>
-                                  {item.name}
+                                  {getLocaleName(item, language)}
                                 </span>
-                                {(item as any).description && (
+                                {getLocaleDescription(item, language) && (
                                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                                    {(item as any).description}
+                                    {getLocaleDescription(item, language)}
                                   </span>
                                 )}
                               </div>
@@ -807,7 +807,7 @@ export const WorkItemsPage: React.FC = () => {
 
                             {/* Category */}
                             <td style={{ padding: '0.9rem 1rem', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                              {item.category || (item as any).category_name || '—'}
+                              {getLocaleName({ name: item.category, name_en: item.category_name_en, name_ur: item.category_name_ur }, language) || '—'}
                             </td>
 
                             {/* Daily Target */}

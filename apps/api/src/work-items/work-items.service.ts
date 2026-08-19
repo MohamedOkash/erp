@@ -66,12 +66,14 @@ export class WorkItemsService {
 
       const dataSql = `
         SELECT 
-          w.id, w.company_id, w.unit_id, w.name, w.code, 
+          w.id, w.company_id, w.unit_id, w.name, w.name_en, w.name_ur, w.code, 
           COALESCE(wc.name, w.category) AS category,
+          wc.name_en AS category_name_en, wc.name_ur AS category_name_ur,
           w.category_id, wc.code AS category_code,
-          w.description,
+          w.description, w.description_en, w.description_ur,
           w.default_unit_rate, w.default_daily_target, w.is_active, w.created_at, w.updated_at,
-          u.name AS unit_name, u.symbol AS unit_symbol,
+          u.name AS unit_name, u.name_en AS unit_name_en, u.name_ur AS unit_name_ur,
+          u.symbol AS unit_symbol, u.symbol_en AS unit_symbol_en, u.symbol_ur AS unit_symbol_ur,
           COALESCE(
             (
               SELECT json_agg(
@@ -119,12 +121,14 @@ export class WorkItemsService {
     return this.db.withTenantClient(companyId, async (client) => {
       const res = await client.query(
         `SELECT 
-           w.id, w.company_id, w.unit_id, w.name, w.code, 
+           w.id, w.company_id, w.unit_id, w.name, w.name_en, w.name_ur, w.code, 
            COALESCE(wc.name, w.category) AS category,
+           wc.name_en AS category_name_en, wc.name_ur AS category_name_ur,
            w.category_id, wc.code AS category_code,
-           w.description,
+           w.description, w.description_en, w.description_ur,
            w.default_unit_rate, w.default_daily_target, w.is_active, w.created_at, w.updated_at,
-           u.name AS unit_name, u.symbol AS unit_symbol,
+           u.name AS unit_name, u.name_en AS unit_name_en, u.name_ur AS unit_name_ur,
+           u.symbol AS unit_symbol, u.symbol_en AS unit_symbol_en, u.symbol_ur AS unit_symbol_ur,
            COALESCE(
              (
                SELECT json_agg(

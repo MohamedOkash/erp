@@ -95,3 +95,38 @@ export function formatNumber(val: number | string | null | undefined, lang: Lang
   }
   return Number(val).toLocaleString(lang === 'ar' ? 'ar-SA' : lang === 'ur' ? 'ur-PK' : 'en-US');
 }
+
+/**
+ * Resolves entity name based on active language with Arabic fallback
+ */
+export function getLocaleName(
+  entity: { name?: string | null; name_en?: string | null; name_ur?: string | null } | null | undefined,
+  lang: Language = 'ar',
+): string {
+  if (!entity) return '';
+  if (lang === 'en' && entity.name_en && entity.name_en.trim().length > 0) {
+    return entity.name_en.trim();
+  }
+  if (lang === 'ur' && entity.name_ur && entity.name_ur.trim().length > 0) {
+    return entity.name_ur.trim();
+  }
+  return (entity.name || '').trim();
+}
+
+/**
+ * Resolves entity description based on active language with fallback
+ */
+export function getLocaleDescription(
+  entity: { description?: string | null; description_en?: string | null; description_ur?: string | null } | null | undefined,
+  lang: Language = 'ar',
+): string {
+  if (!entity) return '';
+  if (lang === 'en' && entity.description_en && entity.description_en.trim().length > 0) {
+    return entity.description_en.trim();
+  }
+  if (lang === 'ur' && entity.description_ur && entity.description_ur.trim().length > 0) {
+    return entity.description_ur.trim();
+  }
+  return (entity.description || '').trim();
+}
+

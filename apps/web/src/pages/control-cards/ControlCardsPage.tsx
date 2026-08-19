@@ -7,6 +7,7 @@ import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
 import { ControlCardDetailModal } from './ControlCardDetailModal';
 import { useI18n } from '../../i18n/I18nContext';
+import { getLocaleName, formatUnit } from '../../lib/format';
 import {
   FileSpreadsheet,
   Search,
@@ -18,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const ControlCardsPage: React.FC = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [cards, setCards] = useState<ControlCardSummary[]>([]);
   const [categories, setCategories] = useState<WorkCategory[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -118,7 +119,7 @@ export const ControlCardsPage: React.FC = () => {
               className={`btn ${selectedCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
               style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
             >
-              <span>{cat.name}</span>
+              <span>{getLocaleName(cat, language)}</span>
             </button>
           ))}
         </div>
@@ -218,7 +219,7 @@ export const ControlCardsPage: React.FC = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {c.unit}
+                    {formatUnit(c.unit, language)}
                   </span>
                 </div>
 

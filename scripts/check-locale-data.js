@@ -77,6 +77,22 @@ async function checkLocaleData() {
       console.error('❌ [units] has NULL or empty multilingual name/symbol values!');
     }
 
+    // 4. Check work_items
+    console.log('--- Checking [work_items] Multilingual Columns ---');
+    const itemCheck = await client.query(`
+      SELECT 
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE name_en IS NULL OR TRIM(name_en) = '') AS missing_en,
+        COUNT(*) FILTER (WHERE name_ur IS NULL OR TRIM(name_ur) = '') AS missing_ur
+      FROM work_items
+    `);
+    const itemStats = itemCheck.rows[0];
+    console.log(`   Total Work Items: ${itemStats.total} | Missing EN: ${itemStats.missing_en} | Missing UR: ${itemStats.missing_ur}`);
+    if (Number(itemStats.missing_en) > 0 || Number(itemStats.missing_ur) > 0) {
+      hasErrors = true;
+      console.error('❌ [work_items] has NULL or empty name_en / name_ur values!');
+    }
+
   } catch (err) {
     console.error('❌ Error querying live DB:', err.message);
     hasErrors = true;
