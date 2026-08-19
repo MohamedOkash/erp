@@ -467,11 +467,14 @@ export class ProductionService {
         `UPDATE production_records
          SET status = $1,
              ${timestampColumn} = CURRENT_TIMESTAMP,
+             engineer_notes = COALESCE($3, engineer_notes),
+             engineer_approved_by = COALESCE($4, engineer_approved_by),
              updated_at = CURRENT_TIMESTAMP
          WHERE id = $2
          RETURNING id, company_id, branch_id, project_id, work_item_id, work_area_id,
-                   date, production_type, actual_quantity, target_quantity, status`,
-        [nextStatus, recordId],
+                   date, production_type, actual_quantity, target_quantity, status,
+                   engineer_approved_at, engineer_approved_by, engineer_notes`,
+        [nextStatus, recordId, dto.notes || null, dto.engineerApprovedBy || null],
       );
 
       return updateRes.rows[0];

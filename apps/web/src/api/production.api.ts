@@ -102,6 +102,8 @@ export interface UpdateProductionPayload {
 
 export interface ApprovePayload {
   step: 'submit' | 'supervisor' | 'engineer' | 'final';
+  notes?: string;
+  engineerApprovedBy?: string;
 }
 
 export interface CorrectionPayload {
@@ -263,8 +265,9 @@ export const productionApi = {
     return Array.isArray(res) ? res : res.data || [];
   },
 
-  async approveStep(id: string, step: 'submit' | 'supervisor' | 'engineer' | 'final'): Promise<ProductionRecord> {
-    return apiClient.post<ProductionRecord>(`/production/${id}/approve`, { step });
+  async approveStep(id: string, payload: ApprovePayload | ('submit' | 'supervisor' | 'engineer' | 'final')): Promise<ProductionRecord> {
+    const body = typeof payload === 'string' ? { step: payload } : payload;
+    return apiClient.post<ProductionRecord>(`/production/${id}/approve`, body);
   },
 
   async createCorrection(id: string, payload: CorrectionPayload): Promise<any> {
