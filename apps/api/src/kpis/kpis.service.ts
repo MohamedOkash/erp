@@ -24,7 +24,7 @@ export class KpisService {
       }
 
       if (query.date) {
-        conditions.push(`pr.production_date = $${paramIdx++}`);
+        conditions.push(`pr.date = $${paramIdx++}`);
         params.push(query.date);
       }
 
@@ -43,7 +43,7 @@ export class KpisService {
           pr.id AS record_id,
           pr.project_id,
           p.name AS project_name,
-          pr.production_date,
+          pr.date AS production_date,
           pr.status AS record_status,
           pr.crew_id,
           c.code AS crew_code,
@@ -51,9 +51,9 @@ export class KpisService {
           c.crew_number,
           ct.name AS template_name,
           pr.foreman_id,
-          u_foreman.name AS foreman_name,
+          COALESCE(u_foreman.full_name, u_foreman.username) AS foreman_name,
           pr.engineer_approved_by,
-          u_eng.name AS engineer_name,
+          COALESCE(u_eng.full_name, u_eng.username) AS engineer_name,
           pr.work_area_id,
           wa.name AS work_area_name,
           wa.area_m2 AS room_area_m2,
@@ -62,8 +62,8 @@ export class KpisService {
           wi.code AS work_item_code,
           pr.work_item_stage_id,
           wis.name AS stage_name,
-          COALESCE(wis.daily_target, wi.daily_target, 20.0) AS standard_daily_target,
-          wis.weight_percentage AS stage_weight_pct,
+          COALESCE(wis.standard_productivity, wi.default_daily_target, 20.0) AS standard_daily_target,
+          COALESCE(wis.percentage, 100.0) AS stage_weight_pct,
           COALESCE(
             json_agg(
               json_build_object(
@@ -95,12 +95,12 @@ export class KpisService {
         LEFT JOIN employees e ON pw.employee_id = e.id
         LEFT JOIN crew_members cm ON c.id = cm.crew_id AND cm.employee_id = pw.employee_id
         WHERE ${conditions.join(' AND ')}
-        GROUP BY pr.id, pr.project_id, p.name, pr.production_date, pr.status, pr.crew_id, c.code,
-                 c.crew_type, c.crew_number, ct.name, pr.foreman_id, u_foreman.name,
-                 pr.engineer_approved_by, u_eng.name, pr.work_area_id, wa.name, wa.area_m2,
+        GROUP BY pr.id, pr.project_id, p.name, pr.date, pr.status, pr.crew_id, c.code,
+                 c.crew_type, c.crew_number, ct.name, pr.foreman_id, u_foreman.full_name, u_foreman.username,
+                 pr.engineer_approved_by, u_eng.full_name, u_eng.username, pr.work_area_id, wa.name, wa.area_m2,
                  pr.work_item_id, wi.name, wi.code, pr.work_item_stage_id, wis.name,
-                 wis.daily_target, wi.daily_target, wis.weight_percentage
-        ORDER BY pr.production_date DESC, pr.created_at DESC
+                 wis.standard_productivity, wi.default_daily_target, wis.percentage
+        ORDER BY pr.date DESC, pr.created_at DESC
       `;
 
       const res = await client.query(sql, params);

@@ -89,7 +89,7 @@ export class CrewsService {
           ct.skilled_count,
           ct.unskilled_count,
           c.foreman_id,
-          u.name AS foreman_name,
+          COALESCE(u.full_name, u.username) AS foreman_name,
           c.work_area_id,
           wa.name AS work_area_name,
           c.is_active,
@@ -107,7 +107,7 @@ export class CrewsService {
                 'identityNumber', e.identity_number,
                 'profession', e.profession,
                 'hourlyRate', e.hourly_rate,
-                'roleTitle', e.role,
+                'roleTitle', e.role_type,
                 'dailyWage', e.daily_wage
               )
             ) FILTER (WHERE cm.employee_id IS NOT NULL),
@@ -118,12 +118,12 @@ export class CrewsService {
         LEFT JOIN crew_templates ct ON c.template_id = ct.id
         LEFT JOIN users u ON c.foreman_id = u.id
         LEFT JOIN work_areas wa ON c.work_area_id = wa.id
-        LEFT JOIN crew_members cm ON c.id = cm.crew_id AND cm.left_at IS NULL
+        LEFT JOIN crew_members cm ON c.id = cm.crew_id
         LEFT JOIN employees e ON cm.employee_id = e.id
         WHERE ${conditions.join(' AND ')}
         GROUP BY c.id, c.company_id, c.project_id, p.name, c.code, c.crew_type, c.crew_number,
                  c.template_id, ct.name, ct.skilled_count, ct.unskilled_count,
-                 c.foreman_id, u.name, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
+                 c.foreman_id, u.full_name, u.username, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
         ORDER BY c.code ASC
       `;
 
@@ -148,7 +148,7 @@ export class CrewsService {
           ct.skilled_count,
           ct.unskilled_count,
           c.foreman_id,
-          u.name AS foreman_name,
+          COALESCE(u.full_name, u.username) AS foreman_name,
           c.work_area_id,
           wa.name AS work_area_name,
           c.is_active,
@@ -166,7 +166,7 @@ export class CrewsService {
                 'identityNumber', e.identity_number,
                 'profession', e.profession,
                 'hourlyRate', e.hourly_rate,
-                'roleTitle', e.role,
+                'roleTitle', e.role_type,
                 'dailyWage', e.daily_wage
               )
             ) FILTER (WHERE cm.employee_id IS NOT NULL),
@@ -177,12 +177,12 @@ export class CrewsService {
         LEFT JOIN crew_templates ct ON c.template_id = ct.id
         LEFT JOIN users u ON c.foreman_id = u.id
         LEFT JOIN work_areas wa ON c.work_area_id = wa.id
-        LEFT JOIN crew_members cm ON c.id = cm.crew_id AND cm.left_at IS NULL
+        LEFT JOIN crew_members cm ON c.id = cm.crew_id
         LEFT JOIN employees e ON cm.employee_id = e.id
         WHERE c.company_id = $1 AND c.id = $2
         GROUP BY c.id, c.company_id, c.project_id, p.name, c.code, c.crew_type, c.crew_number,
                  c.template_id, ct.name, ct.skilled_count, ct.unskilled_count,
-                 c.foreman_id, u.name, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
+                 c.foreman_id, u.full_name, u.username, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
       `;
       const res = await client.query(sql, [companyId, id]);
       if (res.rows.length === 0) {
