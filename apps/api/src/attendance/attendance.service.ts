@@ -164,13 +164,18 @@ export class AttendanceService {
         params.push(projectScope);
       }
 
-      if (query.fromDate) {
-        conditions.push(`a.date >= $${paramIdx++}`);
-        params.push(query.fromDate);
-      }
-      if (query.toDate) {
-        conditions.push(`a.date <= $${paramIdx++}`);
-        params.push(query.toDate);
+      if (query.date) {
+        conditions.push(`a.date = $${paramIdx++}`);
+        params.push(query.date);
+      } else {
+        if (query.fromDate) {
+          conditions.push(`a.date >= $${paramIdx++}`);
+          params.push(query.fromDate);
+        }
+        if (query.toDate) {
+          conditions.push(`a.date <= $${paramIdx++}`);
+          params.push(query.toDate);
+        }
       }
       if (query.employeeId) {
         conditions.push(`a.employee_id = $${paramIdx++}`);

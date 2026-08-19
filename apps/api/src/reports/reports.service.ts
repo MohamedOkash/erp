@@ -67,7 +67,7 @@ export class ReportsService {
 
       const conditions: string[] = [
         'company_id = $1',
-        `(created_by = $2 OR is_public = true OR (query_config->'sharedUserIds')::jsonb ? $2)`,
+        `(created_by = $2::uuid OR is_public = true OR COALESCE(query_config->'sharedUserIds', '[]'::jsonb)::jsonb ? $2::text)`,
       ];
       const params: any[] = [companyId, userId];
       let paramIdx = 3;
@@ -370,7 +370,7 @@ export class ReportsService {
     return this.db.withTenantClient(companyId, async (client) => {
       // 1. Fetch Project basic details
       const projectRes = await client.query(
-        `SELECT p.id, p.name, p.code, p.status, p.budget, p.contract_value,
+        `SELECT p.id, p.name, p.code, p.status,
                 p.start_date, p.end_date, b.name AS branch_name
          FROM projects p
          LEFT JOIN branches b ON p.branch_id = b.id
@@ -386,7 +386,7 @@ export class ReportsService {
       // 2. Fetch all project cost expenses grouped by category
       const costsRes = await client.query(
         `SELECT category, SUM(amount) AS total_amount
-         FROM costs
+         FROM cost_entries
          WHERE project_id = $1 AND company_id = $2
          GROUP BY category`,
         [projectId, companyId],

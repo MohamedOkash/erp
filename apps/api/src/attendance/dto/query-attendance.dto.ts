@@ -11,6 +11,10 @@ import { Type } from 'class-transformer';
 export class QueryAttendanceDto {
   @IsDateString()
   @IsOptional()
+  date?: string;
+
+  @IsDateString()
+  @IsOptional()
   fromDate?: string;
 
   @IsDateString()

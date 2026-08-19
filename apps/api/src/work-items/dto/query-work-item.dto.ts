@@ -1,5 +1,5 @@
-import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class QueryWorkItemDto {
   @IsString()
@@ -17,6 +17,11 @@ export class QueryWorkItemDto {
   @IsString()
   @IsOptional()
   search?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true || value === 1 || value === '1')
+  @IsBoolean()
+  isActive?: boolean;
 
   @Type(() => Number)
   @IsNumber()
