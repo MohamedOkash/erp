@@ -58,4 +58,22 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsString()
+  profession?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  hourlyRate?: number;
+
+  @IsOptional()
+  @IsString()
+  companyEmployeeId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectEmployeeId?: string;
 }
+

@@ -85,6 +85,36 @@ export class EmployeesController {
   }
 
   /**
+   * Assign or update per-project employee code
+   * Route: POST /api/v1/employees/:id/project-code
+   */
+  @Post(':id/project-code')
+  async assignProjectCode(
+    @Param('id') id: string,
+    @Body() body: { projectId: string; projectEmployeeCode: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.employeesService.assignProjectCode(
+      user.companyId,
+      id,
+      body.projectId,
+      body.projectEmployeeCode,
+    );
+  }
+
+  /**
+   * Get all per-project codes for employee
+   * Route: GET /api/v1/employees/:id/project-codes
+   */
+  @Get(':id/project-codes')
+  async getProjectCodes(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.employeesService.getProjectCodes(user.companyId, id);
+  }
+
+  /**
    * Soft delete / Deactivate employee (isActive = false)
    * Route: DELETE /api/v1/employees/:id
    */
@@ -96,3 +126,4 @@ export class EmployeesController {
     return this.employeesService.deleteEmployee(user.companyId, id);
   }
 }
+

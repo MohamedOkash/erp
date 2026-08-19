@@ -20,6 +20,15 @@ export class QueryEmployeeDto {
 
   @IsOptional()
   @IsString()
+  profession?: string;
+
+  @IsOptional()
+  @IsString()
+  projectId?: string;
+
+
+  @IsOptional()
+  @IsString()
   nationalId?: string;
 
   @IsOptional()

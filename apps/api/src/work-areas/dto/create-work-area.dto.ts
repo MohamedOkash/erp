@@ -32,4 +32,10 @@ export class CreateWorkAreaDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean = true;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  areaM2?: number;
 }
+

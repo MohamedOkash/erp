@@ -31,4 +31,10 @@ export class UpdateWorkAreaDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  areaM2?: number;
 }
+

@@ -15,6 +15,7 @@ import { WorkAreasService } from './work-areas.service';
 import { CreateWorkAreaDto } from './dto/create-work-area.dto';
 import { UpdateWorkAreaDto } from './dto/update-work-area.dto';
 import { QueryWorkAreaDto } from './dto/query-work-area.dto';
+import { SaveRoomBoqDto } from './dto/save-room-boq.dto';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/auth.service';
@@ -63,6 +64,32 @@ export class WorkAreasController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.workAreasService.deleteWorkArea(user.companyId, id);
+    await this.workAreasService.deleteWorkArea(user.companyId, id);
+  }
+
+  @Get(':id/room-boq')
+  async getRoomBoq(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.workAreasService.getRoomBoqItems(user.companyId, id);
+  }
+
+  @Post(':id/room-boq')
+  async saveRoomBoq(
+    @Param('id') id: string,
+    @Body() dto: SaveRoomBoqDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.workAreasService.saveRoomBoqItem(user.companyId, id, dto);
+  }
+
+  @Delete(':id/room-boq/:itemId')
+  async deleteRoomBoq(
+    @Param('id') id: string,
+    @Param('itemId') itemId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.workAreasService.deleteRoomBoqItem(user.companyId, id, itemId);
   }
 }

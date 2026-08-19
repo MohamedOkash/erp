@@ -31,6 +31,7 @@ import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { CompanySettingsModule } from './company-settings/company-settings.module';
 import { CrewsModule } from './crews/crews.module';
+import { KpisModule } from './kpis/kpis.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -45,6 +46,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     BranchesModule,
     ProjectsModule,
     CrewsModule,
+    KpisModule,
     WorkItemsModule,
     WorkAreasModule,
     BoqModule,

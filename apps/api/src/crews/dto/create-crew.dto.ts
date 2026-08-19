@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CrewMemberItemDto {
@@ -8,8 +8,30 @@ export class CrewMemberItemDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(['skilled_1', 'skilled_2', 'helper'])
-  role: 'skilled_1' | 'skilled_2' | 'helper';
+  @IsIn(['skilled_1', 'skilled_2', 'helper', 'maallem', 'labor'])
+  role: 'skilled_1' | 'skilled_2' | 'helper' | 'maallem' | 'labor';
+}
+
+export class CreateCrewTemplateDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  code: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  skilledCount: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  unskilledCount: number;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
 
 export class CreateCrewDto {
@@ -21,10 +43,21 @@ export class CreateCrewDto {
   @IsString()
   code: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @IsIn(['A', 'B'])
-  crewType: 'A' | 'B';
+  crewType?: string;
+
+  @IsOptional()
+  @IsString()
+  templateId?: string;
+
+  @IsOptional()
+  @IsString()
+  foremanId?: string;
+
+  @IsOptional()
+  @IsString()
+  crewNumber?: string;
 
   @IsOptional()
   @IsString()

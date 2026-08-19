@@ -4,12 +4,50 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { CreateCrewDto } from './dto/create-crew.dto';
+import { CreateCrewDto, CreateCrewTemplateDto } from './dto/create-crew.dto';
 import { QueryCrewDto } from './dto/query-crew.dto';
 
 @Injectable()
 export class CrewsService {
   constructor(private readonly db: DatabaseService) {}
+
+  async getTemplates(companyId: string) {
+    return this.db.withTenantClient(companyId, async (client) => {
+      const res = await client.query(
+        `SELECT id, company_id, name, code, skilled_count, unskilled_count, description, is_active, created_at
+         FROM crew_templates
+         WHERE company_id = $1
+         ORDER BY created_at ASC`,
+        [companyId],
+      );
+      return { data: res.rows };
+    });
+  }
+
+  async createTemplate(companyId: string, dto: CreateCrewTemplateDto) {
+    return this.db.withTenantClient(companyId, async (client) => {
+      const res = await client.query(
+        `INSERT INTO crew_templates (company_id, name, code, skilled_count, unskilled_count, description)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (company_id, code) DO UPDATE
+         SET name = EXCLUDED.name,
+             skilled_count = EXCLUDED.skilled_count,
+             unskilled_count = EXCLUDED.unskilled_count,
+             description = EXCLUDED.description,
+             updated_at = CURRENT_TIMESTAMP
+         RETURNING *`,
+        [
+          companyId,
+          dto.name,
+          dto.code,
+          dto.skilledCount || 1,
+          dto.unskilledCount || 1,
+          dto.description || null,
+        ],
+      );
+      return res.rows[0];
+    });
+  }
 
   async findAll(companyId: string, query: QueryCrewDto) {
     return this.db.withTenantClient(companyId, async (client) => {
@@ -45,6 +83,13 @@ export class CrewsService {
           p.name AS project_name,
           c.code,
           c.crew_type,
+          c.crew_number,
+          c.template_id,
+          ct.name AS template_name,
+          ct.skilled_count,
+          ct.unskilled_count,
+          c.foreman_id,
+          u.name AS foreman_name,
           c.work_area_id,
           wa.name AS work_area_name,
           c.is_active,
@@ -60,6 +105,8 @@ export class CrewsService {
                 'companyEmployeeId', e.company_employee_id,
                 'projectEmployeeId', e.project_employee_id,
                 'identityNumber', e.identity_number,
+                'profession', e.profession,
+                'hourlyRate', e.hourly_rate,
                 'roleTitle', e.role,
                 'dailyWage', e.daily_wage
               )
@@ -68,11 +115,15 @@ export class CrewsService {
           ) AS members
         FROM crews c
         JOIN projects p ON c.project_id = p.id
+        LEFT JOIN crew_templates ct ON c.template_id = ct.id
+        LEFT JOIN users u ON c.foreman_id = u.id
         LEFT JOIN work_areas wa ON c.work_area_id = wa.id
         LEFT JOIN crew_members cm ON c.id = cm.crew_id AND cm.left_at IS NULL
         LEFT JOIN employees e ON cm.employee_id = e.id
         WHERE ${conditions.join(' AND ')}
-        GROUP BY c.id, c.company_id, c.project_id, p.name, c.code, c.crew_type, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
+        GROUP BY c.id, c.company_id, c.project_id, p.name, c.code, c.crew_type, c.crew_number,
+                 c.template_id, ct.name, ct.skilled_count, ct.unskilled_count,
+                 c.foreman_id, u.name, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
         ORDER BY c.code ASC
       `;
 
@@ -91,6 +142,13 @@ export class CrewsService {
           p.name AS project_name,
           c.code,
           c.crew_type,
+          c.crew_number,
+          c.template_id,
+          ct.name AS template_name,
+          ct.skilled_count,
+          ct.unskilled_count,
+          c.foreman_id,
+          u.name AS foreman_name,
           c.work_area_id,
           wa.name AS work_area_name,
           c.is_active,
@@ -106,6 +164,8 @@ export class CrewsService {
                 'companyEmployeeId', e.company_employee_id,
                 'projectEmployeeId', e.project_employee_id,
                 'identityNumber', e.identity_number,
+                'profession', e.profession,
+                'hourlyRate', e.hourly_rate,
                 'roleTitle', e.role,
                 'dailyWage', e.daily_wage
               )
@@ -114,11 +174,15 @@ export class CrewsService {
           ) AS members
         FROM crews c
         JOIN projects p ON c.project_id = p.id
+        LEFT JOIN crew_templates ct ON c.template_id = ct.id
+        LEFT JOIN users u ON c.foreman_id = u.id
         LEFT JOIN work_areas wa ON c.work_area_id = wa.id
         LEFT JOIN crew_members cm ON c.id = cm.crew_id AND cm.left_at IS NULL
         LEFT JOIN employees e ON cm.employee_id = e.id
         WHERE c.company_id = $1 AND c.id = $2
-        GROUP BY c.id, c.company_id, c.project_id, p.name, c.code, c.crew_type, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
+        GROUP BY c.id, c.company_id, c.project_id, p.name, c.code, c.crew_type, c.crew_number,
+                 c.template_id, ct.name, ct.skilled_count, ct.unskilled_count,
+                 c.foreman_id, u.name, c.work_area_id, wa.name, c.is_active, c.created_at, c.updated_at
       `;
       const res = await client.query(sql, [companyId, id]);
       if (res.rows.length === 0) {
@@ -131,16 +195,20 @@ export class CrewsService {
   async create(companyId: string, dto: CreateCrewDto) {
     return this.db.withTenantClient(companyId, async (client) => {
       try {
+        const crewType = dto.crewType || (dto.templateId ? 'A' : 'A');
         const insertCrewSql = `
-          INSERT INTO crews (company_id, project_id, code, crew_type, work_area_id, is_active)
-          VALUES ($1, $2, $3, $4, $5, $6)
+          INSERT INTO crews (company_id, project_id, code, crew_type, template_id, foreman_id, crew_number, work_area_id, is_active)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           RETURNING *
         `;
         const crewRes = await client.query(insertCrewSql, [
           companyId,
           dto.projectId,
           dto.code,
-          dto.crewType,
+          crewType,
+          dto.templateId || null,
+          dto.foremanId || null,
+          dto.crewNumber || null,
           dto.workAreaId || null,
           dto.isActive !== undefined ? dto.isActive : true,
         ]);

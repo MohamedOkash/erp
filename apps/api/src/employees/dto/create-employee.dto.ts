@@ -54,4 +54,22 @@ export class CreateEmployeeDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  profession?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  hourlyRate?: number;
+
+  @IsOptional()
+  @IsString()
+  companyEmployeeId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectEmployeeId?: string;
 }
+
