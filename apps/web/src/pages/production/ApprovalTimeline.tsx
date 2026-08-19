@@ -83,7 +83,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({ record }) =>
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return null;
     const d = new Date(dateStr);
-    return `${d.toLocaleDateString('ar-SA')} - ${d.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}`;
+    return `${d.toLocaleDateString()} - ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
   return (
@@ -222,7 +222,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({ record }) =>
               )}
 
               {formatDate(step.timestamp) && (
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', direction: 'ltr', textAlign: 'right' }}>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', textAlign: 'end' }}>
                   {formatDate(step.timestamp)}
                 </div>
               )}

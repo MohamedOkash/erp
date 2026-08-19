@@ -64,12 +64,12 @@ export const StatsStrip: React.FC<StatsStripProps> = ({
               border: '1px solid var(--border-subtle)',
             }}
           >
-            {/* Right Accent Glow Line */}
+            {/* Logical Accent Glow Line */}
             <div
               style={{
                 position: 'absolute',
                 top: 0,
-                right: 0,
+                insetInlineEnd: 0,
                 bottom: 0,
                 width: '3px',
                 background: accentColor,

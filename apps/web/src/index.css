@@ -1074,3 +1074,40 @@ table tbody tr:hover {
     display: block !important;
   }
 }
+
+/* ============================================================
+   Responsive Tables & Directional Safety
+   ============================================================ */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+
+.table-responsive table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+  font-size: 14px;
+}
+
+.table-responsive th,
+.table-responsive td {
+  padding: 0.85rem 1rem;
+  text-align: start;
+  vertical-align: middle;
+}
+
+.table-responsive th.text-center,
+.table-responsive td.text-center {
+  text-align: center;
+}
+
+.table-responsive th.text-end,
+.table-responsive td.text-end {
+  text-align: end;
+}
+
