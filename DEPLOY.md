@@ -98,33 +98,27 @@ sudo certbot --nginx -d erp.yourcompany.com
 
 ---
 
-## المسار (ب): النشر السحابي المدار (Managed Cloud / PaaS)
+## المسار (ج): النشر المجاني الموحد على منصة Vercel (Single-Platform Fullstack)
 
-مناسب للتجارب السريعة أو النشر بدون إدارة سيرفرات:
+تم تجهيز المنظومة بملف إعداد موحد `vercel.json` ومعالج سحابي خفيف `api/index.ts` لتمكين النشر الكامل (API + Web Frontend) على منصة Vercel بنقرة واحدة ومجاناً 100%.
 
-### 1. قاعدة البيانات (Database)
-- استخدم **Supabase** أو **Neon Postgres**.
-- انسخ الـ Connection String (مع تفعيل `sslmode=require`).
+### أوامر النشر السريع (3 خطوات فقط):
 
-### 2. واجهة الـ Backend (API)
-- **المنصات المقترحة:** Render, Railway, Fly.io, أو AWS App Runner.
-- **Root Directory:** `apps/api`
-- **Build Command:** `npm install && npm run build`
-- **Start Command:** `npm run start:prod`
-- **Environment Variables:**
-  - `NODE_ENV=production`
-  - `DATABASE_URL=<your-supabase-url>`
-  - `JWT_SECRET=<strong-random-key>`
-  - `CORS_ORIGIN=https://your-web-app.vercel.app`
+```bash
+# 1. تثبيت Vercel CLI (اختياري، أو النشر المباشر عبر ربط GitHub)
+npm install -g vercel
 
-### 3. واجهة الـ Frontend (Web)
-- **المنصات المقترحة:** Vercel, Netlify, أو Cloudflare Pages.
-- **Root Directory:** `apps/web`
-- **Build Command:** `npm run build`
-- **Output Directory:** `dist`
-- **Rewrites (Vercel `vercel.json` أو Netlify `_redirects`):**
-  - توجيه كل المسارات إلى `index.html` (SPA routing).
-  - توجيه `/api/*` إلى رابط خدمة الـ Backend API.
+# 2. تطبيق الهياكل المرجعية على قاعدة بيانات Supabase الحية
+NODE_ENV=production node scripts/apply-migrations.js
+
+# 3. النشر الفوري للإنتاج
+vercel --prod
+```
+
+### المتغيرات البيئية المطلوبة في لوحة تحكم Vercel (Project Settings -> Environment Variables):
+- `DATABASE_URL`: رابط اتصال قاعدة بيانات Supabase المباشر (Session Pooler أو Direct).
+- `JWT_SECRET`: مفتاح تشفير أمان الجلسات (سلسلة عشوائية 32+ حرف).
+- `NODE_ENV`: اضبط القيمة على `production`.
 
 ---
 
@@ -137,4 +131,5 @@ sudo certbot --nginx -d erp.yourcompany.com
 | **تقييد نطاق الـ CORS** | التأكد من ضبط `CORS_ORIGIN` في الـ API على دومين الموقع المعتمد فقط وعدم تركه مفتوحًا في بيئة الإنتاج. | ✔ إلزامي |
 | **تفعيل عزل البيانات RLS** | التأكد من عمل سياسات Row-Level Security على مستوى الشركات والمشاريع. | ✔ مفعّل ومختبر |
 | **فحص سجلات الأخطاء** | التأكد من عدم وجود طباعة للمفاتيح الحساسة في `console.log`. | ✔ نظيف |
-| **اختبار سلامة اللغات** | التأكد من اكتمال ترجمة جميع مفاتيح اللغات (عربي / إنجليزي / أوردو) بدون أي نقص. | ✔ 1448 مفتاح مكتمل |
+| **اختبار سلامة اللغات** | التأكد من اكتمال ترجمة جميع مفاتيح اللغات (عربي / إنجليزي / أوردو) بنسبة 100%. | ✔ 1917 مفتاح مكتمل (0 أخطاء) |
+
