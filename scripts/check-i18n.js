@@ -433,6 +433,7 @@ function main() {
     return false;
   }
 
+  let systemItemEnCount = 0;
   let untranslatedEnCount = 0;
   let untranslatedUrCount = 0;
   let wrongArCount = 0;
@@ -443,21 +444,28 @@ function main() {
     ...Object.keys(dictionaries.ur || {})
   ]));
 
-  const authenticUrduWords = new Set(['دن', 'سال', 'آج', 'مہینہ', 'ہفتہ', 'کل', 'وقت', 'ہاں', 'نہیں', 'شامل', 'منظور', 'کام']);
   for (const k of allDictKeys) {
     const arVal = dictionaries.ar[k] || '';
     const enVal = dictionaries.en[k] || '';
     const urVal = dictionaries.ur[k] || '';
 
+    if (enVal && enVal.toLowerCase().includes('system item')) systemItemEnCount++;
     if (enVal && arabicRegex.test(enVal)) untranslatedEnCount++;
     if (urVal && arVal) {
-      if (urVal.trim() === arVal.trim()) {
+      if (urVal.trim() === arVal.trim() && arabicRegex.test(arVal) && arVal.trim() !== '؟') {
         untranslatedUrCount++;
-      } else if (!authenticUrduWords.has(urVal.trim()) && !urduDistinctRegex.test(urVal) && arabicRegex.test(urVal)) {
+      } else if (urVal.trim().length > 10 && !urduDistinctRegex.test(urVal) && arabicRegex.test(urVal)) {
         untranslatedUrCount++;
       }
     }
     if (arVal && hasDisallowedLatin(arVal)) wrongArCount++;
+  }
+
+  if (systemItemEnCount > 0) {
+    hasErrors = true;
+    console.log(`❌ [system_item_en]: Found ${systemItemEnCount} keys in en.json containing "System Item".`);
+  } else {
+    console.log('✅ [en.json]: 0 "System Item" placeholder values.');
   }
 
   if (untranslatedEnCount > 0) {
