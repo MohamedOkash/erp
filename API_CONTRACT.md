@@ -1520,5 +1520,105 @@
   - `ControlCardsService`: يعتمد فوراً ساعات اليوم، تكوين الطاقم، اليوميات الافتراضية ودقة التقريب.
   - `CostsService`: يعتمد فوراً ساعات اليوم ومضاعف الإضافي في `autoCalculateLaborCosts`.
 
+---
+
+## 21. موديولات وإجراءات SACODECO التشغيلية والمالية (SACODECO Operations & Financial Architecture)
+
+### 1) إدارة فرق العمل الميدانية (Crews Management)
+- **إنشاء طاقم ميداني جديد:** `POST /api/v1/crews`
+  - **Body:**
+    ```json
+    {
+      "name": "طاقم لياسة رقم 1",
+      "code": "CRW-01",
+      "crewType": "A",
+      "foremanId": "uuid",
+      "projectId": "uuid",
+      "members": [
+        { "employeeId": "uuid", "roleInCrew": "skilled_1" },
+        { "employeeId": "uuid", "roleInCrew": "skilled_2" },
+        { "employeeId": "uuid", "roleInCrew": "helper" }
+      ]
+    }
+    ```
+- **استعراض الفرق الميدانية:** `GET /api/v1/crews?projectId=uuid&crewType=A`
+  - **الاستجابة (200 OK):** قائمة بالفرق مع تفاصيل العمالة والمهن واليوميات.
+
+### 2) اعتماد ومراجعة الإنتاجية للمهندس (Engineer Review & Approval)
+- **المسار:** `PATCH /api/v1/production-records/:id/approve`
+- **الـ Request Body:**
+  ```json
+  {
+    "notes": "تم فحص الشاقول واستلام القدة بنجاح",
+    "engineerApprovedBy": "uuid"
+  }
+  ```
+- **الاستجابة:** `200 OK` مع تحديث `status = 'approved'`, `engineer_approved_at = NOW()`, `engineer_notes`, `engineer_approved_by`.
+
+### 3) رفع واستيراد دليل البنود ومقايسات الغرف (Bulk Excel Uploads)
+- **رفع دليل البنود والمراحل:** `POST /api/v1/imports/work-items/upload`
+  - **Form-data:** `file: work_items.xlsx`
+  - **الأعمدة:** كود البند، اسم البند، التصنيف، الوحدة، المستهدف اليومي، السعر، سعر المواد.
+- **رفع مقايسة الغرف والمساحات التفصيلية:** `POST /api/v1/imports/room-boq/upload`
+  - **Form-data:** `file: room_boq.xlsx`
+  - **الأعمدة:** المشروع، المبنى/المنطقة، الطابق، الغرفة، كود البند، الكمية، سعر الوحدة.
+- **تثبيت الاستيراد بعد المعاينة:** `POST /api/v1/imports/:jobId/commit`
+
+### 4) التقارير المالية وتحليل نقطة التعادل (Financial Reports & Break-even)
+- **المسار:** `GET /api/v1/financial-reports/project/:id`
+- **الاستجابة (200 OK):**
+  ```json
+  {
+    "project": {
+      "id": "uuid",
+      "name": "مشروع أبراج النرجس",
+      "contractValue": 1200000,
+      "budget": 950000
+    },
+    "financialSummary": {
+      "revenue": 1200000,
+      "totalExecutedRevenue": 480000,
+      "directCosts": {
+        "material": 180000,
+        "labor": 140000,
+        "equipment": 35000,
+        "other": 15000,
+        "totalDirect": 370000
+      },
+      "overheadExpenses": 96000,
+      "totalCost": 466000,
+      "grossProfit": 830000,
+      "grossMarginPct": 69.17,
+      "netProfit": 734000,
+      "netProfitMarginPct": 61.17
+    },
+    "costStructurePercentages": {
+      "materialPct": 38.6,
+      "laborPct": 30.0,
+      "equipmentPct": 7.5,
+      "overheadPct": 20.6,
+      "otherPct": 3.2
+    },
+    "workItems": [
+      {
+        "workItemId": "uuid",
+        "name": "لياسة داخلية ناعمة",
+        "code": "PLST-01",
+        "contractUnitPrice": 45,
+        "unitMaterialCost": 8,
+        "unitLaborCost": 12.5,
+        "variableUnitCost": 20.5,
+        "unitContributionMargin": 24.5,
+        "allocatedOverhead": 12500,
+        "breakEvenUnits": 511,
+        "executedQuantity": 650,
+        "breakEvenProgressPct": 127.2,
+        "isBreakEvenReached": true
+      }
+    ]
+  }
+  ```
+
+
 
 
