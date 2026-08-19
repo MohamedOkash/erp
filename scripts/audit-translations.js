@@ -37,7 +37,7 @@ const allowedLatinTokens = new Set([
   'SACODECO', 'V1', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HR', 'OK', 'URL', 'UI', 'UX',
   'A', 'B', 'C', 'D', 'N', 'M', 'KG', 'M2', 'M3', 'CM', 'MM', 'PC', 'PCS', 'ZKTECO', 'SUPREMA',
   'KB', 'MB', 'GB', 'TB', 'RUH', 'JED', 'DMM', 'KSA', 'FAHAD_ENG', 'ADMIN', 'BACKEND', 'FRONTEND',
-  'SHOP', 'DRAWINGS', 'SPA', 'VERCEL', 'GF', 'PLS'
+  'SHOP', 'DRAWINGS', 'SPA', 'VERCEL', 'GF', 'PLS', 'YYYY', 'MM', 'DD', 'HH', 'SS'
 ]);
 
 function hasDisallowedLatinInAr(val) {

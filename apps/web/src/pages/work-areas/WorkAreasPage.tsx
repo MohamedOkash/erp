@@ -600,7 +600,7 @@ export const WorkAreasPage: React.FC = () => {
                 type="text"
                 required
                 className="input-field"
-                placeholder="Zone / Floor / Room"
+                placeholder={t('auto.اسم_منطقة_العمل_448fb6')}
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
               />

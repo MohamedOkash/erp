@@ -354,7 +354,7 @@ export const EmployeesPage: React.FC = () => {
           <input
             type="text"
             className="input-field"
-            placeholder="10xxxxxxxx / 23xxxxxxxx"
+            placeholder={t('auto.مثال_10xxxxxxxx_23xxxxxxxx_5264b3')}
             style={{ flex: '1 1 300px' }}
             value={identityLookupQuery}
             onChange={(e) => setIdentityLookupQuery(e.target.value)}
@@ -588,7 +588,7 @@ export const EmployeesPage: React.FC = () => {
                             onClick={() => openProjectCodes(emp)}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', color: '#f59e0b' }}
-                            title="Project IDs"
+                            title={t('auto.المعرفات_الميدانية_بالمشاريع_2ef401')}
                           >
                             <Hash size={14} />
                           </button>
@@ -869,7 +869,7 @@ export const EmployeesPage: React.FC = () => {
                 <div>
                   <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{a.projectName}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                    Code: {a.projectCode} • Role: {a.assignedRole}
+                    {a.projectCode} • {a.assignedRole}
                   </div>
                 </div>
                 <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>

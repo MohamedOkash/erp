@@ -1,5 +1,11 @@
 # Construction ERP — Handoff (Source of Truth)
 
+## ⚠️ قواعد الجودة الدائمة (QA & Engineering Protocol)
+1. **ممنوع Browser tasks**: التحقق scripts واختبارات فقط.
+2. **أي claim بدون output خام = مرفوض**: لا يُعتد بأي نتيجة دون لصق المخرجات الفعلية الصادرة من الـ Terminal.
+3. **بوابة QA الموحدة (`npm run qa`)**: لا يُقفل أي batch إلا بـ `npm run qa` أخضر بالكامل (8 بوابات حاسمة).
+4. **عقد الـ Schema**: أي batch يلمس الـ DB schema يجب أن يختم بـ `apply-migrations.js` على القاعدة الحية وطلبات curl 200s بنجاح.
+
 ## 1) التعريف
 - ERP لمقاول تشطيبات؛ عربي أول RTL + إنجليزي.
 - فروع/بنود/وحدات/مناطق/حالات ديناميكية 100% — ممنوع الـ hard-coding.

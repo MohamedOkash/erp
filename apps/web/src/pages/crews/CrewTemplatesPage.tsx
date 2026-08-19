@@ -222,7 +222,7 @@ export const CrewTemplatesPage: React.FC = () => {
               <input
                 type="text"
                 required
-                placeholder="Template Name"
+                placeholder={t('crews.template_name')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="input-field"

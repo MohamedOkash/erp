@@ -164,7 +164,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
               type="text"
               required
               className="input-field"
-              placeholder="Full Name"
+              placeholder={t('employees.name')}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -180,7 +180,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
               list="professionsList"
               required
               className="input-field"
-              placeholder="Profession / Trade"
+              placeholder={t('employees.profession')}
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
             />
@@ -223,7 +223,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
               type="text"
               required
               className="input-field"
-              placeholder="10xxxxxxxx / 23xxxxxxxx"
+              placeholder={t('auto.مثال_10xxxxxxxx_23xxxxxxxx_5264b3')}
               value={identityNumber}
               onChange={(e) => setIdentityNumber(e.target.value)}
             />

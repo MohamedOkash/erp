@@ -39,6 +39,16 @@ const ALLOWLIST = new Set([
   'v2',
   'LTR',
   'RTL',
+  'Plasterer',
+  'Tiler',
+  'Painter',
+  'Gypsum Board',
+  'Carpenter',
+  'Steel Fixer',
+  'Plumber',
+  'Electrician',
+  'Helper',
+  'Finishing Foreman',
 ]);
 
 const ALLOWED_REGEX = /^(SACODECO|ERP|SAR|USD|AED|EGP|QAR|BHD|KWD|OMR|m²|m³|m|cm|mm|kg|%|\d+(\.\d+)?|\+|\-|\/|\*|÷|×|=|:|#|\s|\.|,|;|\||•|—|–|&|\(|\)|\[|\]|<|>|\{|\}|_|\uD83C[\uDDE6-\uDDFF]){1,}$/i;

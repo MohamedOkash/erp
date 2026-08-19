@@ -178,6 +178,9 @@ function scanHardcodedStrings() {
 
       if (arabicRegex.test(line)) {
         let cleaned = line.replace(/\bt\([^)]+\)/g, '');
+        cleaned = cleaned.replace(/formatUnit\([^)]+\)/g, '');
+        cleaned = cleaned.replace(/formatCurrency\([^)]+\)/g, '');
+        cleaned = cleaned.replace(/formatNumber\([^)]+\)/g, '');
         cleaned = cleaned.replace(/\/\/.*/, '').replace(/\/\*.*?\*\//g, '');
         cleaned = cleaned.replace(/defaultLabel:\s*['"][^'"]+['"]/g, '');
         cleaned = cleaned.replace(/defaultTitle:\s*['"][^'"]+['"]/g, '');
@@ -375,7 +378,7 @@ function main() {
     'SACODECO', 'V1', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HR', 'OK', 'URL', 'UI', 'UX',
     'A', 'B', 'C', 'D', 'N', 'M', 'KG', 'M2', 'M3', 'CM', 'MM', 'PC', 'PCS', 'ZKTECO', 'SUPREMA',
     'KB', 'MB', 'GB', 'TB', 'RUH', 'JED', 'DMM', 'KSA', 'FAHAD_ENG', 'ADMIN', 'BACKEND', 'FRONTEND',
-    'SHOP', 'DRAWINGS', 'SPA', 'VERCEL', 'GF', 'PLS'
+    'SHOP', 'DRAWINGS', 'SPA', 'VERCEL', 'GF', 'PLS', 'YYYY', 'MM', 'DD', 'HH', 'SS'
   ]);
 
   function hasDisallowedLatin(val) {
