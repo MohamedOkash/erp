@@ -6,7 +6,7 @@ const { Client } = require(path.resolve(__dirname, '../apps/api/node_modules/pg'
 const BENCHMARKS = [
   {
     category: 'GP CEILING',
-    codePattern: '%GYP%CEIL%',
+    codePattern: 'GYP-01',
     expected: {
       dailyTarget: 20,
       perHour: 1.25,
@@ -20,7 +20,7 @@ const BENCHMARKS = [
   },
   {
     category: 'CEILING TUNNEL',
-    codePattern: '%TUNNEL%',
+    codePattern: 'GYP-03',
     expected: {
       dailyTarget: 2,
       perHour: 0.125,
@@ -34,7 +34,7 @@ const BENCHMARKS = [
   },
   {
     category: 'BLOCK',
-    codePattern: '%BLOCK%',
+    codePattern: 'BLK-01',
     expected: {
       dailyTarget: 75.5,
       perHour: 0.3775,
@@ -48,7 +48,7 @@ const BENCHMARKS = [
   },
   {
     category: 'EPOXY',
-    codePattern: '%EPOXY%',
+    codePattern: 'EPX-01',
     expected: {
       dailyTarget: 33,
       perHour: 0.52,
@@ -59,7 +59,7 @@ const BENCHMARKS = [
   },
   {
     category: 'GPC',
-    codePattern: '%GPC%',
+    codePattern: 'GYP-02',
     expected: {
       dailyTarget: 27,
       perHour: 1.6875,
@@ -90,9 +90,9 @@ async function compareStandards() {
       const itemRes = await client.query(
         `SELECT id, name, code, default_daily_target, default_unit_rate
          FROM work_items
-         WHERE code ILIKE $1 OR name ILIKE $1
+         WHERE code = $1 OR name ILIKE $2
          LIMIT 1`,
-        [b.codePattern]
+        [b.codePattern, `%${b.category}%`]
       );
 
       if (itemRes.rows.length === 0) {
@@ -114,8 +114,8 @@ async function compareStandards() {
       comparisonRows.push({
         item: b.category,
         field: 'Contract Rate (SAR)',
-        sheetValue: b.expected.contractRate,
-        dbValue: Number(item.default_unit_rate),
+        sheetValue: `${b.expected.contractRate} SAR`,
+        dbValue: `${Number(item.default_unit_rate)} SAR`,
         matched: rateMatch,
       });
       if (!rateMatch) allMatched = false;
@@ -125,8 +125,8 @@ async function compareStandards() {
       comparisonRows.push({
         item: b.category,
         field: 'Daily Target',
-        sheetValue: b.expected.dailyTarget,
-        dbValue: Number(item.default_daily_target),
+        sheetValue: `${b.expected.dailyTarget}`,
+        dbValue: `${Number(item.default_daily_target)}`,
         matched: targetMatch,
       });
       if (!targetMatch) allMatched = false;
@@ -145,8 +145,8 @@ async function compareStandards() {
         comparisonRows.push({
           item: b.category,
           field: 'Stages Count',
-          sheetValue: b.expected.stagesCount,
-          dbValue: stagesRes.rows.length,
+          sheetValue: `${b.expected.stagesCount} Stages`,
+          dbValue: `${stagesRes.rows.length} Stages`,
           matched: countMatch,
         });
         if (!countMatch) allMatched = false;
@@ -155,12 +155,13 @@ async function compareStandards() {
       if (b.expected.stages) {
         b.expected.stages.forEach((expectedStage, sIdx) => {
           const actualStage = stagesRes.rows[sIdx];
-          const pMatch = actualStage && Math.abs(Number(actualStage.percentage) - expectedStage.percentage) < 0.5;
+          const actualPercent = actualStage ? (Number(actualStage.percentage) <= 1.0 ? Number(actualStage.percentage) * 100 : Number(actualStage.percentage)) : 0;
+          const pMatch = actualStage && Math.abs(actualPercent - expectedStage.percentage) < 0.5;
           comparisonRows.push({
             item: b.category,
             field: `Stage ${sIdx + 1} %`,
             sheetValue: `${expectedStage.percentage}%`,
-            dbValue: actualStage ? `${actualStage.percentage}%` : 'N/A',
+            dbValue: actualStage ? `${Math.round(actualPercent)}%` : 'N/A',
             matched: pMatch,
           });
           if (!pMatch) allMatched = false;
