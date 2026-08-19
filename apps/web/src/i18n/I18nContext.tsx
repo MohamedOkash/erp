@@ -10,6 +10,33 @@ const dictionaries: Record<Language, any> = {
   ur: urDict,
 };
 
+function resolveKeyInDictionary(dict: any, key: string): string | undefined {
+  if (!dict || typeof dict !== 'object') return undefined;
+
+  // 1. Direct flat key match (e.g. "kpis.title" or "common.save")
+  if (typeof dict[key] === 'string') {
+    return dict[key];
+  }
+
+  // 2. Nested path traversal (e.g. dict.kpis.title)
+  const parts = key.split('.');
+  let current: any = dict;
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+    } else {
+      current = undefined;
+      break;
+    }
+  }
+
+  if (typeof current === 'string') {
+    return current;
+  }
+
+  return undefined;
+}
+
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -35,39 +62,29 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const t = useCallback(
     (key: string, params?: Record<string, string | number>): string => {
-      const keys = key.split('.');
-      let current: any = dictionaries[language];
+      // 1. Current Language Lookup
+      let resolved = resolveKeyInDictionary(dictionaries[language], key);
 
-      for (const k of keys) {
-        if (current && typeof current === 'object' && k in current) {
-          current = current[k];
-        } else {
-          // Fallback to Arabic if missing
-          let fallback: any = dictionaries.ar;
-          for (const fbK of keys) {
-            if (fallback && typeof fallback === 'object' && fbK in fallback) {
-              fallback = fallback[fbK];
-            } else {
-              fallback = null;
-              break;
-            }
-          }
-          current = fallback ?? key;
-          break;
-        }
+      // 2. Fallback Chain: ur -> en -> ar
+      if (resolved === undefined && language === 'ur') {
+        resolved = resolveKeyInDictionary(dictionaries.en, key);
       }
 
-      if (typeof current !== 'string') {
-        return key;
+      // 3. Fallback to Arabic
+      if (resolved === undefined) {
+        resolved = resolveKeyInDictionary(dictionaries.ar, key);
       }
+
+      // 4. Default to key if completely missing
+      const finalStr = resolved !== undefined ? resolved : key;
 
       if (params) {
         return Object.entries(params).reduce((str, [pKey, pVal]) => {
           return str.replace(new RegExp(`{${pKey}}`, 'g'), String(pVal));
-        }, current);
+        }, finalStr);
       }
 
-      return current;
+      return finalStr;
     },
     [language],
   );

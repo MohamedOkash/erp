@@ -1950,5 +1950,10 @@
   "common.price": "السعر",
   "common.quantity": "الكمية",
   "crews.code": "كود الطاقم",
-  "employees.name": "اسم العامل"
+  "employees.name": "اسم العامل",
+  "nav.links.kpis": "مؤشرات الأداء المتسلسلة",
+  "nav.links.daily_entry": "الإدخال اليومي للإنتاج",
+  "nav.links.foreman_archive": "أرشيف الفورمان",
+  "nav.links.engineer_review": "مراجعة المهندس",
+  "nav.links.crew_templates": "قوالب الأطقم الميدانية"
 }

@@ -1950,5 +1950,10 @@
   "common.price": "مطلوبہ قیمت یا ریٹ",
   "common.quantity": "کل مقدار یا یونٹ",
   "crews.code": "ٹیم کا کوڈ",
-  "employees.name": "کارکن کا پورا نام"
+  "employees.name": "کارکن کا پورا نام",
+  "nav.links.kpis": "کارکردگی کے بنیادی اشاریے",
+  "nav.links.daily_entry": "یومیہ پیداوار کا اندراج",
+  "nav.links.foreman_archive": "فورمین کے ریکارڈ کا آرکائیو",
+  "nav.links.engineer_review": "انجینئر کے جائزے کا تفصیلی ریکارڈ",
+  "nav.links.crew_templates": "میدانی ٹیموں کے سانچے"
 }

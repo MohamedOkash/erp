@@ -1950,5 +1950,10 @@
   "common.price": "Price",
   "common.quantity": "Quantity",
   "crews.code": "Crew Code",
-  "employees.name": "Employee Name"
+  "employees.name": "Employee Name",
+  "nav.links.kpis": "Cascading KPIs",
+  "nav.links.daily_entry": "Daily Production Entry",
+  "nav.links.foreman_archive": "Foreman Archive",
+  "nav.links.engineer_review": "Engineer Review",
+  "nav.links.crew_templates": "Crew Templates"
 }

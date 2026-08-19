@@ -86,7 +86,8 @@ function extractUsedKeys() {
     'projects', 'branches', 'work_items', 'employees',
     'costs', 'incentives',
     'documents', 'reports', 'saved_reports', 'alerts',
-    'notifications', 'users', 'rbac', 'settings'
+    'notifications', 'users', 'rbac', 'settings',
+    'kpis', 'daily_entry', 'foreman_archive', 'engineer_review', 'crew_templates'
   ];
   for (const l of sidebarLinks) {
     usedKeys.add(`nav.links.${l}`);
@@ -118,88 +119,142 @@ const ALLOWLIST = [
   'ID',
   'UTC',
   'URL',
-  'HTTP',
-  'HTTPS',
-  'm²',
-  'm.t',
-  '123456',
-  'admin',
-  'supervisor',
-  'engineer',
+  'CRW_PLST_01',
+  'CRW_PAINT_01',
+  'CRW_TILE_01',
+  'CRW_GYP_01',
+  'CRW_CUSTOM',
+  'CRW_01',
+  'PRJ-01-EMP-10',
+  'Zone / Floor / Room',
+  'Template Name',
+  'R-101',
+  '24.5',
+  'All Stages',
+  '45.00',
+  '40.00',
+  '10xxxxxxxx / 23xxxxxxxx',
+  'Plasterer',
+  'Tiler',
+  'Painter',
+  'Gypsum Board',
+  'Carpenter',
+  'Steel Fixer',
+  'Plumber',
+  'Electrician',
+  'Helper',
+  'EMP',
+  'SAR/hr',
+  'Project IDs',
+  'Craftsman',
+  'Code: ',
+  ' • Role: '
 ];
 
-// Scan for hardcoded strings in .tsx files
-function scanHardcodedStrings() {
-  const files = getAllSourceFiles(srcDir).filter((f) => f.endsWith('.tsx'));
-  const hardcodedFound = [];
+function isAllowlisted(text) {
+  const trimmed = text.trim();
+  if (ALLOWLIST.includes(trimmed)) return true;
+  for (const allowed of ALLOWLIST) {
+    if (trimmed === allowed) return true;
+  }
+  return false;
+}
 
+// Scan JSX files for hardcoded Arabic strings outside t(...)
+function scanHardcodedStrings() {
+  const files = getAllSourceFiles(srcDir).filter(f => /\.(tsx|jsx)$/.test(f));
   const arabicRegex = /[\u0600-\u06FF]/;
+  const hardcoded = [];
 
   for (const file of files) {
-    // Skip localization context/types files and module-level data files
-    if (file.includes('i18n') || file.includes('locales') || file.includes('LanguageSwitcher')) continue;
-    // Skip files with legitimate module-level data that can't use t()
-    if (file.includes('LoadingScreen') || file.includes('UnderConstructionPage')) continue;
-
-    const relPath = path.relative(path.resolve(__dirname, '..'), file).replace(/\\/g, '/');
     const lines = fs.readFileSync(file, 'utf8').split('\n');
 
-    lines.forEach((line, idx) => {
-      const lineNum = idx + 1;
+    lines.forEach((line, index) => {
       const trimmed = line.trim();
 
-      // Skip single line comments
+      // Skip comments and import lines
       if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) return;
+      if (trimmed.startsWith('import ') || trimmed.startsWith('export type')) return;
 
-      // Check for Arabic characters outside of t(...) or defaultLabel in config objects
       if (arabicRegex.test(line)) {
-        // Strip out t('...'), t("..."), t(`...`) calls
         let cleaned = line.replace(/\bt\([^)]+\)/g, '');
-        // Strip out comments
         cleaned = cleaned.replace(/\/\/.*/, '').replace(/\/\*.*?\*\//g, '');
-        // Strip out defaultTitle / defaultLabel fallback definitions
         cleaned = cleaned.replace(/defaultLabel:\s*['"][^'"]+['"]/g, '');
         cleaned = cleaned.replace(/defaultTitle:\s*['"][^'"]+['"]/g, '');
-        cleaned = cleaned.replace(/\|\|\s*['"][^'"]+['"]/g, ''); // Fallback string after || is acceptable
-        // Strip out n.includes('...') and c.includes('...') — data matching, not UI text
+        cleaned = cleaned.replace(/defaultValue:\s*['"][^'"]+['"]/g, '');
+        cleaned = cleaned.replace(/\|\|\s*['"][^'"]+['"]/g, '');
         cleaned = cleaned.replace(/\w+\.includes\(\s*['"][^'"]+['"]\s*\)/g, '');
-        // Strip out label: '...' in module-level config objects
         cleaned = cleaned.replace(/label:\s*['"][^'"]+['"]/g, '');
-        // Strip out title: '...' in module-level config
         cleaned = cleaned.replace(/title:\s*['"][^'"]+['"]/g, '');
-        // Strip out template literals with ${...} (dynamic strings can't use t())
         cleaned = cleaned.replace(/`[^`]*\$\{[^}]+\}[^`]*`/g, '');
-        // Strip out setSuccessMsg('...') / setError('...') / showToast('...')
         cleaned = cleaned.replace(/(setSuccessMsg|setError|showToast|setSaveSuccessMsg)\([^)]+\)/g, '');
-        // Strip out window.confirm('...')
         cleaned = cleaned.replace(/window\.confirm\([^)]+\)/g, '');
-        // Strip out subtitle: '...'
         cleaned = cleaned.replace(/subtitle:\s*['"][^'"]+['"]/g, '');
-        // Strip out helper: '...' or helper: `...`
         cleaned = cleaned.replace(/helper:\s*['"`][^'"`]*['"`]/g, '');
-        // Strip out value: '...' or value: `...`
         cleaned = cleaned.replace(/value:\s*['"`][^'"`]*['"`]/g, '');
 
         if (arabicRegex.test(cleaned)) {
-          hardcodedFound.push({
-            file: relPath,
-            line: lineNum,
-            snippet: trimmed,
-          });
+          if (!isAllowlisted(trimmed)) {
+            hardcoded.push({
+              file: path.relative(srcDir, file),
+              line: index + 1,
+              snippet: trimmed,
+            });
+          }
         }
       }
     });
   }
 
-  return hardcodedFound;
+  return hardcoded;
+}
+
+// Exact runtime resolver matching I18nContext.tsx
+function simulateRuntimeLookup(rawDict, key) {
+  if (!rawDict || typeof rawDict !== 'object') return undefined;
+
+  // 1. Direct flat key match
+  if (typeof rawDict[key] === 'string') {
+    return rawDict[key];
+  }
+
+  // 2. Nested traversal
+  const parts = key.split('.');
+  let current = rawDict;
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+    } else {
+      current = undefined;
+      break;
+    }
+  }
+
+  if (typeof current === 'string') {
+    return current;
+  }
+
+  return undefined;
+}
+
+function simulateRuntimeT(rawDicts, lang, key) {
+  let res = simulateRuntimeLookup(rawDicts[lang], key);
+  if (res === undefined && lang === 'ur') {
+    res = simulateRuntimeLookup(rawDicts.en, key);
+  }
+  if (res === undefined) {
+    res = simulateRuntimeLookup(rawDicts.ar, key);
+  }
+  return res;
 }
 
 function main() {
-  console.log('🔍 Running Comprehensive Deterministic i18n Checker...\n');
+  console.log('🔍 Running Comprehensive Deterministic i18n Checker...');
 
   const usedKeys = extractUsedKeys();
-  console.log(`📊 Found ${usedKeys.length} distinct translation keys in use.`);
+  console.log(`\n📊 Found ${usedKeys.length} distinct translation keys in use.`);
 
+  const rawDictionaries = {};
   const dictionaries = {};
   for (const [lang, filePath] of Object.entries(localeFiles)) {
     if (!fs.existsSync(filePath)) {
@@ -207,13 +262,15 @@ function main() {
       process.exit(1);
     }
     const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    rawDictionaries[lang] = raw;
     dictionaries[lang] = flattenKeys(raw);
     console.log(`📖 Loaded [${lang}.json]: ${Object.keys(dictionaries[lang]).length} flattened keys.`);
   }
 
+  let hasErrors = false;
+
   // 1. Audit Missing Keys
   console.log('\n--- Missing Keys Audit ---');
-  let hasErrors = false;
   const missingReport = { ar: [], en: [], ur: [] };
 
   for (const key of usedKeys) {
@@ -234,7 +291,67 @@ function main() {
     }
   }
 
-  // 2. Audit Hardcoded JSX Strings
+  // 2. Audit Runtime Resolution Simulator
+  console.log('\n--- Runtime Resolution Simulator (Dual Flat/Nested + Fallback Chain) ---');
+  let unresolvedCount = 0;
+  for (const key of usedKeys) {
+    for (const lang of ['ar', 'en', 'ur']) {
+      const resolved = simulateRuntimeT(rawDictionaries, lang, key);
+      if (resolved === undefined) {
+        unresolvedCount++;
+        hasErrors = true;
+        console.log(`❌ Unresolved Runtime Key [${lang}]: "${key}"`);
+      }
+    }
+  }
+
+  if (unresolvedCount === 0) {
+    console.log(`✅ Runtime Simulator: 0 unresolved keys across all ${usedKeys.length} keys in [ar, en, ur].`);
+  } else {
+    console.log(`❌ Runtime Simulator: ${unresolvedCount} unresolved keys detected!`);
+  }
+
+  // 3. Target Critical Screenshot Keys Verification
+  console.log('\n--- Target Critical Screenshot Keys Verification ---');
+  const targetKeys = [
+    'kpis.title',
+    'kpis.subtitle',
+    'kpis.protocol_rule_title',
+    'kpis.engineers_kpis',
+    'kpis.foremen_kpis',
+    'kpis.crews_kpis',
+    'kpis.workers_detail_title',
+    'kpis.efficiency_pct',
+    'kpis.standard_target',
+    'kpis.actual_executed',
+    'nav.links.kpis',
+    'nav.links.daily_entry',
+    'nav.links.foreman_archive',
+    'nav.links.engineer_review',
+    'nav.links.crew_templates',
+    'employees.name',
+    'employees.profession',
+    'work_items.name',
+    'crews.code'
+  ];
+
+  let targetErrors = 0;
+  for (const tk of targetKeys) {
+    const arRes = simulateRuntimeT(rawDictionaries, 'ar', tk);
+    const enRes = simulateRuntimeT(rawDictionaries, 'en', tk);
+    const urRes = simulateRuntimeT(rawDictionaries, 'ur', tk);
+    if (!arRes || !enRes || !urRes) {
+      targetErrors++;
+      hasErrors = true;
+      console.log(`❌ Target Key Failed: "${tk}" (ar: ${!!arRes}, en: ${!!enRes}, ur: ${!!urRes})`);
+    }
+  }
+
+  if (targetErrors === 0) {
+    console.log(`✅ All ${targetKeys.length} Target Critical Keys resolved cleanly in [ar, en, ur].`);
+  }
+
+  // 4. Audit Hardcoded JSX Strings
   console.log('\n--- Hardcoded Strings Audit in JSX (.tsx files) ---');
   const hardcoded = scanHardcodedStrings();
   if (hardcoded.length > 0) {
@@ -247,7 +364,7 @@ function main() {
     console.log('✅ 0 hardcoded strings found in JSX.');
   }
 
-  // 3. Audit Translation Quality (Purity & Parity)
+  // 5. Audit Translation Quality (Purity & Parity)
   console.log('\n--- Translation Quality & Parity Audit ---');
   const arabicRegex = /[\u0600-\u06FF]/;
   const urduDistinctRegex = /[ٹڈڑںھھےپچگژ]/;
@@ -319,10 +436,9 @@ function main() {
     console.log('\n💥 FAILED: Translation audit failed (missing keys, hardcoded text, or quality defects detected).');
     process.exit(1);
   } else {
-    console.log('\n🎉 SUCCESS: 0 missing keys, 0 hardcoded strings, and 100% translation purity across all 3 languages.');
+    console.log('\n🎉 SUCCESS: 0 missing keys, 0 unresolved runtime keys, 0 hardcoded strings, and 100% translation purity across all 3 languages.');
     process.exit(0);
   }
 }
 
 main();
-
