@@ -31,6 +31,10 @@ class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     let sanitizedEndpoint = endpoint;
     if (sanitizedEndpoint.includes('limit=')) {
       sanitizedEndpoint = sanitizedEndpoint.replace(/([?&]limit=)(\d+)/g, (match, prefix, val) => {

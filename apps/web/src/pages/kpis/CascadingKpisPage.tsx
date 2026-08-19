@@ -4,6 +4,19 @@ import { kpisApi } from '../../api/kpis.api';
 import type { CascadeKpiResponse, EvaluatedWorkerKpi } from '../../api/kpis.api';
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
+import { StatsStrip } from '../../components/StatsStrip';
+import {
+  TrendingUp,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Users,
+  HardHat,
+  ClipboardList,
+  RotateCw,
+  Search,
+  Target,
+} from 'lucide-react';
 
 export const CascadingKpisPage: React.FC = () => {
   const { t } = useI18n();
@@ -67,25 +80,36 @@ export const CascadingKpisPage: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-sm">
+    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Header Card */}
+      <div
+        className="card"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          padding: '1.25rem 1.5rem',
+        }}
+      >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-500">🎯</span>
-            {t('kpis.title')}
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-heading)' }}>
+            <Target size={26} color="#f59e0b" />
+            <span>{t('kpis.title')}</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
             {t('kpis.subtitle')}
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Global Filters */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
           <select
             value={selectedProject}
             onChange={(e) => setSelectedProject(e.target.value)}
-            className="px-3 py-2 bg-background border border-border rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500/30"
+            className="input-field"
+            style={{ width: 'auto', minWidth: '180px' }}
           >
             <option value="">{t('common.all_projects')}</option>
             {projects.map((p) => (
@@ -99,134 +123,134 @@ export const CascadingKpisPage: React.FC = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-3 py-2 bg-background border border-border rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500/30"
+            className="input-field"
+            style={{ width: 'auto' }}
           />
 
           <button
+            type="button"
             onClick={fetchKpis}
-            className="px-4 py-2 bg-amber-500 text-black font-semibold rounded-xl text-sm hover:bg-amber-400 transition-all shadow-sm flex items-center gap-2"
+            className="btn btn-primary"
+            style={{ gap: '0.5rem', background: '#f59e0b', color: '#000' }}
           >
-            🔄 {t('common.refresh')}
+            <RotateCw size={15} />
+            <span>{t('common.refresh')}</span>
           </button>
         </div>
       </div>
 
       {/* Error alert */}
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl text-xs font-semibold">
-          {error}
+        <div className="alert alert-danger">
+          <span>{error}</span>
         </div>
       )}
 
       {/* Operational Protocol Banner */}
-      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center gap-3">
-        <span className="text-xl">💡</span>
-        <div className="text-xs text-amber-500 font-medium">
-          <strong>{t('kpis.protocol_rule_title')}</strong>{' '}
-          {t('kpis.protocol_rule_desc')}
+      <div
+        style={{
+          padding: '1rem 1.25rem',
+          background: 'rgba(245, 158, 11, 0.08)',
+          border: '1px solid rgba(245, 158, 11, 0.25)',
+          borderRadius: 'var(--radius-md)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontSize: '0.85rem',
+          color: 'var(--text-heading)',
+        }}
+      >
+        <span style={{ fontSize: '1.25rem' }}>💡</span>
+        <div>
+          <strong style={{ color: '#f59e0b' }}>{t('kpis.protocol_rule_title')}</strong>{' '}
+          <span style={{ color: 'var(--text-muted)' }}>{t('kpis.protocol_rule_desc')}</span>
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
+      {/* Stats Summary Strip */}
       {data?.summary && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-card/70 backdrop-blur-md p-5 rounded-2xl border border-border/60 shadow-sm">
-            <div className="text-xs text-muted-foreground font-medium">
-              {t('kpis.summary.avg_efficiency')}
-            </div>
-            <div className="text-3xl font-extrabold text-foreground mt-2 flex items-baseline gap-1">
-              {data.summary.avgKpi}%
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {data.summary.totalEvaluatedWorkers} {t('kpis.summary.workers_count')}
-            </div>
-          </div>
-
-          <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-2xl shadow-sm">
-            <div className="text-xs text-emerald-500 font-medium flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {t('kpis.summary.excellent')}
-            </div>
-            <div className="text-3xl font-extrabold text-emerald-500 mt-2">{data.summary.greenCount}</div>
-            <div className="text-xs text-emerald-500/70 mt-1">
-              {t('kpis.summary.on_or_above_target')}
-            </div>
-          </div>
-
-          <div className="bg-amber-500/10 border border-amber-500/20 p-5 rounded-2xl shadow-sm">
-            <div className="text-xs text-amber-500 font-medium flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-              {t('kpis.summary.good')}
-            </div>
-            <div className="text-3xl font-extrabold text-amber-500 mt-2">{data.summary.yellowCount}</div>
-            <div className="text-xs text-amber-500/70 mt-1">
-              {t('kpis.summary.near_target')}
-            </div>
-          </div>
-
-          <div className="bg-red-500/10 border border-red-500/20 p-5 rounded-2xl shadow-sm">
-            <div className="text-xs text-red-500 font-medium flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-500"></span>
-              {t('kpis.summary.poor')}
-            </div>
-            <div className="text-3xl font-extrabold text-red-500 mt-2">{data.summary.redCount}</div>
-            <div className="text-xs text-red-500/70 mt-1">
-              {t('kpis.summary.needs_support')}
-            </div>
-          </div>
-
-          <div className="bg-card/70 backdrop-blur-md p-5 rounded-2xl border border-border/60 shadow-sm col-span-2 md:col-span-1">
-            <div className="text-xs text-muted-foreground font-medium">
-              {t('kpis.summary.crews_summary')}
-            </div>
-            <div className="text-lg font-bold text-foreground mt-2 flex flex-col gap-1 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('kpis.summary.engineers')}</span>
-                <span className="font-semibold text-foreground">{data.summary.engineersCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('kpis.summary.foremen')}</span>
-                <span className="font-semibold text-foreground">{data.summary.foremenCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('kpis.summary.crews')}</span>
-                <span className="font-semibold text-foreground">{data.summary.crewsCount}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <StatsStrip
+          items={[
+            {
+              label: t('kpis.summary.avg_efficiency'),
+              value: `${data.summary.avgKpi}%`,
+              helper: `${data.summary.totalEvaluatedWorkers} ${t('kpis.summary.workers_count')}`,
+              icon: <TrendingUp size={18} color="#f59e0b" />,
+            },
+            {
+              label: t('kpis.summary.excellent'),
+              value: data.summary.greenCount,
+              helper: t('kpis.summary.on_or_above_target'),
+              icon: <CheckCircle2 size={18} color="#10b981" />,
+              color: 'success',
+            },
+            {
+              label: t('kpis.summary.good'),
+              value: data.summary.yellowCount,
+              helper: t('kpis.summary.near_target'),
+              icon: <AlertTriangle size={18} color="#f59e0b" />,
+            },
+            {
+              label: t('kpis.summary.poor'),
+              value: data.summary.redCount,
+              helper: t('kpis.summary.needs_support'),
+              icon: <XCircle size={18} color="#ef4444" />,
+            },
+            {
+              label: t('kpis.summary.crews_summary'),
+              value: `${data.summary.crewsCount} ${t('kpis.summary.crews')}`,
+              helper: `${data.summary.engineersCount} ${t('kpis.summary.engineers')} • ${data.summary.foremenCount} ${t('kpis.summary.foremen')}`,
+              icon: <Users size={18} color="#3b82f6" />,
+            },
+          ]}
+        />
       )}
 
-      {/* Hierarchical Supervisor & Crew Summaries */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Hierarchical Supervisor & Crew Summaries (3-Column Grid, Stacks on Mobile) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '1.25rem',
+        }}
+      >
         {/* Engineers */}
-        <div className="bg-card/60 backdrop-blur-md p-5 rounded-2xl border border-border/50 shadow-sm space-y-3">
-          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <span>👷‍♂️</span> {t('kpis.engineers_kpis')}
+        <div className="card" style={{ padding: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <HardHat size={18} color="#f59e0b" />
+            <span>{t('kpis.engineers_kpis')}</span>
           </h3>
-          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '240px', overflowY: 'auto' }}>
             {data?.engineers && data.engineers.length > 0 ? (
               data.engineers.map((eng) => (
                 <div
                   key={eng.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-background/80 border border-border/50 text-xs"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.6rem 0.85rem',
+                    background: 'var(--bg-surface-elevated)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.85rem',
+                  }}
                 >
-                  <span className="font-medium text-foreground">{eng.name}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{eng.name}</span>
                   <span
-                    className={`font-bold px-2 py-0.5 rounded-lg ${
-                      eng.efficiencyPct >= 100
-                        ? 'bg-emerald-500/10 text-emerald-500'
-                        : eng.efficiencyPct >= 80
-                        ? 'bg-amber-500/10 text-amber-500'
-                        : 'bg-red-500/10 text-red-500'
-                    }`}
+                    className="badge"
+                    style={{
+                      fontWeight: 700,
+                      background: eng.efficiencyPct >= 100 ? 'rgba(16, 185, 129, 0.15)' : eng.efficiencyPct >= 80 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      color: eng.efficiencyPct >= 100 ? '#10b981' : eng.efficiencyPct >= 80 ? '#f59e0b' : '#ef4444',
+                    }}
                   >
                     {eng.efficiencyPct}%
                   </span>
                 </div>
               ))
             ) : (
-              <div className="text-xs text-muted-foreground text-center py-4">
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>
                 {t('common.no_data')}
               </div>
             )}
@@ -234,36 +258,45 @@ export const CascadingKpisPage: React.FC = () => {
         </div>
 
         {/* Foremen */}
-        <div className="bg-card/60 backdrop-blur-md p-5 rounded-2xl border border-border/50 shadow-sm space-y-3">
-          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <span>📋</span> {t('kpis.foremen_kpis')}
+        <div className="card" style={{ padding: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <ClipboardList size={18} color="#f59e0b" />
+            <span>{t('kpis.foremen_kpis')}</span>
           </h3>
-          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '240px', overflowY: 'auto' }}>
             {data?.foremen && data.foremen.length > 0 ? (
               data.foremen.map((f) => (
                 <div
                   key={f.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-background/80 border border-border/50 text-xs"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.6rem 0.85rem',
+                    background: 'var(--bg-surface-elevated)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.85rem',
+                  }}
                 >
                   <div>
-                    <div className="font-medium text-foreground">{f.name}</div>
-                    <div className="text-[10px] text-muted-foreground">{f.engineerName}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{f.name}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{f.engineerName}</div>
                   </div>
                   <span
-                    className={`font-bold px-2 py-0.5 rounded-lg ${
-                      f.efficiencyPct >= 100
-                        ? 'bg-emerald-500/10 text-emerald-500'
-                        : f.efficiencyPct >= 80
-                        ? 'bg-amber-500/10 text-amber-500'
-                        : 'bg-red-500/10 text-red-500'
-                    }`}
+                    className="badge"
+                    style={{
+                      fontWeight: 700,
+                      background: f.efficiencyPct >= 100 ? 'rgba(16, 185, 129, 0.15)' : f.efficiencyPct >= 80 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      color: f.efficiencyPct >= 100 ? '#10b981' : f.efficiencyPct >= 80 ? '#f59e0b' : '#ef4444',
+                    }}
                   >
                     {f.efficiencyPct}%
                   </span>
                 </div>
               ))
             ) : (
-              <div className="text-xs text-muted-foreground text-center py-4">
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>
                 {t('common.no_data')}
               </div>
             )}
@@ -271,36 +304,45 @@ export const CascadingKpisPage: React.FC = () => {
         </div>
 
         {/* Crews */}
-        <div className="bg-card/60 backdrop-blur-md p-5 rounded-2xl border border-border/50 shadow-sm space-y-3">
-          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <span>👥</span> {t('kpis.crews_kpis')}
+        <div className="card" style={{ padding: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <Users size={18} color="#f59e0b" />
+            <span>{t('kpis.crews_kpis')}</span>
           </h3>
-          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '240px', overflowY: 'auto' }}>
             {data?.crews && data.crews.length > 0 ? (
               data.crews.map((c) => (
                 <div
                   key={c.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-background/80 border border-border/50 text-xs"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.6rem 0.85rem',
+                    background: 'var(--bg-surface-elevated)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.85rem',
+                  }}
                 >
                   <div>
-                    <div className="font-medium text-foreground">{c.name}</div>
-                    <div className="text-[10px] text-muted-foreground">{c.foremanName}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{c.name}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{c.foremanName}</div>
                   </div>
                   <span
-                    className={`font-bold px-2 py-0.5 rounded-lg ${
-                      c.efficiencyPct >= 100
-                        ? 'bg-emerald-500/10 text-emerald-500'
-                        : c.efficiencyPct >= 80
-                        ? 'bg-amber-500/10 text-amber-500'
-                        : 'bg-red-500/10 text-red-500'
-                    }`}
+                    className="badge"
+                    style={{
+                      fontWeight: 700,
+                      background: c.efficiencyPct >= 100 ? 'rgba(16, 185, 129, 0.15)' : c.efficiencyPct >= 80 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      color: c.efficiencyPct >= 100 ? '#10b981' : c.efficiencyPct >= 80 ? '#f59e0b' : '#ef4444',
+                    }}
                   >
                     {c.efficiencyPct}%
                   </span>
                 </div>
               ))
             ) : (
-              <div className="text-xs text-muted-foreground text-center py-4">
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>
                 {t('common.no_data')}
               </div>
             )}
@@ -308,32 +350,46 @@ export const CascadingKpisPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Detailed Evaluation Table */}
-      <div className="bg-card/60 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm overflow-hidden space-y-4 p-6">
-        {/* Table Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-base font-bold text-foreground">
+      {/* Detailed Evaluation Table Card */}
+      <div className="card" style={{ padding: '1.25rem', overflow: 'hidden' }}>
+        {/* Table Controls */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            marginBottom: '1.25rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>
               {t('kpis.workers_detail_title')}
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-secondary text-secondary-foreground">
+            <span className="badge badge-secondary" style={{ fontSize: '0.75rem', fontWeight: 700 }}>
               {filteredWorkers.length}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              type="text"
-              placeholder={t('common.search')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-3 py-1.5 bg-background border border-border rounded-xl text-xs focus:ring-2 focus:ring-amber-500/30"
-            />
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.6rem' }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                placeholder={t('common.search')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field"
+                style={{ paddingInlineStart: '2rem', width: '180px', height: '34px', fontSize: '0.8rem' }}
+              />
+              <Search size={14} style={{ position: 'absolute', top: '10px', insetInlineStart: '8px', color: 'var(--text-dim)' }} />
+            </div>
 
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as any)}
-              className="px-3 py-1.5 bg-background border border-border rounded-xl text-xs font-medium"
+              className="input-field"
+              style={{ width: 'auto', height: '34px', fontSize: '0.8rem' }}
             >
               <option value="all">{t('common.all')}</option>
               <option value="skilled">{t('kpis.filter_skilled')}</option>
@@ -343,7 +399,8 @@ export const CascadingKpisPage: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-3 py-1.5 bg-background border border-border rounded-xl text-xs font-medium"
+              className="input-field"
+              style={{ width: 'auto', height: '34px', fontSize: '0.8rem' }}
             >
               <option value="all">{t('common.all')}</option>
               <option value="excellent">{t('kpis.status_excellent')}</option>
@@ -353,78 +410,88 @@ export const CascadingKpisPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-border/60">
-          <table className="w-full text-start text-xs">
-            <thead className="bg-muted/50 border-b border-border/60 text-muted-foreground font-semibold">
-              <tr>
-                <th className="px-4 py-3 text-start">#</th>
-                <th className="px-4 py-3 text-start">{t('employees.name')}</th>
-                <th className="px-4 py-3 text-start">{t('employees.profession')}</th>
-                <th className="px-4 py-3 text-start">{t('crews.code')}</th>
-                <th className="px-4 py-3 text-start">{t('work_items.name')}</th>
-                <th className="px-4 py-3 text-center">{t('kpis.actual_executed')}</th>
-                <th className="px-4 py-3 text-center">{t('kpis.standard_target')}</th>
-                <th className="px-4 py-3 text-center">{t('kpis.efficiency_pct')}</th>
-                <th className="px-4 py-3 text-center">{t('common.status')}</th>
+        {/* Responsive Table Wrapper */}
+        <div style={{ overflowX: 'auto', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'start', fontSize: '0.85rem' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+                <th style={{ padding: '0.85rem 1rem' }}>#</th>
+                <th style={{ padding: '0.85rem 1rem' }}>{t('employees.name')}</th>
+                <th style={{ padding: '0.85rem 1rem' }}>{t('employees.profession')}</th>
+                <th style={{ padding: '0.85rem 1rem' }}>{t('crews.code')}</th>
+                <th style={{ padding: '0.85rem 1rem' }}>{t('work_items.name')}</th>
+                <th style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>{t('kpis.actual_executed')}</th>
+                <th style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>{t('kpis.standard_target')}</th>
+                <th style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>{t('kpis.efficiency_pct')}</th>
+                <th style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>{t('common.status')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40 bg-background/50">
+            <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
                     {t('common.loading')}
                   </td>
                 </tr>
               ) : filteredWorkers.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
                     {t('common.no_data')}
                   </td>
                 </tr>
               ) : (
                 filteredWorkers.map((worker, index) => (
-                  <tr key={`${worker.id}-${index}`} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-foreground">{worker.employeeName}</div>
-                      <div className="text-[10px] text-muted-foreground">
+                  <tr
+                    key={`${worker.id}-${index}`}
+                    style={{
+                      borderBottom: '1px solid var(--border-subtle)',
+                      transition: 'background var(--transition-fast)',
+                    }}
+                  >
+                    <td style={{ padding: '0.85rem 1rem', color: 'var(--text-dim)' }}>{index + 1}</td>
+                    <td style={{ padding: '0.85rem 1rem' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{worker.employeeName}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
                         {worker.roleLabel}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-foreground font-medium">
+                    <td style={{ padding: '0.85rem 1rem', color: 'var(--text-heading)', fontWeight: 500 }}>
                       {worker.profession || '-'}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-foreground">{worker.crewCode}</div>
-                      <div className="text-[10px] text-muted-foreground">{worker.foremanName}</div>
+                    <td style={{ padding: '0.85rem 1rem' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{worker.crewCode}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{worker.foremanName}</div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-foreground">{worker.workItemName}</div>
-                      <div className="text-[10px] text-muted-foreground">{worker.stageName} • {worker.roomName}</div>
+                    <td style={{ padding: '0.85rem 1rem' }}>
+                      <div style={{ fontWeight: 500, color: 'var(--text-heading)' }}>{worker.workItemName}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{worker.stageName} • {worker.roomName}</div>
                     </td>
-                    <td className="px-4 py-3 text-center font-bold text-foreground">
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center', fontWeight: 700, color: 'var(--text-heading)' }}>
                       {worker.actualQuantity !== null ? `${worker.actualQuantity} ${worker.unit}` : (
-                        <span className="text-muted-foreground italic text-[11px]">
+                        <span style={{ color: 'var(--text-dim)', fontStyle: 'italic', fontSize: '0.75rem' }}>
                           {t('kpis.crew_average_label')}
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                       {worker.standardTarget} {worker.unit}
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex flex-col items-center gap-1">
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                         <span
-                          className="font-extrabold text-sm"
-                          style={{ color: worker.color }}
+                          style={{
+                            fontWeight: 800,
+                            fontSize: '0.95rem',
+                            color: worker.color,
+                          }}
                         >
                           {worker.efficiencyPct}%
                         </span>
-                        <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div style={{ width: '64px', height: '5px', background: 'var(--bg-surface-elevated)', borderRadius: '999px', overflow: 'hidden' }}>
                           <div
-                            className="h-full rounded-full transition-all"
                             style={{
+                              height: '100%',
+                              borderRadius: '999px',
                               width: `${Math.min(worker.efficiencyPct, 100)}%`,
                               backgroundColor: worker.color,
                             }}
@@ -432,13 +499,15 @@ export const CascadingKpisPage: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
                       <span
-                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold"
+                        className="badge"
                         style={{
-                          backgroundColor: `${worker.color}15`,
+                          backgroundColor: `${worker.color}18`,
                           color: worker.color,
-                          border: `1px solid ${worker.color}30`,
+                          border: `1px solid ${worker.color}35`,
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
                         }}
                       >
                         {worker.status === 'excellent'

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/I18nContext';
 import { crewsApi } from '../../api/crews.api';
 import type { CrewTemplate } from '../../api/crews.api';
+import { Modal } from '../../components/Modal';
+import { Settings, Plus, Users, Loader2 } from 'lucide-react';
 
 export const CrewTemplatesPage: React.FC = () => {
   const { t } = useI18n();
@@ -61,69 +63,116 @@ export const CrewTemplatesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-sm">
+      <div
+        className="card"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          padding: '1.25rem 1.5rem',
+        }}
+      >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-500">⚙️</span>
-            {t('crews.templates_title')}
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-heading)' }}>
+            <Settings size={26} color="#f59e0b" />
+            <span>{t('crews.templates_title')}</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
             {t('crews.templates_subtitle')}
           </p>
         </div>
 
         <button
+          type="button"
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-amber-500 text-black font-semibold rounded-xl text-sm hover:bg-amber-400 transition-all shadow-sm flex items-center gap-2"
+          className="btn btn-primary"
+          style={{ gap: '0.5rem', background: '#f59e0b', color: '#000' }}
         >
-          ➕ {t('crews.add_template')}
+          <Plus size={16} />
+          <span>{t('crews.add_template')}</span>
         </button>
       </div>
 
-      {/* Grid of Templates */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Grid of Templates (Responsive: 1 col on mobile, 2 on tablet, 3 on desktop) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '1.25rem',
+        }}
+      >
         {loading ? (
-          <div className="col-span-3 text-center py-12 text-muted-foreground">
-            {t('common.loading')}
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
+            <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto 0.5rem' }} />
+            <p>{t('common.loading')}</p>
           </div>
         ) : templates.length === 0 ? (
-          <div className="col-span-3 text-center py-12 text-muted-foreground">
-            {t('common.no_data')}
+          <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+            <Users size={36} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
+            <p>{t('common.no_data')}</p>
           </div>
         ) : (
           templates.map((tpl) => (
             <div
               key={tpl.id}
-              className="bg-card/70 backdrop-blur-md rounded-2xl border border-border/60 p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-500/40 transition-all"
+              className="card"
+              style={{
+                padding: '1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '1.25rem',
+              }}
             >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-muted text-foreground">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span className="badge badge-secondary" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.75rem' }}>
                     {tpl.code}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-500">
+                  <span
+                    className="badge"
+                    style={{
+                      background: tpl.is_active ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      color: tpl.is_active ? '#10b981' : '#ef4444',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                    }}
+                  >
                     {tpl.is_active ? t('common.active') : t('common.inactive')}
                   </span>
                 </div>
 
-                <h3 className="text-base font-bold text-foreground">{tpl.name}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>
+                  {tpl.name}
+                </h3>
 
-                <p className="text-xs text-muted-foreground line-clamp-2">
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
                   {tpl.description || t('crews.no_description')}
                 </p>
               </div>
 
               {/* Composition badge */}
-              <div className="pt-4 border-t border-border/50 grid grid-cols-2 gap-3 text-center text-xs">
-                <div className="bg-background/80 p-2.5 rounded-xl border border-border/40">
-                  <div className="text-[11px] text-muted-foreground">{t('crews.skilled_count')}</div>
-                  <div className="text-lg font-bold text-foreground mt-0.5">{tpl.skilled_count}</div>
+              <div
+                style={{
+                  paddingTop: '1rem',
+                  borderTop: '1px solid var(--border-subtle)',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '0.75rem',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ background: 'var(--bg-surface-elevated)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{t('crews.skilled_count')}</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-heading)', marginTop: '0.2rem' }}>{tpl.skilled_count}</div>
                 </div>
-                <div className="bg-background/80 p-2.5 rounded-xl border border-border/40">
-                  <div className="text-[11px] text-muted-foreground">{t('crews.unskilled_count')}</div>
-                  <div className="text-lg font-bold text-amber-500 mt-0.5">{tpl.unskilled_count}</div>
+                <div style={{ background: 'var(--bg-surface-elevated)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{t('crews.unskilled_count')}</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f59e0b', marginTop: '0.2rem' }}>{tpl.unskilled_count}</div>
                 </div>
               </div>
             </div>
@@ -131,124 +180,108 @@ export const CrewTemplatesPage: React.FC = () => {
         )}
       </div>
 
-      {/* Modal for creating template */}
-      {showModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center p-4 overflow-y-auto"
-          style={{ alignItems: 'flex-start' }}
-        >
-          <div className="bg-card w-full max-w-lg rounded-2xl border border-border shadow-2xl p-6 space-y-5 my-8">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h2 className="text-lg font-bold text-foreground">
-                {t('crews.create_template_modal_title')}
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-muted-foreground hover:text-foreground text-sm"
-              >
-                ✕
-              </button>
+      {/* Modal for creating template using standardized Modal component */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={t('crews.create_template_modal_title')}
+        icon={<Settings size={22} color="#f59e0b" />}
+        maxWidth="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="btn btn-secondary"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              form="create-template-form"
+              className="btn btn-primary"
+              style={{ background: '#f59e0b', color: '#000' }}
+              disabled={submitting}
+            >
+              {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{submitting ? t('common.saving') : t('common.save')}</span>
+            </button>
+          </div>
+        }
+      >
+        <form id="create-template-form" onSubmit={handleCreate}>
+          {error && (
+            <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">{t('crews.template_name')} *</label>
+              <input
+                type="text"
+                required
+                placeholder="Template Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="input-field"
+              />
             </div>
 
-            {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs">
-                {error}
-              </div>
-            )}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">{t('crews.template_code')} *</label>
+              <input
+                type="text"
+                required
+                placeholder="CREW_01"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="input-field"
+                style={{ fontFamily: 'monospace' }}
+              />
+            </div>
 
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">
-                  {t('crews.template_name')} *
-                </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t('crews.skilled_count')}</label>
                 <input
-                  type="text"
+                  type="number"
+                  min="1"
+                  max="10"
                   required
-                  placeholder="Template Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-amber-500/30"
+                  value={skilledCount}
+                  onChange={(e) => setSkilledCount(parseInt(e.target.value) || 1)}
+                  className="input-field"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">
-                  {t('crews.template_code')} *
-                </label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t('crews.unskilled_count')}</label>
                 <input
-                  type="text"
+                  type="number"
+                  min="0"
+                  max="10"
                   required
-                  placeholder="CREW_01"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-xl text-sm font-mono focus:ring-2 focus:ring-amber-500/30"
+                  value={unskilledCount}
+                  onChange={(e) => setUnskilledCount(parseInt(e.target.value) || 0)}
+                  className="input-field"
                 />
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">
-                    {t('crews.skilled_count')}
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    required
-                    value={skilledCount}
-                    onChange={(e) => setSkilledCount(parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-amber-500/30"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">
-                    {t('crews.unskilled_count')}
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    required
-                    value={unskilledCount}
-                    onChange={(e) => setUnskilledCount(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-amber-500/30"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">
-                  {t('common.notes')}
-                </label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-amber-500/30"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-muted text-foreground rounded-xl text-sm hover:bg-muted/80 font-medium"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 bg-amber-500 text-black font-semibold rounded-xl text-sm hover:bg-amber-400 disabled:opacity-50"
-                >
-                  {submitting ? t('common.saving') : t('common.save')}
-                </button>
-              </div>
-            </form>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">{t('common.notes')}</label>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="input-field"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 };
