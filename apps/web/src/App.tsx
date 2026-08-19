@@ -10,6 +10,7 @@ import { EmployeesPage } from './pages/employees/EmployeesPage';
 import { TransfersPage } from './pages/transfers/TransfersPage';
 import { ProductionPage } from './pages/production/ProductionPage';
 import { DailyEntryPage } from './pages/foreman/DailyEntryPage';
+import { ForemanArchivePage } from './pages/foreman/ForemanArchivePage';
 import { ControlCardsPage } from './pages/control-cards/ControlCardsPage';
 import { DailyReportPage } from './pages/reports/DailyReportPage';
 import { BoqProgressPage } from './pages/boq/BoqProgressPage';
@@ -51,6 +52,7 @@ export const App: React.FC = () => {
         <Route path="/transfers" element={<TransfersPage />} />
         <Route path="/production" element={<ProductionPage />} />
         <Route path="/daily-entry" element={<DailyEntryPage />} />
+        <Route path="/foreman/archive" element={<ForemanArchivePage />} />
         <Route path="/boq" element={<BoqProgressPage />} />
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/costs" element={<CostsPage />} />

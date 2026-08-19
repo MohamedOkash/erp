@@ -35,6 +35,11 @@ export interface ProductionRecord {
   actualQuantity: number;
   targetQuantity: number;
   teamCode?: string | null;
+  crewId?: string | null;
+  crewCode?: string | null;
+  crewType?: string | null;
+  foremanId?: string | null;
+  engineerNotes?: string | null;
   supervisorId: string;
   supervisorName?: string;
   engineerId?: string | null;
@@ -55,6 +60,8 @@ export interface ProductionQuery {
   toDate?: string;
   branchId?: string;
   projectId?: string;
+  crewId?: string;
+  workAreaId?: string;
   status?: string;
   search?: string;
 }
@@ -165,6 +172,11 @@ export function normalizeProductionRecord(r: any): ProductionRecord {
     actualQuantity: Number(r.actual_quantity ?? r.actualQuantity ?? 0),
     targetQuantity: Number(r.target_quantity ?? r.targetQuantity ?? 0),
     teamCode: r.team_code || r.teamCode || null,
+    crewId: r.crew_id || r.crewId || null,
+    crewCode: r.crew_code || r.crewCode || null,
+    crewType: r.crew_type || r.crewType || null,
+    foremanId: r.foreman_id || r.foremanId || null,
+    engineerNotes: r.engineer_notes || r.engineerNotes || null,
     supervisorId: r.supervisor_id || r.supervisorId || '',
     supervisorName: r.supervisor_name || r.supervisorName || '—',
     engineerId: r.engineer_id || r.engineerId || null,
@@ -188,6 +200,8 @@ export const productionApi = {
     if (query.toDate) params.append('toDate', query.toDate);
     if (query.branchId) params.append('branchId', query.branchId);
     if (query.projectId) params.append('projectId', query.projectId);
+    if (query.crewId) params.append('crewId', query.crewId);
+    if (query.workAreaId) params.append('workAreaId', query.workAreaId);
     if (query.status && query.status !== 'all') params.append('status', query.status);
 
     const qs = params.toString();
@@ -209,7 +223,8 @@ export const productionApi = {
           r.projectName?.toLowerCase().includes(s) ||
           r.workItemName?.toLowerCase().includes(s) ||
           r.supervisorName?.toLowerCase().includes(s) ||
-          r.teamCode?.toLowerCase().includes(s),
+          r.teamCode?.toLowerCase().includes(s) ||
+          r.crewCode?.toLowerCase().includes(s),
       );
     }
 

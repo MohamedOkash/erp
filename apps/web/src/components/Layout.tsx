@@ -70,6 +70,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     color: '#f59e0b',
     links: [
       { to: '/daily-entry', key: 'daily_entry', defaultLabel: 'الإدخال اليومي للطواقم (Foreman)', icon: <HardHat size={18} /> },
+      { to: '/foreman/archive', key: 'foreman_archive', defaultLabel: 'أرشيف اليوميات الميدانية', icon: <FileText size={18} /> },
       { to: '/production', key: 'production', defaultLabel: 'الإنتاجية اليومية والمراحل', icon: <Layers size={18} /> },
       { to: '/boq', key: 'boq', defaultLabel: 'المقايسة وتقدم التنفيذ', icon: <FileSpreadsheet size={18} /> },
       { to: '/work-areas', key: 'work_areas', defaultLabel: 'مناطق العمل والمباني', icon: <Network size={18} /> },
