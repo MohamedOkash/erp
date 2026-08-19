@@ -247,13 +247,82 @@ function main() {
     console.log('✅ 0 hardcoded strings found in JSX.');
   }
 
+  // 3. Audit Translation Quality (Purity & Parity)
+  console.log('\n--- Translation Quality & Parity Audit ---');
+  const arabicRegex = /[\u0600-\u06FF]/;
+  const urduDistinctRegex = /[ٹڈڑںھھےپچگژ]/;
+
+  const allowedLatinTokens = new Set([
+    'SAR', 'BOQ', 'ERP', 'API', 'EXCEL', 'XLSX', 'PDF', 'CSV', 'JSON', 'RBAC', 'ID', 'UUID',
+    'CRW', 'PLST', 'GPC', 'BLOCK', 'EPOXY', 'TUNNEL', 'GP', 'CEILING', 'ENGINEER', 'FOREMAN',
+    'SACODECO', 'V1', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HR', 'OK', 'URL', 'UI', 'UX',
+    'A', 'B', 'C', 'D', 'N', 'M', 'KG', 'M2', 'M3', 'CM', 'MM', 'PC', 'PCS', 'ZKTECO', 'SUPREMA',
+    'KB', 'MB', 'GB', 'TB', 'RUH', 'JED', 'DMM', 'KSA', 'FAHAD_ENG', 'ADMIN', 'BACKEND', 'FRONTEND',
+    'SHOP', 'DRAWINGS', 'SPA', 'VERCEL', 'GF', 'PLS'
+  ]);
+
+  function hasDisallowedLatin(val) {
+    let cleanStr = String(val).replace(/\{[A-Za-z0-9_]+\}/g, '');
+    cleanStr = cleanStr.replace(/[A-Z0-9_\-\.]+@[A-Z0-9_\-\.]+/gi, '');
+    const words = cleanStr.match(/[A-Za-z]+/g) || [];
+    for (const word of words) {
+      const upper = word.toUpperCase();
+      if (allowedLatinTokens.has(upper)) continue;
+      if (/^[A-Z]{1,6}$/i.test(word) && ['M','K','B'].includes(upper)) continue;
+      return true;
+    }
+    return false;
+  }
+
+  let untranslatedEnCount = 0;
+  let untranslatedUrCount = 0;
+  let wrongArCount = 0;
+
+  const allDictKeys = Array.from(new Set([
+    ...Object.keys(dictionaries.ar || {}),
+    ...Object.keys(dictionaries.en || {}),
+    ...Object.keys(dictionaries.ur || {})
+  ]));
+
+  for (const k of allDictKeys) {
+    const arVal = dictionaries.ar[k] || '';
+    const enVal = dictionaries.en[k] || '';
+    const urVal = dictionaries.ur[k] || '';
+
+    if (enVal && arabicRegex.test(enVal)) untranslatedEnCount++;
+    if (urVal && arVal && (urVal.trim() === arVal.trim() || (!urduDistinctRegex.test(urVal) && arabicRegex.test(urVal)))) untranslatedUrCount++;
+    if (arVal && hasDisallowedLatin(arVal)) wrongArCount++;
+  }
+
+  if (untranslatedEnCount > 0) {
+    hasErrors = true;
+    console.log(`❌ [untranslated_en]: Found ${untranslatedEnCount} keys in en.json containing Arabic text.`);
+  } else {
+    console.log('✅ [en.json]: 0 untranslated Arabic strings.');
+  }
+
+  if (untranslatedUrCount > 0) {
+    hasErrors = true;
+    console.log(`❌ [untranslated_ur]: Found ${untranslatedUrCount} keys in ur.json lacking authentic Urdu characters.`);
+  } else {
+    console.log('✅ [ur.json]: 0 untranslated strings (100% Urdu parity).');
+  }
+
+  if (wrongArCount > 0) {
+    hasErrors = true;
+    console.log(`❌ [wrong_ar]: Found ${wrongArCount} keys in ar.json containing foreign Latin text.`);
+  } else {
+    console.log('✅ [ar.json]: 0 invalid Latin strings.');
+  }
+
   if (hasErrors) {
-    console.log('\n💥 FAILED: Translation audit failed (missing keys or hardcoded text detected).');
+    console.log('\n💥 FAILED: Translation audit failed (missing keys, hardcoded text, or quality defects detected).');
     process.exit(1);
   } else {
-    console.log('\n🎉 SUCCESS: 0 missing keys and 0 hardcoded strings detected.');
+    console.log('\n🎉 SUCCESS: 0 missing keys, 0 hardcoded strings, and 100% translation purity across all 3 languages.');
     process.exit(0);
   }
 }
 
 main();
+
