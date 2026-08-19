@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { workAreasApi } from '../../api/work-areas.api';
-import type { WorkArea, CreateWorkAreaPayload, UpdateWorkAreaPayload } from '../../api/work-areas.api';
+import type { WorkArea, CreateWorkAreaPayload, UpdateWorkAreaPayload, RoomBoqItem } from '../../api/work-areas.api';
 import { projectsApi } from '../../api/projects.api';
 import type { Project } from '../../api/projects.api';
+import { workItemsApi } from '../../api/work-items.api';
+import type { WorkItem } from '../../api/work-items.api';
 import { Modal } from '../../components/Modal';
 import { useI18n } from '../../i18n/I18nContext';
 import {
@@ -19,6 +21,7 @@ import {
   ChevronDown,
   Layers,
   Hash,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 interface TreeNode extends WorkArea {
@@ -30,6 +33,7 @@ export const WorkAreasPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [areas, setAreas] = useState<WorkArea[]>([]);
+  const [workItems, setWorkItems] = useState<WorkItem[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,11 +49,22 @@ export const WorkAreasPage: React.FC = () => {
   const [formName, setFormName] = useState('');
   const [formCode, setFormCode] = useState('');
   const [formSortOrder, setFormSortOrder] = useState<number>(0);
+  const [formAreaM2, setFormAreaM2] = useState<number | ''>('');
   const [isSaving, setIsSaving] = useState(false);
 
   // Delete State
   const [deletingArea, setDeletingArea] = useState<WorkArea | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Room BOQ Modal State
+  const [selectedRoomForBoq, setSelectedRoomForBoq] = useState<WorkArea | null>(null);
+  const [roomBoqItems, setRoomBoqItems] = useState<RoomBoqItem[]>([]);
+  const [loadingBoq, setLoadingBoq] = useState(false);
+  const [boqWorkItemId, setBoqWorkItemId] = useState('');
+  const [boqStageId, setBoqStageId] = useState('');
+  const [boqQuantity, setBoqQuantity] = useState<number | ''>('');
+  const [boqRate, setBoqRate] = useState<number | ''>('');
+  const [savingBoq, setSavingBoq] = useState(false);
 
   const loadProjects = async () => {
     try {
@@ -58,6 +73,15 @@ export const WorkAreasPage: React.FC = () => {
       if (res.data.length > 0 && !selectedProject) {
         setSelectedProject(res.data[0].id);
       }
+    } catch {
+      // ignore
+    }
+  };
+
+  const loadWorkItems = async () => {
+    try {
+      const res = await workItemsApi.list({ limit: 100 });
+      setWorkItems(res.data);
     } catch {
       // ignore
     }
@@ -82,6 +106,7 @@ export const WorkAreasPage: React.FC = () => {
 
   useEffect(() => {
     loadProjects();
+    loadWorkItems();
   }, []);
 
   useEffect(() => {
@@ -124,6 +149,7 @@ export const WorkAreasPage: React.FC = () => {
     setFormName('');
     setFormCode('');
     setFormSortOrder(areas.length);
+    setFormAreaM2('');
     setIsModalOpen(true);
   };
 
@@ -133,6 +159,7 @@ export const WorkAreasPage: React.FC = () => {
     setFormName('');
     setFormCode('');
     setFormSortOrder(0);
+    setFormAreaM2('');
     setIsModalOpen(true);
   };
 
@@ -142,6 +169,7 @@ export const WorkAreasPage: React.FC = () => {
     setFormName(area.name);
     setFormCode(area.code || '');
     setFormSortOrder(area.sortOrder || 0);
+    setFormAreaM2(area.area_m2 || area.areaM2 || '');
     setIsModalOpen(true);
   };
 
@@ -158,6 +186,7 @@ export const WorkAreasPage: React.FC = () => {
           code: formCode.trim() || undefined,
           parentId: modalParentId,
           sortOrder: Number(formSortOrder) || 0,
+          areaM2: formAreaM2 !== '' ? Number(formAreaM2) : undefined,
         };
         await workAreasApi.update(editingArea.id, payload);
         setSuccessMsg(t('auto.تم_تحديث_منطقة_العمل_بنجاح_496db5'));
@@ -168,6 +197,7 @@ export const WorkAreasPage: React.FC = () => {
           name: formName.trim(),
           code: formCode.trim() || undefined,
           sortOrder: Number(formSortOrder) || 0,
+          areaM2: formAreaM2 !== '' ? Number(formAreaM2) : undefined,
         };
         await workAreasApi.create(payload);
         setSuccessMsg(t('auto.تم_إنشاء_منطقة_العمل_بنجاح_3fe2c1'));
@@ -186,8 +216,8 @@ export const WorkAreasPage: React.FC = () => {
     if (!deletingArea) return;
     setIsDeleting(true);
     try {
-      await workAreasApi.remove(deletingArea.id);
-      setSuccessMsg(`تم حذف المنطقة "${deletingArea.name}" بنجاح`);
+      await workAreasApi.delete(deletingArea.id);
+      setSuccessMsg(t('auto.تم_حذف_المنطقة_بنجاح', { defaultValue: 'Deleted successfully' }));
       setDeletingArea(null);
       loadAreas();
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -198,10 +228,70 @@ export const WorkAreasPage: React.FC = () => {
     }
   };
 
+  const openRoomBoq = async (area: WorkArea) => {
+    setSelectedRoomForBoq(area);
+    setLoadingBoq(true);
+    setBoqWorkItemId('');
+    setBoqStageId('');
+    setBoqQuantity('');
+    setBoqRate('');
+    try {
+      const res = await workAreasApi.getRoomBoq(area.id);
+      setRoomBoqItems(res.data || []);
+    } catch {
+      setRoomBoqItems([]);
+    } finally {
+      setLoadingBoq(false);
+    }
+  };
+
+  const handleSaveRoomBoq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRoomForBoq || !boqWorkItemId || boqQuantity === '') return;
+
+    setSavingBoq(true);
+    try {
+      await workAreasApi.saveRoomBoq(selectedRoomForBoq.id, {
+        projectId: selectedProject,
+        workItemId: boqWorkItemId,
+        workItemStageId: boqStageId || undefined,
+        totalQuantity: Number(boqQuantity),
+        unitRate: boqRate !== '' ? Number(boqRate) : 0,
+      });
+      const res = await workAreasApi.getRoomBoq(selectedRoomForBoq.id);
+      setRoomBoqItems(res.data || []);
+      setBoqWorkItemId('');
+      setBoqStageId('');
+      setBoqQuantity('');
+      setBoqRate('');
+    } catch (err: any) {
+      alert(err.message || 'Error');
+    } finally {
+      setSavingBoq(false);
+    }
+  };
+
+  const handleDeleteRoomBoq = async (itemId: string) => {
+    if (!selectedRoomForBoq) return;
+    try {
+      await workAreasApi.deleteRoomBoq(selectedRoomForBoq.id, itemId);
+      setRoomBoqItems((prev) => prev.filter((item) => item.id !== itemId));
+    } catch (err: any) {
+      alert(err.message || 'Error');
+    }
+  };
+
+  // Selected work item stages
+  const activeWorkItemStages = useMemo(() => {
+    const item = workItems.find((w) => w.id === boqWorkItemId);
+    return item?.stages || [];
+  }, [boqWorkItemId, workItems]);
+
   // Recursive Tree Node Renderer
   const renderTreeNode = (node: TreeNode, depth: number = 0) => {
     const hasChildren = node.children && node.children.length > 0;
     const isCollapsed = !!collapsedNodes[node.id];
+    const areaM2Val = node.area_m2 || node.areaM2;
 
     return (
       <div key={node.id} style={{ display: 'flex', flexDirection: 'column' }}>
@@ -213,14 +303,14 @@ export const WorkAreasPage: React.FC = () => {
             padding: '0.75rem 1rem',
             marginRight: `${depth * 28}px`,
             background: depth === 0 ? 'rgba(30, 41, 59, 0.7)' : 'rgba(15, 23, 42, 0.4)',
-            borderRight: depth === 0 ? '3px solid #3b82f6' : '2px dashed rgba(59, 130, 246, 0.4)',
+            borderRight: depth === 0 ? '3px solid #f59e0b' : '2px dashed rgba(245, 158, 11, 0.4)',
             borderBottom: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-sm)',
             marginBottom: '0.35rem',
             transition: 'background var(--transition-fast)',
           }}
         >
-          {/* Left Side: Name + Code + Level */}
+          {/* Left Side: Name + Code + Level + Area M2 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             {hasChildren ? (
               <button
@@ -242,7 +332,7 @@ export const WorkAreasPage: React.FC = () => {
               <div style={{ width: '16px' }} />
             )}
 
-            <Layers size={17} color={depth === 0 ? '#60a5fa' : '#38bdf8'} />
+            <Layers size={17} color={depth === 0 ? '#f59e0b' : '#fbbf24'} />
 
             <div>
               <span style={{ fontWeight: 600, color: 'var(--text-heading)', fontSize: '0.95rem' }}>
@@ -257,14 +347,27 @@ export const WorkAreasPage: React.FC = () => {
                   <span>{node.code}</span>
                 </span>
               )}
+              {areaM2Val ? (
+                <span
+                  className="badge"
+                  style={{
+                    marginRight: '0.5rem',
+                    fontSize: '0.7rem',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: '#f59e0b',
+                  }}
+                >
+                  {areaM2Val} m²
+                </span>
+              ) : null}
             </div>
 
             <span
               className="badge"
               style={{
                 fontSize: '0.65rem',
-                background: depth === 0 ? 'rgba(37, 99, 235, 0.2)' : 'rgba(14, 165, 233, 0.15)',
-                color: depth === 0 ? '#60a5fa' : '#38bdf8',
+                background: depth === 0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)',
+                color: '#f59e0b',
               }}
             >
               {t('auto.مستوى_5b42b1')}{node.level ?? depth + 1}
@@ -273,6 +376,17 @@ export const WorkAreasPage: React.FC = () => {
 
           {/* Right Side: Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <button
+              type="button"
+              onClick={() => openRoomBoq(node)}
+              className="btn btn-secondary"
+              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', gap: '0.3rem', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}
+              title={t('boq.room_boq_title')}
+            >
+              <FileSpreadsheet size={13} />
+              <span>BOQ</span>
+            </button>
+
             <button
               type="button"
               onClick={() => openCreateChild(node)}
@@ -336,7 +450,7 @@ export const WorkAreasPage: React.FC = () => {
       >
         <div>
           <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Network size={28} color="#60a5fa" />
+            <Network size={28} color="#f59e0b" />
             <span>{t('operations.work_areas_title')}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
@@ -347,105 +461,62 @@ export const WorkAreasPage: React.FC = () => {
         <button
           onClick={openCreateRoot}
           className="btn btn-primary"
-          style={{ gap: '0.5rem' }}
-          disabled={!selectedProject}
+          style={{ gap: '0.5rem', background: '#f59e0b', color: '#000' }}
         >
-          <Plus size={18} />
+          <Plus size={16} />
           <span>{t('operations.add_zone')}</span>
         </button>
       </div>
 
-      {/* Alerts */}
-      {successMsg && (
-        <div
-          style={{
-            padding: '0.75rem 1rem',
-            background: 'var(--status-success-bg)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            color: '#6ee7b7',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.25rem',
-          }}
+      {/* Project Selector Bar */}
+      <div
+        className="card"
+        style={{
+          padding: '1rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}
+      >
+        <label style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-heading)' }}>
+          {t('common.all_projects')}
+        </label>
+        <select
+          className="input-field"
+          style={{ width: 'auto', minWidth: '250px' }}
+          value={selectedProject}
+          onChange={(e) => setSelectedProject(e.target.value)}
         >
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name} {p.code ? `(${p.code})` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Messages */}
+      {error && (
+        <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>
+          <AlertCircle size={18} />
+          <span>{error}</span>
+        </div>
+      )}
+      {successMsg && (
+        <div className="alert alert-success" style={{ marginBottom: '1rem' }}>
           <CheckCircle2 size={18} />
           <span>{successMsg}</span>
         </div>
       )}
 
-      {error && (
-        <div
-          style={{
-            padding: '0.75rem 1rem',
-            background: 'var(--status-danger-bg)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            color: '#fca5a5',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.25rem',
-          }}
-        >
-          <AlertCircle size={18} />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Project Selector Bar */}
-      <div
-        className="glass-card"
-        style={{
-          padding: '1.25rem',
-          marginBottom: '1.5rem',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '280px' }}>
-          <FolderTree size={20} color="#60a5fa" />
-          <div style={{ flex: 1 }}>
-            <label className="form-label" style={{ marginBottom: '0.25rem' }}>
-              {t('auto.المشروع_الميداني_المستهدف_458674')}</label>
-            <select
-              className="input-field"
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.code || t('auto.بدون_كود_519c6b')}) - {p.branchName || t('auto.فرع_184029')}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          {t('auto.إجمالي_المناطق_المسجلة_بالمشرو_58b775')}<strong style={{ color: 'var(--text-heading)' }}>{areas.length}</strong>
-        </div>
-      </div>
-
       {/* Tree Container */}
-      <div className="glass-card" style={{ padding: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <h3 style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Network size={18} color="#60a5fa" />
-            <span>{t('auto.الشجرة_الهرمية_لمواقع_العمل_235d47')}</span>
-          </h3>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-            {t('auto.يمكنك_طي_وفرز_المستويات_بالضغط_783b78')}</span>
-        </div>
-
+      <div className="card" style={{ padding: '1.25rem' }}>
         {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '3rem' }}>
-            <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto', color: '#60a5fa' }} />
-            <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>{t('auto.جاري_بناء_الشجرة_الهرمية_6559dd')}</p>
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+            <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto 0.5rem' }} />
+            <p>{t('common.loading')}</p>
           </div>
         ) : areaTree.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
@@ -454,7 +525,7 @@ export const WorkAreasPage: React.FC = () => {
             <button
               onClick={openCreateRoot}
               className="btn btn-primary"
-              style={{ marginTop: '1rem', gap: '0.5rem' }}
+              style={{ marginTop: '1rem', gap: '0.5rem', background: '#f59e0b', color: '#000' }}
             >
               <Plus size={16} />
               <span>{t('auto.إضافة_أول_منطقة_رئيسية_مثل_مبن_291783')}</span>
@@ -467,7 +538,7 @@ export const WorkAreasPage: React.FC = () => {
         )}
       </div>
 
-      {/* Create / Edit Modal */}
+      {/* Create / Edit Area Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -478,7 +549,7 @@ export const WorkAreasPage: React.FC = () => {
             ? t('auto.إضافة_منطقة_فرعية_تابعة_10271f')
             : t('auto.إضافة_منطقة_رئيسية_75ff10')
         }
-        icon={<Network size={22} color="#60a5fa" />}
+        icon={<Network size={22} color="#f59e0b" />}
         maxWidth="md"
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', width: '100%' }}>
@@ -488,10 +559,17 @@ export const WorkAreasPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isSaving}
             >
-              {t('auto.إلغاء_5987b3')}</button>
-            <button type="submit" form="work-area-form" className="btn btn-primary" disabled={isSaving}>
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              form="work-area-form"
+              className="btn btn-primary"
+              style={{ background: '#f59e0b', color: '#000' }}
+              disabled={isSaving}
+            >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{editingArea ? t('auto.حفظ_التعديلات_4ff313') : t('auto.إنشاء_المنطقة_718885')}</span>
+              <span>{editingArea ? t('common.save') : t('common.create')}</span>
             </button>
           </div>
         }
@@ -517,26 +595,41 @@ export const WorkAreasPage: React.FC = () => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">{t('auto.اسم_منطقة_العمل_448fb6')}</label>
+              <label className="form-label">{t('auto.اسم_منطقة_العمل_448fb6')} *</label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder={t('auto.مثال_الدور_الأرضي_الجناح_الشرق_7e69e0')}
+                placeholder="Zone / Floor / Room"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
               />
             </div>
 
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">{t('auto.كود_المنطقة_118931')}</label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder={t('auto.مثال_GF_E1_7a7cf4')}
-                value={formCode}
-                onChange={(e) => setFormCode(e.target.value)}
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t('auto.كود_المنطقة_118931')}</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="R-101"
+                  value={formCode}
+                  onChange={(e) => setFormCode(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t('operations.room_area_m2')}</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="input-field"
+                  placeholder="24.5"
+                  value={formAreaM2}
+                  onChange={(e) => setFormAreaM2(e.target.value === '' ? '' : Number(e.target.value))}
+                />
+              </div>
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
@@ -553,6 +646,182 @@ export const WorkAreasPage: React.FC = () => {
         </form>
       </Modal>
 
+      {/* Room BOQ Modal */}
+      {selectedRoomForBoq && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center p-4 overflow-y-auto"
+          style={{ alignItems: 'flex-start' }}
+        >
+          <div className="bg-card w-full max-w-2xl rounded-2xl border border-border shadow-2xl p-6 space-y-5 my-8">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div>
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <span>📑</span> {t('boq.room_boq_title')}: {selectedRoomForBoq.name}
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {selectedRoomForBoq.area_m2 ? `${selectedRoomForBoq.area_m2} m²` : 'BOQ'}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedRoomForBoq(null)}
+                className="text-muted-foreground hover:text-foreground text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Existing BOQ Table */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-foreground">{t('boq.registered_items')}</h3>
+              <div className="overflow-x-auto rounded-xl border border-border/60">
+                <table className="w-full text-start text-xs">
+                  <thead className="bg-muted/50 text-muted-foreground font-semibold border-b border-border/60">
+                    <tr>
+                      <th className="px-3 py-2 text-start">{t('work_items.name')}</th>
+                      <th className="px-3 py-2 text-start">{t('work_items.stage')}</th>
+                      <th className="px-3 py-2 text-center">{t('common.quantity')}</th>
+                      <th className="px-3 py-2 text-center">{t('common.price')}</th>
+                      <th className="px-3 py-2 text-center">{t('common.actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40 bg-background/50">
+                    {loadingBoq ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-4 text-muted-foreground">
+                          {t('common.loading')}
+                        </td>
+                      </tr>
+                    ) : roomBoqItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-4 text-muted-foreground">
+                          {t('common.no_data')}
+                        </td>
+                      </tr>
+                    ) : (
+                      roomBoqItems.map((item) => (
+                        <tr key={item.id}>
+                          <td className="px-3 py-2 font-medium text-foreground">{item.work_item_name}</td>
+                          <td className="px-3 py-2 text-muted-foreground">{item.stage_name || 'All Stages'}</td>
+                          <td className="px-3 py-2 text-center font-bold text-foreground">{item.total_quantity} {item.unit_symbol || 'm²'}</td>
+                          <td className="px-3 py-2 text-center text-foreground">{item.unit_rate} SAR</td>
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteRoomBoq(item.id)}
+                              className="text-red-500 hover:text-red-400 p-1"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Add Item to Room BOQ Form */}
+            <form onSubmit={handleSaveRoomBoq} className="p-4 bg-muted/30 border border-border/60 rounded-xl space-y-3">
+              <h3 className="text-xs font-bold text-foreground">{t('boq.add_item_to_room')}</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {t('work_items.item')} *
+                  </label>
+                  <select
+                    required
+                    value={boqWorkItemId}
+                    onChange={(e) => {
+                      setBoqWorkItemId(e.target.value);
+                      setBoqStageId('');
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-xs"
+                  >
+                    <option value="">{t('common.select')}</option>
+                    {workItems.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name} ({w.code || ''})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {t('work_items.stage')}
+                  </label>
+                  <select
+                    value={boqStageId}
+                    onChange={(e) => setBoqStageId(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-xs"
+                  >
+                    <option value="">{t('boq.all_stages')}</option>
+                    {activeWorkItemStages.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.percentage}%)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {t('common.quantity')} *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0.01"
+                    step="0.01"
+                    placeholder="45.00"
+                    value={boqQuantity}
+                    onChange={(e) => setBoqQuantity(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {t('common.price')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="40.00"
+                    value={boqRate}
+                    onChange={(e) => setBoqRate(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={savingBoq}
+                  className="px-4 py-1.5 bg-amber-500 text-black font-semibold rounded-lg text-xs hover:bg-amber-400 transition-all disabled:opacity-50"
+                >
+                  {savingBoq ? t('common.saving') : t('common.add')}
+                </button>
+              </div>
+            </form>
+
+            <div className="flex justify-end border-t border-border pt-3">
+              <button
+                type="button"
+                onClick={() => setSelectedRoomForBoq(null)}
+                className="px-4 py-2 bg-muted text-foreground rounded-xl text-xs font-semibold hover:bg-muted/80"
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={!!deletingArea}
@@ -568,7 +837,8 @@ export const WorkAreasPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeleting}
             >
-              {t('auto.إلغاء_5987b3')}</button>
+              {t('common.cancel')}
+            </button>
             <button
               type="button"
               onClick={handleConfirmDelete}
@@ -577,13 +847,15 @@ export const WorkAreasPage: React.FC = () => {
               disabled={isDeleting}
             >
               {isDeleting ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{t('auto.تأكيد_الحذف_4af57e')}</span>
+              <span>{t('common.delete')}</span>
             </button>
           </div>
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_478ebe')}<strong style={{ color: 'var(--text-heading)' }}>"{deletingArea?.name}"</strong>{t('auto.سيتم_حذف_أو_فصل_كافة_المناطق_ا_351564')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_حذف_ا_478ebe')}{' '}
+          <strong style={{ color: 'var(--text-heading)' }}>"{deletingArea?.name || ''}"</strong>?
+        </p>
       </Modal>
     </div>
   );

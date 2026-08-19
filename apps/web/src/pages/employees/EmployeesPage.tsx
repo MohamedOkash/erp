@@ -3,6 +3,8 @@ import { employeesApi } from '../../api/employees.api';
 import type { Employee, CreateEmployeePayload, UpdateEmployeePayload } from '../../api/employees.api';
 import { branchesApi } from '../../api/branches.api';
 import type { Branch } from '../../api/branches.api';
+import { projectsApi } from '../../api/projects.api';
+import type { Project } from '../../api/projects.api';
 import { EmployeeFormModal } from './EmployeeFormModal';
 import { XlsxImportModal } from './XlsxImportModal';
 import { Modal } from '../../components/Modal';
@@ -25,8 +27,7 @@ import {
   Briefcase,
   Layers,
   X,
-  DollarSign,
-  ShieldCheck,
+  Hash,
   HardHat,
 } from 'lucide-react';
 
@@ -34,6 +35,7 @@ export const EmployeesPage: React.FC = () => {
   const { t } = useI18n();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
@@ -46,6 +48,7 @@ export const EmployeesPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedProfession, setSelectedProfession] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
 
   // Quick Identity Lookup
@@ -63,13 +66,27 @@ export const EmployeesPage: React.FC = () => {
   const [deactivatingEmployee, setDeactivatingEmployee] = useState<Employee | null>(null);
   const [isDeactivating, setIsDeactivating] = useState(false);
 
-  // View Assignments State
+  // View Assignments & Project Codes State
   const [viewingAssignmentsEmp, setViewingAssignmentsEmp] = useState<Employee | null>(null);
+  const [viewingProjectCodesEmp, setViewingProjectCodesEmp] = useState<Employee | null>(null);
+  const [projectCodesList, setProjectCodesList] = useState<any[]>([]);
+  const [selectedProjectForCode, setSelectedProjectForCode] = useState('');
+  const [customProjectCode, setCustomProjectCode] = useState('');
+  const [savingProjectCode, setSavingProjectCode] = useState(false);
 
   const loadBranches = async () => {
     try {
       const res = await branchesApi.list({ isActive: true });
       setBranches(res.data);
+    } catch {
+      // ignore
+    }
+  };
+
+  const loadProjects = async () => {
+    try {
+      const res = await projectsApi.list({ limit: 100 });
+      setProjects(res.data || []);
     } catch {
       // ignore
     }
@@ -85,6 +102,7 @@ export const EmployeesPage: React.FC = () => {
         search: search.trim() || undefined,
         branchId: selectedBranch || undefined,
         role: selectedRole || undefined,
+        profession: selectedProfession || undefined,
         isActive: statusFilter === '' ? undefined : statusFilter === 'true',
       });
       setEmployees(res.data);
@@ -94,10 +112,11 @@ export const EmployeesPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, search, selectedBranch, selectedRole, statusFilter]);
+  }, [page, limit, search, selectedBranch, selectedRole, selectedProfession, statusFilter]);
 
   useEffect(() => {
     loadBranches();
+    loadProjects();
   }, []);
 
   useEffect(() => {
@@ -157,7 +176,7 @@ export const EmployeesPage: React.FC = () => {
     setIsDeactivating(true);
     try {
       await employeesApi.deactivate(deactivatingEmployee.id);
-      setSuccessMsg(`تم تعطيل / حذف الموظف "${deactivatingEmployee.name}" بنجاح`);
+      setSuccessMsg(t('auto.تم_تعطيل_الموظف_بنجاح', { defaultValue: 'Deleted successfully' }));
       setDeactivatingEmployee(null);
       loadEmployees();
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -182,137 +201,104 @@ export const EmployeesPage: React.FC = () => {
     }
   };
 
+  const openProjectCodes = async (emp: Employee) => {
+    setViewingProjectCodesEmp(emp);
+    setSelectedProjectForCode('');
+    setCustomProjectCode('');
+    try {
+      const res = await employeesApi.getProjectCodes(emp.id);
+      setProjectCodesList(res.data || []);
+    } catch {
+      setProjectCodesList([]);
+    }
+  };
+
+  const handleSaveProjectCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!viewingProjectCodesEmp || !selectedProjectForCode || !customProjectCode.trim()) return;
+
+    setSavingProjectCode(true);
+    try {
+      await employeesApi.assignProjectCode(
+        viewingProjectCodesEmp.id,
+        selectedProjectForCode,
+        customProjectCode.trim(),
+      );
+      const res = await employeesApi.getProjectCodes(viewingProjectCodesEmp.id);
+      setProjectCodesList(res.data || []);
+      setSelectedProjectForCode('');
+      setCustomProjectCode('');
+    } catch (err: any) {
+      alert(err.message || 'Error');
+    } finally {
+      setSavingProjectCode(false);
+    }
+  };
+
   const getIdentityBadge = (emp: Employee) => {
     const type = emp.identityType || 'national_id';
     switch (type) {
       case 'national_id':
-        return <span className="badge badge-primary">{t('auto.هوية_وطنية_4faf6f')}</span>;
+        return <span className="badge badge-success" style={{ fontSize: '0.7rem' }}>{t('auto.هوية_وطنية_1377ce')}</span>;
       case 'iqama':
-        return <span className="badge badge-secondary">{t('auto.إقامة_مقيم_250e80')}</span>;
+        return <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>{t('auto.إقامة_599723')}</span>;
       case 'passport':
-        return <span className="badge badge-accent">{t('auto.جواز_سفر_3efa11')}</span>;
+        return <span className="badge badge-secondary" style={{ fontSize: '0.7rem' }}>{t('auto.جواز_سفر_523f66')}</span>;
       default:
-        return <span className="badge badge-secondary">{type}</span>;
+        return null;
     }
   };
 
-  // Compute summary stats
-  const activeCount = employees.filter((e) => e.isActive).length;
-  const supervisorsCount = employees.filter((e) => e.role === 'supervisor' || e.roleType === 'supervisor').length;
-  const workersCount = employees.filter((e) => e.role === 'worker' || e.roleType === 'worker').length;
-  const avgWage =
-    employees.length > 0
-      ? Math.round(employees.reduce((acc, e) => acc + (Number(e.dailyWage) || 0), 0) / employees.length)
-      : 0;
-
-  const statsItems = [
-    {
-      label: t('auto.إجمالي_الموظفين_39fbc7'),
-      value: total,
-      helper: `${employees.length} مسجلين حالياً`,
-      icon: <Users size={22} />,
-      color: '#60a5fa',
-    },
-    {
-      label: t('auto.الموظفون_النشطون_185bc8'),
-      value: activeCount,
-      helper: `${total - activeCount} معطل أو مؤرشف`,
-      icon: <ShieldCheck size={22} />,
-      color: '#34d399',
-    },
-    {
-      label: t('auto.المشرفون_والكوادر_2b9753'),
-      value: supervisorsCount,
-      helper: `${workersCount} عمال تشغيل`,
-      icon: <HardHat size={22} />,
-      color: '#f59e0b',
-    },
-    {
-      label: t('auto.متوسط_الأجر_اليومي_239c75'),
-      value: `${avgWage} SAR`,
-      helper: t('auto.لكافة_التخصصات_والمواقع_524e26'),
-      icon: <DollarSign size={22} />,
-      color: '#a78bfa',
-    },
-  ];
-
-  const getExpiryBadge = (dateStr?: string | null) => {
-    if (!dateStr) return <span style={{ color: 'var(--text-dim)' }}>—</span>;
-    const expiry = new Date(dateStr);
-    const now = new Date();
-    const diffDays = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays <= 0) {
-      return (
-        <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', fontSize: '0.72rem' }}>
-          {t('auto.منتهية_33ddc2')}{Math.abs(diffDays)} {t('auto.يوم_مضت_4bcf17')}</span>
-      );
-    }
-    if (diffDays <= 90) {
-      return (
-        <span className="badge badge-primary" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', fontSize: '0.72rem' }}>
-          {t('auto.تنتهي_خلال_1544ea')}{diffDays} {t('auto.يوم_1864c7')}</span>
-      );
-    }
-    return (
-      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-        {dateStr.split('T')[0]}
-      </span>
-    );
-  };
-
-  const startRecord = employees.length === 0 ? 0 : (page - 1) * limit + 1;
+  const startRecord = (page - 1) * limit + 1;
   const endRecord = Math.min(page * limit, total);
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
-      {/* Top Header & Actions Bar */}
+    <div className="animate-fade-in" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      {/* Header */}
       <div
         style={{
           display: 'flex',
+          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
-          flexWrap: 'wrap',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Users size={26} color="#60a5fa" />
-            <span>{t('resources.employees_title')}</span>
+          <h1 style={{ fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Users size={28} color="#f59e0b" />
+            <span>{t('nav.links.employees')}</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            {t('nav.links.employees')}
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            {t('resources.employees_title')}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
-            type="button"
             onClick={handleExportXlsx}
-            disabled={isExporting || employees.length === 0}
+            disabled={isExporting}
             className="btn btn-secondary"
-            style={{ gap: '0.4rem' }}
+            style={{ gap: '0.5rem' }}
           >
             {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            <span>{t('common.export_excel')}</span>
+            <span>{t('auto.تصدير_Excel_547f87')}</span>
           </button>
 
           <button
-            type="button"
             onClick={() => setIsImportModalOpen(true)}
             className="btn btn-secondary"
-            style={{ gap: '0.4rem' }}
+            style={{ gap: '0.5rem' }}
           >
             <UploadCloud size={16} />
-            <span>{t('operations.import_excel')}</span>
+            <span>{t('auto.استيراد_XLSX_4f1b40')}</span>
           </button>
 
           <button
-            type="button"
             onClick={handleOpenCreate}
             className="btn btn-primary"
-            style={{ gap: '0.4rem' }}
+            style={{ gap: '0.5rem', background: '#f59e0b', color: '#000' }}
           >
             <Plus size={16} />
             <span>{t('resources.add_employee')}</span>
@@ -320,83 +306,76 @@ export const EmployeesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Summary Strip */}
-      <StatsStrip items={statsItems} isLoading={isLoading && employees.length === 0} />
+      {/* Stats Summary */}
+      <StatsStrip
+        items={[
+          { label: t('auto.إجمالي_الموظفين_العمال_20fc02'), value: total, icon: <Users size={16} /> },
+          {
+            label: t('auto.النشطون_حاليا_150f59'),
+            value: employees.filter((e) => e.isActive).length,
+            icon: <Users size={16} />,
+            color: 'success',
+          },
+          { label: t('auto.الفروع_المسجلة_44ec46'), value: branches.length, icon: <Building size={16} /> },
+        ]}
+      />
 
-      {/* Alerts */}
+      {/* Messages */}
+      {error && (
+        <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>
+          <AlertCircle size={18} />
+          <span>{error}</span>
+        </div>
+      )}
       {successMsg && (
-        <div
-          style={{
-            padding: '0.75rem 1rem',
-            background: 'var(--status-success-bg)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            color: '#6ee7b7',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.25rem',
-          }}
-        >
+        <div className="alert alert-success" style={{ marginBottom: '1rem' }}>
           <CheckCircle2 size={18} />
           <span>{successMsg}</span>
         </div>
       )}
 
-      {error && (
-        <div
-          style={{
-            padding: '0.75rem 1rem',
-            background: 'var(--status-danger-bg)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            color: '#fca5a5',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.25rem',
-          }}
-        >
-          <AlertCircle size={18} />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Quick Identity Search Box */}
+      {/* Quick Lookup Card */}
       <div
         className="glass-card"
         style={{
-          padding: '1rem 1.25rem',
+          padding: '1.25rem',
           marginBottom: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%)',
-          border: '1px solid rgba(59, 130, 246, 0.25)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
         }}
       >
-        <form onSubmit={handleIdentityLookup} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#60a5fa', fontWeight: 600, fontSize: '0.9rem' }}>
-            <CreditCard size={18} />
-            <span>{t('auto.فحص_هوية_إقامة_فوري_38f076')}</span>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-heading)', fontWeight: 600 }}>
+          <CreditCard size={18} color="#f59e0b" />
+          <span>{t('auto.استعلام_سريع_برقم_الهوية_الإ_524b01')}</span>
+        </div>
 
+        <form onSubmit={handleIdentityLookup} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <input
             type="text"
             className="input-field"
-            style={{ maxWidth: '320px', padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-            placeholder={t('auto.أدخل_رقم_الهوية_أو_الإقامة_1c04de')}
+            placeholder="10xxxxxxxx / 23xxxxxxxx"
+            style={{ flex: '1 1 300px' }}
             value={identityLookupQuery}
             onChange={(e) => setIdentityLookupQuery(e.target.value)}
           />
-
-          <button type="submit" className="btn btn-secondary" disabled={isSearchingIdentity} style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}>
-            {isSearchingIdentity ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-            <span>{t('auto.استعلام_625abd')}</span>
+          <button type="submit" className="btn btn-secondary" disabled={isSearchingIdentity} style={{ gap: '0.5rem' }}>
+            {isSearchingIdentity ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+            <span>{t('auto.استعلام_27a925')}</span>
           </button>
 
           {lookupResult && (
-            <div className="animate-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginRight: 'auto' }}>
-              <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>
-                {t('auto.و_جد_6dcdee')}{lookupResult.name} ({lookupResult.roleType}) - {lookupResult.branchName || t('auto.فرع_184029')}
-              </span>
+            <div
+              className="badge badge-success animate-fade-in"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                fontSize: '0.85rem',
+              }}
+            >
+              <span>{t('auto.مطابق_2f22b7')} {lookupResult.name} ({lookupResult.roleType})</span>
               <button
                 type="button"
                 onClick={() => setLookupResult(null)}
@@ -416,7 +395,7 @@ export const EmployeesPage: React.FC = () => {
           padding: '1.25rem',
           marginBottom: '1.5rem',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap: '1rem',
           alignItems: 'end',
         }}
@@ -436,6 +415,32 @@ export const EmployeesPage: React.FC = () => {
               setPage(1);
             }}
           />
+        </div>
+
+        <div className="form-group" style={{ margin: 0 }}>
+          <label className="form-label">
+            <Briefcase size={14} color="#f59e0b" />
+            <span>{t('employees.profession')}</span>
+          </label>
+          <select
+            className="input-field"
+            value={selectedProfession}
+            onChange={(e) => {
+              setSelectedProfession(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('common.all')}</option>
+            <option value="Plasterer">Plasterer</option>
+            <option value="Tiler">Tiler</option>
+            <option value="Painter">Painter</option>
+            <option value="Gypsum Board">Gypsum Board</option>
+            <option value="Carpenter">Carpenter</option>
+            <option value="Steel Fixer">Steel Fixer</option>
+            <option value="Plumber">Plumber</option>
+            <option value="Electrician">Electrician</option>
+            <option value="Helper">Helper</option>
+          </select>
         </div>
 
         <div className="form-group" style={{ margin: 0 }}>
@@ -462,7 +467,7 @@ export const EmployeesPage: React.FC = () => {
 
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">
-            <Briefcase size={14} />
+            <HardHat size={14} />
             <span>{t('auto.الدور_الوظيفي_358574')}</span>
           </label>
           <select
@@ -500,7 +505,7 @@ export const EmployeesPage: React.FC = () => {
 
       {/* Employees Table */}
       {isLoading && employees.length === 0 ? (
-        <TableSkeleton rows={6} columns={8} />
+        <TableSkeleton rows={6} columns={9} />
       ) : (
         <div
           className={`glass-card table-loading-overlay ${isLoading ? 'loading-soft' : ''}`}
@@ -511,10 +516,10 @@ export const EmployeesPage: React.FC = () => {
               <thead>
                 <tr style={{ background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <th style={{ padding: '1rem' }}>{t('auto.الاسم_الكود_20cd46')}</th>
+                  <th style={{ padding: '1rem' }}>{t('employees.profession')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الوثيقة_رقم_الهوية_21e36e')}</th>
-                  <th style={{ padding: '1rem' }}>{t('auto.صلاحية_الإقامة_الهوية_39a3f4')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الفرع_الأساسي_5b1823')}</th>
-                  <th style={{ padding: '1rem' }}>{t('auto.الدور_59a3bd')}</th>
+                  <th style={{ padding: '1rem' }}>{t('employees.hourly_rate')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الأجر_اليومي_14bd29')}</th>
                   <th style={{ padding: '1rem' }}>{t('auto.الحالة_252d72')}</th>
                   <th style={{ padding: '1rem', textAlign: 'center' }}>{t('auto.الإجراءات_3259ef')}</th>
@@ -523,8 +528,9 @@ export const EmployeesPage: React.FC = () => {
               <tbody>
                 {employees.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      {t('auto.لا_يوجد_موظفون_مطابقون_لمعايير_41cbd3')}</td>
+                    <td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      {t('auto.لا_يوجد_موظفون_مطابقون_لمعايير_41cbd3')}
+                    </td>
                   </tr>
                 ) : (
                   employees.map((emp) => (
@@ -536,10 +542,15 @@ export const EmployeesPage: React.FC = () => {
                       }}
                     >
                       <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1rem' }}>{emp.name}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem' }}>{emp.name}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                          {emp.code || t('auto.بدون_كود_519c6b')} {emp.phone ? `• ${emp.phone}` : ''}
+                          {emp.companyEmployeeId || emp.code || 'EMP'} {emp.phone ? `• ${emp.phone}` : ''}
                         </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span className="badge badge-secondary" style={{ color: '#f59e0b', fontWeight: 600 }}>
+                          {emp.profession || 'Craftsman'}
+                        </span>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
@@ -549,31 +560,39 @@ export const EmployeesPage: React.FC = () => {
                           </span>
                         </div>
                       </td>
-                      <td style={{ padding: '1rem' }}>
-                        {getExpiryBadge(emp.identityExpiryDate)}
-                      </td>
                       <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-                        {emp.branchName || t('auto.غير_محدد_1567b8')}
+                        {emp.branchName || '—'}
                       </td>
-                      <td style={{ padding: '1rem' }}>
-                        <span className="badge badge-secondary" style={{ textTransform: 'capitalize' }}>
-                          {emp.roleType || emp.role}
-                        </span>
+                      <td style={{ padding: '1rem', fontWeight: 700, color: '#f59e0b' }}>
+                        {emp.hourlyRate || emp.hourly_rate || Math.round(((emp.dailyWage || 0) / 8.0) * 100) / 100}{' '}
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>SAR/hr</span>
                       </td>
                       <td style={{ padding: '1rem', fontWeight: 600 }}>
                         {emp.dailyWage}{' '}
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{t('auto.SAR_يوم_65be80')}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>SAR</span>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         {emp.isActive ? (
-                          <span className="badge badge-success">{t('auto.نشط_185349')}</span>
+                          <span className="badge badge-success">{t('common.active')}</span>
                         ) : (
                           <span className="badge badge-accent" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>
-                            {t('auto.معطل_2f1ba8')}</span>
+                            {t('common.inactive')}
+                          </span>
                         )}
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          {/* Project Codes Button */}
+                          <button
+                            type="button"
+                            onClick={() => openProjectCodes(emp)}
+                            className="btn btn-secondary"
+                            style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', color: '#f59e0b' }}
+                            title="Project IDs"
+                          >
+                            <Hash size={14} />
+                          </button>
+
                           {emp.assignments && emp.assignments.length > 0 && (
                             <button
                               type="button"
@@ -590,7 +609,7 @@ export const EmployeesPage: React.FC = () => {
                             onClick={() => handleOpenEdit(emp)}
                             className="btn btn-secondary"
                             style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)' }}
-                            title={t('auto.تعديل_الموظف_4f28c8')}
+                            title={t('common.edit')}
                           >
                             <Edit2 size={14} />
                           </button>
@@ -604,7 +623,7 @@ export const EmployeesPage: React.FC = () => {
                               color: '#f87171',
                               borderColor: 'rgba(239, 68, 68, 0.25)',
                             }}
-                            title={t('auto.تعطيل_حذف_560bfd')}
+                            title={t('common.delete')}
                           >
                             <Trash2 size={14} />
                           </button>
@@ -630,7 +649,8 @@ export const EmployeesPage: React.FC = () => {
             }}
           >
             <span>
-              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.موظف_عامل_4750aa')}</span>
+              {t('auto.عرض_18221e')}{startRecord}–{endRecord} {t('auto.من_إجمالي_4d6b95')}{total} {t('auto.موظف_عامل_4750aa')}
+            </span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn btn-secondary"
@@ -638,7 +658,8 @@ export const EmployeesPage: React.FC = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                {t('auto.السابق_252abb')}</button>
+                {t('auto.السابق_252abb')}
+              </button>
               <span style={{ padding: '0.35rem 0.5rem' }}>{t('auto.صفحة_2ea914')}{page}</span>
               <button
                 className="btn btn-secondary"
@@ -646,7 +667,8 @@ export const EmployeesPage: React.FC = () => {
                 disabled={page * limit >= total}
                 onClick={() => setPage(page + 1)}
               >
-                {t('auto.التالي_252ecf')}</button>
+                {t('auto.التالي_252ecf')}
+              </button>
             </div>
           </div>
         </div>
@@ -673,6 +695,113 @@ export const EmployeesPage: React.FC = () => {
         }}
       />
 
+      {/* Per-Project Codes Modal */}
+      {viewingProjectCodesEmp && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center p-4 overflow-y-auto"
+          style={{ alignItems: 'flex-start' }}
+        >
+          <div className="bg-card w-full max-w-lg rounded-2xl border border-border shadow-2xl p-6 space-y-5 my-8">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div>
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Hash size={20} color="#f59e0b" />
+                  <span>{t('employees.project_employee_id')}</span>
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {viewingProjectCodesEmp.name} ({viewingProjectCodesEmp.companyEmployeeId || viewingProjectCodesEmp.code})
+                </p>
+              </div>
+              <button
+                onClick={() => setViewingProjectCodesEmp(null)}
+                className="text-muted-foreground hover:text-foreground text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* List of current project codes */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-foreground">{t('common.all_projects')}</h3>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {projectCodesList.length === 0 ? (
+                  <div className="text-xs text-muted-foreground py-3 text-center bg-muted/20 rounded-xl">
+                    {t('common.no_data')}
+                  </div>
+                ) : (
+                  projectCodesList.map((pc) => (
+                    <div
+                      key={pc.id}
+                      className="flex items-center justify-between p-2.5 bg-background/80 border border-border/60 rounded-xl text-xs"
+                    >
+                      <span className="font-semibold text-foreground">{pc.project_name}</span>
+                      <span className="font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500">
+                        {pc.project_employee_code}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Add / Update Project Code Form */}
+            <form onSubmit={handleSaveProjectCode} className="p-4 bg-muted/30 border border-border/60 rounded-xl space-y-3">
+              <h3 className="text-xs font-bold text-foreground">{t('common.add')}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">{t('common.all_projects')} *</label>
+                  <select
+                    required
+                    value={selectedProjectForCode}
+                    onChange={(e) => setSelectedProjectForCode(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-xs"
+                  >
+                    <option value="">{t('common.select')}</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">{t('employees.project_employee_id')} *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="PRJ-01-EMP-10"
+                    value={customProjectCode}
+                    onChange={(e) => setCustomProjectCode(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  disabled={savingProjectCode}
+                  className="px-4 py-1.5 bg-amber-500 text-black font-semibold rounded-lg text-xs hover:bg-amber-400 disabled:opacity-50"
+                >
+                  {savingProjectCode ? t('common.saving') : t('common.save')}
+                </button>
+              </div>
+            </form>
+
+            <div className="flex justify-end border-t border-border pt-3">
+              <button
+                type="button"
+                onClick={() => setViewingProjectCodesEmp(null)}
+                className="px-4 py-2 bg-muted text-foreground rounded-xl text-xs font-semibold hover:bg-muted/80"
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Deactivate Confirmation Modal */}
       <Modal
         isOpen={!!deactivatingEmployee}
@@ -688,7 +817,8 @@ export const EmployeesPage: React.FC = () => {
               className="btn btn-secondary"
               disabled={isDeactivating}
             >
-              {t('auto.إلغاء_5987b3')}</button>
+              {t('auto.إلغاء_5987b3')}
+            </button>
             <button
               type="button"
               onClick={handleConfirmDeactivate}
@@ -703,19 +833,22 @@ export const EmployeesPage: React.FC = () => {
         }
       >
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-          {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_66e6c4')}<strong style={{ color: 'var(--text-heading)' }}>"{deactivatingEmployee?.name}"</strong>{t('auto.Soft_Delete_يمكن_إعادة_تنشيطه__21ff8f')}</p>
+          {t('auto.هل_أنت_متأكد_من_رغبتك_في_تعطيل_66e6c4')}{' '}
+          <strong style={{ color: 'var(--text-heading)' }}>"{deactivatingEmployee?.name}"</strong>?
+        </p>
       </Modal>
 
       {/* View Assignments Modal */}
       <Modal
         isOpen={!!viewingAssignmentsEmp}
         onClose={() => setViewingAssignmentsEmp(null)}
-        title={`تعيينات: ${viewingAssignmentsEmp?.name || ''}`}
-        icon={<Layers size={22} color="#60a5fa" />}
+        title={`Assignments: ${viewingAssignmentsEmp?.name || ''}`}
+        icon={<Layers size={22} color="#f59e0b" />}
         maxWidth="md"
         footer={
           <button type="button" onClick={() => setViewingAssignmentsEmp(null)} className="btn btn-secondary">
-            {t('auto.إغلاق_59834d')}</button>
+            {t('auto.إغلاق_59834d')}
+          </button>
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -736,17 +869,18 @@ export const EmployeesPage: React.FC = () => {
                 <div>
                   <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{a.projectName}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                    {t('auto.كود_2f1031')}{a.projectCode} {t('auto.دور_263c7e')}{a.assignedRole}
+                    Code: {a.projectCode} • Role: {a.assignedRole}
                   </div>
                 </div>
                 <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>
-                  {t('auto.منذ_1851af')}{a.startDate ? a.startDate.split('T')[0] : '—'}
+                  {a.startDate ? a.startDate.split('T')[0] : '—'}
                 </span>
               </div>
             ))
           ) : (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, textAlign: 'center', padding: '1rem' }}>
-              {t('auto.لا_توجد_تعيينات_حالية_لهذا_الم_63ad6b')}</p>
+              {t('auto.لا_توجد_تعيينات_حالية_لهذا_الم_63ad6b')}
+            </p>
           )}
         </div>
       </Modal>

@@ -60,6 +60,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     color: '#60a5fa',
     links: [
       { to: '/dashboard', key: 'dashboard', defaultLabel: 'لوحة التحكم والقيادة', icon: <LayoutDashboard size={18} /> },
+      { to: '/kpis', key: 'kpis', defaultLabel: 'مؤشرات الأداء المتسلسلة (Cascading KPIs)', icon: <Award size={18} /> },
       { to: '/control-cards', key: 'control_cards', defaultLabel: 'بطاقات التحكم والبحثية', icon: <FileSpreadsheet size={18} /> },
       { to: '/daily-report', key: 'daily_report', defaultLabel: 'التقرير اليومي الموحد', icon: <BarChart3 size={18} /> },
     ],
@@ -76,6 +77,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
       { to: '/production', key: 'production', defaultLabel: 'الإنتاجية اليومية والمراحل', icon: <Layers size={18} /> },
       { to: '/boq', key: 'boq', defaultLabel: 'المقايسة وتقدم التنفيذ', icon: <FileSpreadsheet size={18} /> },
       { to: '/work-areas', key: 'work_areas', defaultLabel: 'مناطق العمل والمباني', icon: <Network size={18} /> },
+      { to: '/crew-templates', key: 'crew_templates', defaultLabel: 'قوالب الأطقم الميدانية', icon: <Users size={18} /> },
       { to: '/attendance', key: 'attendance', defaultLabel: 'الحضور والانصراف والدوام', icon: <CalendarCheck size={18} /> },
       { to: '/transfers', key: 'transfers', defaultLabel: 'نقل وترحيل الكوادر', icon: <ArrowLeftRight size={18} /> },
     ],

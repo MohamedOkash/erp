@@ -2,14 +2,28 @@ import { apiClient } from './client';
 
 export interface CrewMember {
   employeeId: string;
-  role: 'skilled_1' | 'skilled_2' | 'helper';
+  role: 'skilled_1' | 'skilled_2' | 'helper' | 'maallem' | 'labor';
   joinedAt?: string;
   employeeName?: string;
+  profession?: string;
+  hourlyRate?: number;
   companyEmployeeId?: string;
   projectEmployeeId?: string;
   identityNumber?: string;
   roleTitle?: string;
   dailyWage?: number;
+}
+
+export interface CrewTemplate {
+  id: string;
+  company_id: string;
+  name: string;
+  code: string;
+  skilled_count: number;
+  unskilled_count: number;
+  description?: string | null;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface Crew {
@@ -18,7 +32,14 @@ export interface Crew {
   project_id: string;
   project_name?: string;
   code: string;
-  crew_type: 'A' | 'B';
+  crew_type?: string;
+  crew_number?: string;
+  template_id?: string | null;
+  template_name?: string | null;
+  skilled_count?: number;
+  unskilled_count?: number;
+  foreman_id?: string | null;
+  foreman_name?: string | null;
   work_area_id?: string | null;
   work_area_name?: string | null;
   is_active: boolean;
@@ -29,7 +50,7 @@ export interface Crew {
 
 export interface QueryCrewParams {
   projectId?: string;
-  crewType?: 'A' | 'B';
+  crewType?: string;
   isActive?: boolean;
   workAreaId?: string;
 }
@@ -37,16 +58,35 @@ export interface QueryCrewParams {
 export interface CreateCrewPayload {
   projectId: string;
   code: string;
-  crewType: 'A' | 'B';
+  crewType?: string;
+  templateId?: string;
+  foremanId?: string;
+  crewNumber?: string;
   workAreaId?: string;
   isActive?: boolean;
   members?: Array<{
     employeeId: string;
-    role: 'skilled_1' | 'skilled_2' | 'helper';
+    role: 'skilled_1' | 'skilled_2' | 'helper' | 'maallem' | 'labor';
   }>;
 }
 
+export interface CreateCrewTemplatePayload {
+  name: string;
+  code: string;
+  skilledCount: number;
+  unskilledCount: number;
+  description?: string;
+}
+
 export const crewsApi = {
+  getTemplates: async (): Promise<{ data: CrewTemplate[] }> => {
+    return apiClient.get<{ data: CrewTemplate[] }>('/crews/templates');
+  },
+
+  createTemplate: async (payload: CreateCrewTemplatePayload): Promise<CrewTemplate> => {
+    return apiClient.post<CrewTemplate>('/crews/templates', payload);
+  },
+
   getCrews: async (params?: QueryCrewParams): Promise<{ data: Crew[] }> => {
     const q = new URLSearchParams();
     if (params?.projectId) q.append('projectId', params.projectId);

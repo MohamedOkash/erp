@@ -24,6 +24,9 @@ export interface Employee {
   phone?: string | null;
   roleType: string;
   role?: string;
+  profession?: string | null;
+  hourlyRate?: number | null;
+  hourly_rate?: number | null;
   primaryBranchId?: string | null;
   branchId?: string | null;
   branchName?: string | null;
@@ -31,6 +34,12 @@ export interface Employee {
   hireDate?: string | null;
   isActive: boolean;
   assignments?: EmployeeAssignment[];
+  projectCodes?: Array<{
+    id: string;
+    project_id: string;
+    project_name: string;
+    project_employee_code: string;
+  }>;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -38,6 +47,8 @@ export interface Employee {
 export interface EmployeeQuery {
   branchId?: string;
   role?: string;
+  profession?: string;
+  projectId?: string;
   search?: string;
   identityNumber?: string;
   code?: string;
@@ -62,9 +73,13 @@ export interface CreateEmployeePayload {
   identityExpiryDate?: string;
   nationality?: string;
   roleType: string;
+  profession?: string;
+  hourlyRate?: number;
   dailyWage?: number;
   primaryBranchId?: string;
   code?: string;
+  companyEmployeeId?: string;
+  projectEmployeeId?: string;
   phone?: string;
   isActive?: boolean;
 }
@@ -77,9 +92,13 @@ export interface UpdateEmployeePayload {
   identityExpiryDate?: string;
   nationality?: string;
   roleType?: string;
+  profession?: string;
+  hourlyRate?: number;
   dailyWage?: number;
   primaryBranchId?: string;
   code?: string;
+  companyEmployeeId?: string;
+  projectEmployeeId?: string;
   phone?: string;
   isActive?: boolean;
 }
@@ -193,6 +212,14 @@ export const employeesApi = {
     document.body.removeChild(a);
   },
 
+  async assignProjectCode(id: string, projectId: string, projectEmployeeCode: string): Promise<any> {
+    return apiClient.post(`/employees/${id}/project-code`, { projectId, projectEmployeeCode });
+  },
+
+  async getProjectCodes(id: string): Promise<{ data: any[] }> {
+    return apiClient.get<{ data: any[] }>(`/employees/${id}/project-codes`);
+  },
+
   // Aliases for compatibility
   async getEmployees(query: EmployeeQuery = {}): Promise<EmployeeListResponse> {
     return this.list(query);
@@ -213,3 +240,4 @@ export const employeesApi = {
     return this.deactivate(id);
   },
 };
+

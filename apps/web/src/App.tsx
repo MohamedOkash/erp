@@ -26,6 +26,8 @@ import { SettingsPage } from './pages/settings/SettingsPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { RbacMatrixPage } from './pages/rbac/RbacMatrixPage';
 import { UsersPage } from './pages/users/UsersPage';
+import { CascadingKpisPage } from './pages/kpis/CascadingKpisPage';
+import { CrewTemplatesPage } from './pages/crews/CrewTemplatesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 
@@ -46,10 +48,12 @@ export const App: React.FC = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/control-cards" element={<ControlCardsPage />} />
         <Route path="/daily-report" element={<DailyReportPage />} />
+        <Route path="/kpis" element={<CascadingKpisPage />} />
         <Route path="/branches" element={<BranchesPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/work-items" element={<WorkItemsPage />} />
         <Route path="/work-areas" element={<WorkAreasPage />} />
+        <Route path="/crew-templates" element={<CrewTemplatesPage />} />
         <Route path="/employees" element={<EmployeesPage />} />
         <Route path="/transfers" element={<TransfersPage />} />
         <Route path="/production" element={<ProductionPage />} />

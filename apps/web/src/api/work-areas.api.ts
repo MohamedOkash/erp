@@ -12,10 +12,31 @@ export interface WorkArea {
   level: number;
   path?: string;
   sortOrder: number;
+  area_m2?: number | null;
+  areaM2?: number | null;
   isActive: boolean;
   children?: WorkArea[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface RoomBoqItem {
+  id: string;
+  company_id: string;
+  project_id: string;
+  work_area_id: string;
+  work_item_id: string;
+  work_item_name?: string;
+  work_item_code?: string;
+  work_item_stage_id?: string | null;
+  stage_name?: string | null;
+  total_quantity: number;
+  unit_rate: number;
+  unit_id?: string | null;
+  unit_symbol?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface WorkAreaQuery {
@@ -41,6 +62,7 @@ export interface CreateWorkAreaPayload {
   name: string;
   code?: string;
   sortOrder?: number;
+  areaM2?: number;
   isActive?: boolean;
 }
 
@@ -49,7 +71,18 @@ export interface UpdateWorkAreaPayload {
   code?: string;
   parentId?: string | null;
   sortOrder?: number;
+  areaM2?: number;
   isActive?: boolean;
+}
+
+export interface SaveRoomBoqPayload {
+  projectId: string;
+  workItemId: string;
+  workItemStageId?: string;
+  totalQuantity: number;
+  unitRate?: number;
+  unitId?: string;
+  notes?: string;
 }
 
 export const workAreasApi = {
@@ -63,23 +96,7 @@ export const workAreasApi = {
     if (query.limit) params.append('limit', String(query.limit));
 
     const qs = params.toString();
-    const res = await apiClient.get<any>(`/work-areas${qs ? `?${qs}` : ''}`);
-    if (Array.isArray(res)) {
-      return {
-        data: res,
-        total: res.length,
-        page: 1,
-        limit: res.length,
-        totalPages: 1,
-      };
-    }
-    return {
-      data: res.data || [],
-      total: res.total !== undefined ? res.total : (res.data ? res.data.length : 0),
-      page: res.page || 1,
-      limit: res.limit || 50,
-      totalPages: res.totalPages || 1,
-    };
+    return apiClient.get<WorkAreaListResponse>(`/work-areas${qs ? `?${qs}` : ''}`);
   },
 
   async getById(id: string): Promise<WorkArea> {
@@ -94,7 +111,19 @@ export const workAreasApi = {
     return apiClient.patch<WorkArea>(`/work-areas/${id}`, payload);
   },
 
-  async remove(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/work-areas/${id}`);
+  },
+
+  async getRoomBoq(id: string): Promise<{ data: RoomBoqItem[] }> {
+    return apiClient.get<{ data: RoomBoqItem[] }>(`/work-areas/${id}/room-boq`);
+  },
+
+  async saveRoomBoq(id: string, payload: SaveRoomBoqPayload): Promise<RoomBoqItem> {
+    return apiClient.post<RoomBoqItem>(`/work-areas/${id}/room-boq`, payload);
+  },
+
+  async deleteRoomBoq(id: string, itemId: string): Promise<{ success: boolean }> {
+    return apiClient.delete<{ success: boolean }>(`/work-areas/${id}/room-boq/${itemId}`);
   },
 };
