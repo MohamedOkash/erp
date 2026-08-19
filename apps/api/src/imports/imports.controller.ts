@@ -60,6 +60,32 @@ export class ImportsController {
   }
 
   /**
+   * Upload & stage Work Items catalog XLSX file
+   * Route: POST /api/v1/imports/work-items/upload
+   */
+  @Post('work-items/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadWorkItems(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.importsService.uploadWorkItemsXlsx(user.companyId, file);
+  }
+
+  /**
+   * Upload & stage Room BOQ XLSX file
+   * Route: POST /api/v1/imports/room-boq/upload
+   */
+  @Post('room-boq/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadRoomBoq(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.importsService.uploadRoomBoqXlsx(user.companyId, file);
+  }
+
+  /**
    * Upload & stage attendance XLSX file
    * Route: POST /api/v1/imports/attendance/upload
    */

@@ -62,6 +62,34 @@ export class ImportsService {
         ].includes(headerVal)
       ) {
         colMap['nationalId'] = colNumber;
+      } else if (
+        [
+          'company_employee_id',
+          'الرقم الوظيفي',
+          'رقم وظيفي',
+          'employee_id',
+          'employeeid',
+          'company_emp_id',
+          'الرقم الوظيفي العام',
+          'كود الموظف',
+        ].includes(headerVal)
+      ) {
+        colMap['companyEmployeeId'] = colNumber;
+      } else if (
+        [
+          'project_employee_id',
+          'رقم المشروع الوظيفي',
+          'كود المشروع',
+          'project_emp_id',
+        ].includes(headerVal)
+      ) {
+        colMap['projectEmployeeId'] = colNumber;
+      } else if (
+        ['role', 'المهنة', 'الوظيفة', 'المسمى الوظيفي', 'دور', 'roletype'].includes(
+          headerVal,
+        )
+      ) {
+        colMap['role'] = colNumber;
       } else if (['phone', 'هاتف', 'موبايل', 'تليفون', 'mobile'].includes(headerVal)) {
         colMap['phone'] = colNumber;
       } else if (
@@ -89,16 +117,20 @@ export class ImportsService {
         if (b.code) branchMap.set(b.code.trim().toLowerCase(), b.id);
       }
 
-      // 2. Fetch existing national IDs to detect DB duplicates
+      // 2. Fetch existing national IDs & company employee IDs to detect DB duplicates
       const existingRes = await client.query(
-        `SELECT identity_number AS national_id FROM employees WHERE company_id = $1`,
+        `SELECT identity_number AS national_id, company_employee_id FROM employees WHERE company_id = $1`,
         [companyId],
       );
       const dbNationalIds = new Set<string>(
-        existingRes.rows.map((r) => r.national_id.trim()),
+        existingRes.rows.map((r) => r.national_id ? r.national_id.trim() : ''),
+      );
+      const dbCompanyEmpIds = new Set<string>(
+        existingRes.rows.map((r) => r.company_employee_id ? r.company_employee_id.trim() : '').filter(Boolean),
       );
 
       const seenFileNationalIds = new Set<string>();
+      const seenFileCompanyEmpIds = new Set<string>();
       const parsedRows: StagingRowResponse[] = [];
       const rowDbRecords: any[] = [];
 
@@ -110,6 +142,15 @@ export class ImportsService {
         const nationalIdVal = colMap['nationalId']
           ? row.getCell(colMap['nationalId']).text?.trim()
           : null;
+        const companyEmpIdVal = colMap['companyEmployeeId']
+          ? row.getCell(colMap['companyEmployeeId']).text?.trim()
+          : null;
+        const projectEmpIdVal = colMap['projectEmployeeId']
+          ? row.getCell(colMap['projectEmployeeId']).text?.trim()
+          : null;
+        const roleVal = colMap['role']
+          ? row.getCell(colMap['role']).text?.trim()
+          : 'worker';
         const phoneVal = colMap['phone'] ? row.getCell(colMap['phone']).text?.trim() : null;
         const branchVal = colMap['branch']
           ? row.getCell(colMap['branch']).text?.trim()
@@ -117,7 +158,7 @@ export class ImportsService {
         const wageVal = colMap['wage'] ? row.getCell(colMap['wage']).value : 0;
 
         // Skip completely empty rows
-        if (!nameVal && !nationalIdVal && !phoneVal && !branchVal) {
+        if (!nameVal && !nationalIdVal && !phoneVal && !branchVal && !companyEmpIdVal) {
           continue;
         }
 
@@ -136,9 +177,16 @@ export class ImportsService {
         } else if (seenFileNationalIds.has(nationalIdVal)) {
           status = 'duplicate';
           errors.push('الرقم القومي مكرر داخل نفس الملف');
+        } else if (companyEmpIdVal && dbCompanyEmpIds.has(companyEmpIdVal)) {
+          status = 'duplicate';
+          errors.push('الرقم الوظيفي العام مكرر في قاعدة البيانات');
+        } else if (companyEmpIdVal && seenFileCompanyEmpIds.has(companyEmpIdVal)) {
+          status = 'duplicate';
+          errors.push('الرقم الوظيفي العام مكرر داخل نفس الملف');
         } else {
           status = 'valid';
           seenFileNationalIds.add(nationalIdVal);
+          if (companyEmpIdVal) seenFileCompanyEmpIds.add(companyEmpIdVal);
         }
 
         let primaryBranchId: string | null = null;
@@ -146,14 +194,18 @@ export class ImportsService {
           primaryBranchId = branchMap.get(branchVal.toLowerCase()) || null;
         }
 
+        const autoCompanyEmpId = companyEmpIdVal || `EMP-${nationalIdVal ? nationalIdVal.slice(-6) : r}`;
+
         const parsedData = {
           name: nameVal || null,
           nationalId: nationalIdVal || null,
+          companyEmployeeId: autoCompanyEmpId,
+          projectEmployeeId: projectEmpIdVal || null,
           phone: phoneVal || null,
           branch: branchVal || null,
           primaryBranchId,
           wage: wageNum,
-          roleType: 'worker',
+          roleType: roleVal || 'worker',
         };
 
         const rawData: any = {};
@@ -939,17 +991,86 @@ export class ImportsService {
           const p = row.parsed_data;
           await client.query(
             `INSERT INTO employees (
-              company_id, identity_number, name, phone, role_type, primary_branch_id, daily_wage
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (company_id, identity_number) DO NOTHING`,
+              company_id, identity_number, company_employee_id, project_employee_id, name, phone, role_type, primary_branch_id, daily_wage
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (company_id, identity_number) DO UPDATE
+            SET company_employee_id = EXCLUDED.company_employee_id,
+                project_employee_id = EXCLUDED.project_employee_id,
+                name = EXCLUDED.name,
+                phone = EXCLUDED.phone,
+                role_type = EXCLUDED.role_type,
+                daily_wage = EXCLUDED.daily_wage,
+                updated_at = CURRENT_TIMESTAMP`,
             [
               companyId,
               p.nationalId,
+              p.companyEmployeeId || null,
+              p.projectEmployeeId || null,
               p.name,
               p.phone || null,
               p.roleType || 'worker',
               p.primaryBranchId || null,
               p.wage || 0,
+            ],
+          );
+        }
+      } else if (job.job_type === 'work_items') {
+        for (const row of validRows) {
+          const p = row.parsed_data;
+          const insertItemRes = await client.query(
+            `INSERT INTO work_items (
+              company_id, code, name, category, default_daily_target, default_unit_rate, unit_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (company_id, code) DO UPDATE
+            SET name = EXCLUDED.name,
+                category = EXCLUDED.category,
+                default_daily_target = EXCLUDED.default_daily_target,
+                default_unit_rate = EXCLUDED.default_unit_rate,
+                updated_at = CURRENT_TIMESTAMP
+            RETURNING id`,
+            [
+              companyId,
+              p.code,
+              p.name,
+              p.category || 'General',
+              p.dailyTarget || 20,
+              p.price || 0,
+              p.unitId || null,
+            ],
+          );
+          const workItemId = insertItemRes.rows[0]?.id;
+          if (workItemId && (p.price || p.materialPrice)) {
+            await client.query(
+              `INSERT INTO work_item_prices (
+                company_id, work_item_id, contract_price, material_price, effective_from
+              ) VALUES ($1, $2, $3, $4, CURRENT_DATE)`,
+              [companyId, workItemId, p.price || 0, p.materialPrice || 0],
+            );
+          }
+        }
+      } else if (job.job_type === 'room_boq') {
+        for (const row of validRows) {
+          const p = row.parsed_data;
+          await client.query(
+            `INSERT INTO room_boq_items (
+              company_id, project_id, work_area_id, work_item_id, work_item_stage_id, boq_quantity, unit_rate, total_amount, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (company_id, project_id, work_area_id, work_item_id) DO UPDATE
+            SET boq_quantity = EXCLUDED.boq_quantity,
+                unit_rate = EXCLUDED.unit_rate,
+                total_amount = EXCLUDED.total_amount,
+                notes = EXCLUDED.notes,
+                updated_at = CURRENT_TIMESTAMP`,
+            [
+              companyId,
+              p.projectId,
+              p.workAreaId,
+              p.workItemId,
+              p.stageId || null,
+              p.quantity || 0,
+              p.unitRate || 0,
+              (p.quantity || 0) * (p.unitRate || 0),
+              p.notes || null,
             ],
           );
         }
@@ -2168,6 +2289,336 @@ export class ImportsService {
               projectName: primaryPolicyUsed.project_name || 'السياسة العامة للمنشأة',
             }
           : null,
+        rows: parsedRows,
+      };
+    });
+  }
+
+  /**
+   * Upload & stage Work Items catalog XLSX file
+   */
+  async uploadWorkItemsXlsx(
+    companyId: string,
+    file: Express.Multer.File,
+  ): Promise<ImportUploadResponseDto> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('No file provided or file buffer is empty');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as any);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Worksheet not found in Excel file');
+    }
+
+    const headerRow = worksheet.getRow(1);
+    const colMap: { [key: string]: number } = {};
+
+    headerRow.eachCell((cell, colNumber) => {
+      const h = cell.text ? cell.text.trim().toLowerCase() : '';
+      if (!h) return;
+      if (['code', 'كود', 'رمز البند', 'رقم البند', 'item_code'].includes(h)) colMap['code'] = colNumber;
+      else if (['name', 'اسم البند', 'البند', 'وصف البند', 'item_name'].includes(h)) colMap['name'] = colNumber;
+      else if (['category', 'التصنيف', 'القسم', 'نوع البند'].includes(h)) colMap['category'] = colNumber;
+      else if (['unit', 'الوحدة', 'وحدة القياس', 'unit_name'].includes(h)) colMap['unit'] = colNumber;
+      else if (['target', 'المستهدف', 'المستهدف اليومي', 'الانتاجية اليومية', 'daily_target'].includes(h)) colMap['dailyTarget'] = colNumber;
+      else if (['price', 'السعر', 'سعر الفئة', 'سعر العقد', 'unit_rate', 'contract_price'].includes(h)) colMap['price'] = colNumber;
+      else if (['material_price', 'سعر المواد', 'خامات', 'تكلفة المواد'].includes(h)) colMap['materialPrice'] = colNumber;
+    });
+
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      const unitsRes = await client.query(`SELECT id, name, symbol FROM units WHERE company_id = $1 OR company_id IS NULL`, [companyId]);
+      const unitMap = new Map<string, string>();
+      for (const u of unitsRes.rows) {
+        if (u.name) unitMap.set(u.name.trim().toLowerCase(), u.id);
+        if (u.symbol) unitMap.set(u.symbol.trim().toLowerCase(), u.id);
+      }
+
+      const existingItemsRes = await client.query(`SELECT code FROM work_items WHERE company_id = $1`, [companyId]);
+      const dbCodes = new Set<string>(existingItemsRes.rows.map((r) => r.code ? r.code.trim().toUpperCase() : ''));
+
+      const seenFileCodes = new Set<string>();
+      const parsedRows: StagingRowResponse[] = [];
+      const rowDbRecords: any[] = [];
+      const rowCount = worksheet.rowCount;
+
+      for (let r = 2; r <= rowCount; r++) {
+        const row = worksheet.getRow(r);
+        const codeVal = colMap['code'] ? row.getCell(colMap['code']).text?.trim() : null;
+        const nameVal = colMap['name'] ? row.getCell(colMap['name']).text?.trim() : null;
+        const categoryVal = colMap['category'] ? row.getCell(colMap['category']).text?.trim() : 'General';
+        const unitVal = colMap['unit'] ? row.getCell(colMap['unit']).text?.trim() : null;
+        const targetVal = colMap['dailyTarget'] ? parseFloat(String(row.getCell(colMap['dailyTarget']).value || '20')) : 20;
+        const priceVal = colMap['price'] ? parseFloat(String(row.getCell(colMap['price']).value || '0')) : 0;
+        const materialVal = colMap['materialPrice'] ? parseFloat(String(row.getCell(colMap['materialPrice']).value || '0')) : 0;
+
+        if (!codeVal && !nameVal) continue;
+
+        const errors: string[] = [];
+        let status: 'valid' | 'duplicate' | 'invalid' = 'valid';
+
+        if (!codeVal || !nameVal) {
+          status = 'invalid';
+          if (!codeVal) errors.push('كود البند إلزامي');
+          if (!nameVal) errors.push('اسم البند إلزامي');
+        } else if (seenFileCodes.has(codeVal.toUpperCase())) {
+          status = 'duplicate';
+          errors.push('كود البند مكرر في نفس الملف');
+        } else if (dbCodes.has(codeVal.toUpperCase())) {
+          status = 'duplicate';
+          errors.push('كود البند مسجل مسبقاً في النظام');
+        } else {
+          status = 'valid';
+          seenFileCodes.add(codeVal.toUpperCase());
+        }
+
+        let unitId: string | null = null;
+        if (unitVal) {
+          unitId = unitMap.get(unitVal.toLowerCase()) || null;
+        }
+
+        const parsedData = {
+          code: codeVal,
+          name: nameVal,
+          category: categoryVal,
+          unitId,
+          unitName: unitVal,
+          dailyTarget: targetVal || 20,
+          price: priceVal || 0,
+          materialPrice: materialVal || 0,
+        };
+
+        const rawData: any = {};
+        row.eachCell((cell, colNumber) => {
+          rawData[`col_${colNumber}`] = cell.text;
+        });
+
+        parsedRows.push({
+          rowIndex: r,
+          code: parsedData.code,
+          name: parsedData.name,
+          category: parsedData.category,
+          status,
+          errors,
+        } as any);
+
+        rowDbRecords.push({
+          rowIndex: r,
+          rawData,
+          parsedData,
+          dbStatus: status === 'valid' ? 'valid' : 'error',
+          errors,
+        });
+      }
+
+      const validCount = parsedRows.filter((r: any) => r.status === 'valid').length;
+      const duplicateCount = parsedRows.filter((r: any) => r.status === 'duplicate').length;
+      const invalidCount = parsedRows.filter((r: any) => r.status === 'invalid').length;
+
+      const summary: ImportSummary = {
+        total: parsedRows.length,
+        valid: validCount,
+        duplicate: duplicateCount,
+        invalid: invalidCount,
+      };
+
+      const jobRes = await client.query(
+        `INSERT INTO import_jobs (
+          company_id, job_type, file_name, status, total_rows, valid_rows, error_rows
+        ) VALUES ($1, 'work_items', $2, 'staged', $3, $4, $5)
+        RETURNING id`,
+        [companyId, file.originalname || 'work_items.xlsx', parsedRows.length, validCount, duplicateCount + invalidCount],
+      );
+
+      const jobId = jobRes.rows[0].id;
+
+      for (const item of rowDbRecords) {
+        await client.query(
+          `INSERT INTO import_staging_rows (
+            company_id, import_job_id, row_index, raw_data, parsed_data, status
+          ) VALUES ($1, $2, $3, $4, $5, $6)`,
+          [companyId, jobId, item.rowIndex, JSON.stringify(item.rawData), JSON.stringify(item.parsedData), item.dbStatus],
+        );
+      }
+
+      return {
+        jobId,
+        summary,
+        rows: parsedRows,
+      };
+    });
+  }
+
+  /**
+   * Upload & stage Room BOQ XLSX file (Project / Zone / Floor / Room / Work Item / Quantity)
+   */
+  async uploadRoomBoqXlsx(
+    companyId: string,
+    file: Express.Multer.File,
+  ): Promise<ImportUploadResponseDto> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('No file provided or file buffer is empty');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as any);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Worksheet not found in Excel file');
+    }
+
+    const headerRow = worksheet.getRow(1);
+    const colMap: { [key: string]: number } = {};
+
+    headerRow.eachCell((cell, colNumber) => {
+      const h = cell.text ? cell.text.trim().toLowerCase() : '';
+      if (!h) return;
+      if (['project', 'المشروع', 'اسم المشروع', 'project_name', 'project_id'].includes(h)) colMap['project'] = colNumber;
+      else if (['zone', 'المنطقة', 'المبنى', 'block', 'building'].includes(h)) colMap['zone'] = colNumber;
+      else if (['floor', 'الطابق', 'الدور', 'level'].includes(h)) colMap['floor'] = colNumber;
+      else if (['room', 'الغرفة', 'الجناح', 'الفراغ', 'space'].includes(h)) colMap['room'] = colNumber;
+      else if (['work_item', 'البند', 'كود البند', 'اسم البند', 'item'].includes(h)) colMap['workItem'] = colNumber;
+      else if (['quantity', 'الكمية', 'كمية المقايسة', 'boq_qty', 'boq_quantity'].includes(h)) colMap['quantity'] = colNumber;
+      else if (['rate', 'السعر', 'فئة', 'سعر الوحدة', 'unit_rate'].includes(h)) colMap['rate'] = colNumber;
+    });
+
+    return this.db.withTenantTransaction(companyId, async (client) => {
+      const projectsRes = await client.query(`SELECT id, name, code FROM projects WHERE company_id = $1`, [companyId]);
+      const projectMap = new Map<string, string>();
+      for (const p of projectsRes.rows) {
+        if (p.name) projectMap.set(p.name.trim().toLowerCase(), p.id);
+        if (p.code) projectMap.set(p.code.trim().toLowerCase(), p.id);
+        projectMap.set(p.id, p.id);
+      }
+
+      const workItemsRes = await client.query(`SELECT id, name, code FROM work_items WHERE company_id = $1`, [companyId]);
+      const workItemMap = new Map<string, string>();
+      for (const w of workItemsRes.rows) {
+        if (w.code) workItemMap.set(w.code.trim().toLowerCase(), w.id);
+        if (w.name) workItemMap.set(w.name.trim().toLowerCase(), w.id);
+        workItemMap.set(w.id, w.id);
+      }
+
+      const workAreasRes = await client.query(`SELECT id, name, code, project_id FROM work_areas WHERE company_id = $1`, [companyId]);
+      const areaMap = new Map<string, string>();
+      for (const a of workAreasRes.rows) {
+        if (a.name) areaMap.set(`${a.project_id}|${a.name.trim().toLowerCase()}`, a.id);
+        if (a.code) areaMap.set(`${a.project_id}|${a.code.trim().toLowerCase()}`, a.id);
+        areaMap.set(a.id, a.id);
+      }
+
+      const parsedRows: StagingRowResponse[] = [];
+      const rowDbRecords: any[] = [];
+      const rowCount = worksheet.rowCount;
+
+      for (let r = 2; r <= rowCount; r++) {
+        const row = worksheet.getRow(r);
+        const projectVal = colMap['project'] ? row.getCell(colMap['project']).text?.trim() : null;
+        const zoneVal = colMap['zone'] ? row.getCell(colMap['zone']).text?.trim() : null;
+        const floorVal = colMap['floor'] ? row.getCell(colMap['floor']).text?.trim() : null;
+        const roomVal = colMap['room'] ? row.getCell(colMap['room']).text?.trim() : null;
+        const itemVal = colMap['workItem'] ? row.getCell(colMap['workItem']).text?.trim() : null;
+        const qtyVal = colMap['quantity'] ? parseFloat(String(row.getCell(colMap['quantity']).value || '0')) : 0;
+        const rateVal = colMap['rate'] ? parseFloat(String(row.getCell(colMap['rate']).value || '0')) : 0;
+
+        if (!projectVal && !itemVal && qtyVal === 0) continue;
+
+        const errors: string[] = [];
+        let status: 'valid' | 'duplicate' | 'invalid' = 'valid';
+
+        const projectId = projectVal ? projectMap.get(projectVal.toLowerCase()) || projectMap.get(projectVal) : projectsRes.rows[0]?.id;
+        if (!projectId) {
+          errors.push('المشروع غير محدد أو غير موجود');
+          status = 'invalid';
+        }
+
+        const workItemId = itemVal ? workItemMap.get(itemVal.toLowerCase()) || workItemMap.get(itemVal) : null;
+        if (!workItemId) {
+          errors.push('بند العمل غير موجود في الدليل');
+          status = 'invalid';
+        }
+
+        if (qtyVal <= 0) {
+          errors.push('الكمية يجب أن تكون أكبر من الصفر');
+          status = 'invalid';
+        }
+
+        const areaName = roomVal || floorVal || zoneVal || 'موقع عام';
+        const workAreaId = projectId ? (areaMap.get(`${projectId}|${areaName.toLowerCase()}`) || workAreasRes.rows.find((a) => a.project_id === projectId)?.id || null) : null;
+
+        if (status !== 'invalid') {
+          status = 'valid';
+        }
+
+        const parsedData = {
+          projectId,
+          workItemId,
+          workAreaId,
+          areaName,
+          quantity: qtyVal,
+          unitRate: rateVal,
+        };
+
+        const rawData: any = {};
+        row.eachCell((cell, colNumber) => {
+          rawData[`col_${colNumber}`] = cell.text;
+        });
+
+        parsedRows.push({
+          rowIndex: r,
+          project: projectVal,
+          workItem: itemVal,
+          quantity: qtyVal,
+          rate: rateVal,
+          status,
+          errors,
+        } as any);
+
+        rowDbRecords.push({
+          rowIndex: r,
+          rawData,
+          parsedData,
+          dbStatus: status === 'valid' ? 'valid' : 'error',
+          errors,
+        });
+      }
+
+      const validCount = parsedRows.filter((r: any) => r.status === 'valid').length;
+      const duplicateCount = parsedRows.filter((r: any) => r.status === 'duplicate').length;
+      const invalidCount = parsedRows.filter((r: any) => r.status === 'invalid').length;
+
+      const summary: ImportSummary = {
+        total: parsedRows.length,
+        valid: validCount,
+        duplicate: duplicateCount,
+        invalid: invalidCount,
+      };
+
+      const jobRes = await client.query(
+        `INSERT INTO import_jobs (
+          company_id, job_type, file_name, status, total_rows, valid_rows, error_rows
+        ) VALUES ($1, 'room_boq', $2, 'staged', $3, $4, $5)
+        RETURNING id`,
+        [companyId, file.originalname || 'room_boq.xlsx', parsedRows.length, validCount, duplicateCount + invalidCount],
+      );
+
+      const jobId = jobRes.rows[0].id;
+
+      for (const item of rowDbRecords) {
+        await client.query(
+          `INSERT INTO import_staging_rows (
+            company_id, import_job_id, row_index, raw_data, parsed_data, status
+          ) VALUES ($1, $2, $3, $4, $5, $6)`,
+          [companyId, jobId, item.rowIndex, JSON.stringify(item.rawData), JSON.stringify(item.parsedData), item.dbStatus],
+        );
+      }
+
+      return {
+        jobId,
+        summary,
         rows: parsedRows,
       };
     });
