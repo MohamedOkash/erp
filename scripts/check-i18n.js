@@ -251,6 +251,24 @@ function simulateRuntimeT(rawDicts, lang, key) {
   return res;
 }
 
+function auditWhitespaceInObject(obj, lang, currentPath = '', violations = []) {
+  if (typeof obj === 'string') {
+    if (obj.trim() !== obj) {
+      violations.push({ lang, type: 'value', path: currentPath, value: obj });
+    }
+  } else if (Array.isArray(obj)) {
+    obj.forEach((item, idx) => auditWhitespaceInObject(item, lang, `${currentPath}[${idx}]`, violations));
+  } else if (typeof obj === 'object' && obj !== null) {
+    for (const [key, val] of Object.entries(obj)) {
+      if (key.trim() !== key) {
+        violations.push({ lang, type: 'key', path: currentPath ? `${currentPath}.${key}` : key, key });
+      }
+      auditWhitespaceInObject(val, lang, currentPath ? `${currentPath}.${key}` : key, violations);
+    }
+  }
+  return violations;
+}
+
 function main() {
   console.log('🔍 Running Comprehensive Deterministic i18n Checker...');
 
@@ -271,6 +289,27 @@ function main() {
   }
 
   let hasErrors = false;
+
+  // 0. Strict Whitespace Guard (Keys & Values)
+  console.log('\n--- Strict Whitespace Guard (No Leading/Trailing Whitespace) ---');
+  let whitespaceViolations = [];
+  for (const lang of ['ar', 'en', 'ur']) {
+    const v = auditWhitespaceInObject(rawDictionaries[lang], lang);
+    whitespaceViolations.push(...v);
+  }
+
+  if (whitespaceViolations.length > 0) {
+    hasErrors = true;
+    console.log(`❌ Found ${whitespaceViolations.length} whitespace violations across locale files:`);
+    whitespaceViolations.slice(0, 10).forEach((v) => {
+      console.log(`   [${v.lang}.json] ${v.type} at "${v.path}" has untrimmed whitespace: "${v.key || v.value}"`);
+    });
+    if (whitespaceViolations.length > 10) {
+      console.log(`   ... and ${whitespaceViolations.length - 10} more.`);
+    }
+  } else {
+    console.log('✅ Whitespace Guard: 0 untrimmed keys or values found in [ar, en, ur].');
+  }
 
   // 1. Audit Missing Keys
   console.log('\n--- Missing Keys Audit ---');
