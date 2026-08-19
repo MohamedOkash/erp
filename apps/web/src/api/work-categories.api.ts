@@ -6,6 +6,8 @@ export interface WorkCategory {
   parent_id?: string | null;
   level: number;
   name: string;
+  name_en?: string;
+  name_ur?: string;
   code: string;
   description?: string;
   sort_order: number;

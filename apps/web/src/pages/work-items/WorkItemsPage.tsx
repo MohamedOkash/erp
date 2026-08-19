@@ -528,9 +528,9 @@ export const WorkItemsPage: React.FC = () => {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                       }}
-                      title={cat.name}
+                      title={language === 'en' ? (cat.name_en || cat.name) : language === 'ur' ? (cat.name_ur || cat.name) : cat.name}
                     >
-                      {cat.name}
+                      {language === 'en' ? (cat.name_en || cat.name) : language === 'ur' ? (cat.name_ur || cat.name) : cat.name}
                     </span>
                   </div>
 
@@ -576,7 +576,7 @@ export const WorkItemsPage: React.FC = () => {
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('auto.القسم_النشط_حاليا_236efa')}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#60a5fa' }}>
-                  {activeCategory ? activeCategory.name : t('auto.كافة_الأقسام_33998e')}
+                  {activeCategory ? (language === 'en' ? (activeCategory.name_en || activeCategory.name) : language === 'ur' ? (activeCategory.name_ur || activeCategory.name) : activeCategory.name) : t('auto.كافة_الأقسام_33998e')}
                 </span>
                 {activeCategory?.code && (
                   <span

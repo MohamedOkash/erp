@@ -18,10 +18,14 @@ export interface CrewTemplate {
   id: string;
   company_id: string;
   name: string;
+  name_en?: string;
+  name_ur?: string;
   code: string;
   skilled_count: number;
   unskilled_count: number;
   description?: string | null;
+  description_en?: string | null;
+  description_ur?: string | null;
   is_active: boolean;
   created_at: string;
 }

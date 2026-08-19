@@ -6,7 +6,7 @@ import { Modal } from '../../components/Modal';
 import { Settings, Plus, Users, Loader2 } from 'lucide-react';
 
 export const CrewTemplatesPage: React.FC = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [templates, setTemplates] = useState<CrewTemplate[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -147,11 +147,11 @@ export const CrewTemplatesPage: React.FC = () => {
                 </div>
 
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>
-                  {tpl.name}
+                  {language === 'en' ? (tpl.name_en || tpl.name) : language === 'ur' ? (tpl.name_ur || tpl.name) : tpl.name}
                 </h3>
 
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                  {tpl.description || t('crews.no_description')}
+                  {(language === 'en' ? (tpl.description_en || tpl.description) : language === 'ur' ? (tpl.description_ur || tpl.description) : tpl.description) || t('crews.no_description')}
                 </p>
               </div>
 
