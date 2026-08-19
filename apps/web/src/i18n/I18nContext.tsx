@@ -10,20 +10,33 @@ const dictionaries: Record<Language, any> = {
   ur: urDict,
 };
 
-function resolveKeyInDictionary(dict: any, key: string): string | undefined {
-  if (!dict || typeof dict !== 'object') return undefined;
+function resolveKeyInDictionary(dict: any, rawKey: string): string | undefined {
+  if (!dict || typeof dict !== 'object' || typeof rawKey !== 'string') return undefined;
+  const key = rawKey.trim();
 
   // 1. Direct flat key match (e.g. "kpis.title" or "common.save")
   if (typeof dict[key] === 'string') {
-    return dict[key];
+    return dict[key].trim();
   }
 
   // 2. Nested path traversal (e.g. dict.kpis.title)
   const parts = key.split('.');
   let current: any = dict;
-  for (const part of parts) {
-    if (current && typeof current === 'object' && part in current) {
-      current = current[part];
+  for (const rawPart of parts) {
+    const part = rawPart.trim();
+    if (current && typeof current === 'object') {
+      if (part in current) {
+        current = current[part];
+      } else {
+        // Dual defense: check if any key matches after trimming
+        const foundKey = Object.keys(current).find((k) => k.trim() === part);
+        if (foundKey) {
+          current = current[foundKey];
+        } else {
+          current = undefined;
+          break;
+        }
+      }
     } else {
       current = undefined;
       break;
@@ -31,7 +44,7 @@ function resolveKeyInDictionary(dict: any, key: string): string | undefined {
   }
 
   if (typeof current === 'string') {
-    return current;
+    return current.trim();
   }
 
   return undefined;
@@ -61,7 +74,9 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>): string => {
+    (rawKey: string, params?: Record<string, string | number>): string => {
+      const key = typeof rawKey === 'string' ? rawKey.trim() : String(rawKey || '');
+
       // 1. Current Language Lookup
       let resolved = resolveKeyInDictionary(dictionaries[language], key);
 
@@ -76,7 +91,7 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // 4. Default to key if completely missing
-      const finalStr = resolved !== undefined ? resolved : key;
+      const finalStr = (resolved !== undefined ? resolved : key).trim();
 
       if (params) {
         return Object.entries(params).reduce((str, [pKey, pVal]) => {
