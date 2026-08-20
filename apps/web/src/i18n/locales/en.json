@@ -112,7 +112,9 @@
       "notifications": "Notifications & Alerts Hub",
       "users": "User Management",
       "rbac": "RBAC Permissions Matrix",
-      "settings": "System Settings"
+      "settings": "System Settings",
+      "financial_reports": "Financial Reports & Break-Even",
+      "financial_accounts": "Financial Accounts & Expenses"
     }
   },
   "header": {
