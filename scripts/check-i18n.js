@@ -434,9 +434,26 @@ function main() {
   }
 
   let systemItemEnCount = 0;
+  let blacklistEnViolations = [];
   let untranslatedEnCount = 0;
+  let trailingUrduCount = 0;
   let untranslatedUrCount = 0;
   let wrongArCount = 0;
+
+  const enBlacklist = [
+    { pattern: /^floor floor$/i, label: 'Floor Floor' },
+    { pattern: /^room \/ room$/i, label: 'Room / Room' },
+    { pattern: /^-- --$/, label: '-- --' },
+    { pattern: /^save daily$/i, label: 'Save Daily' },
+    { pattern: /^wage daily$/i, label: 'Wage Daily' },
+    { pattern: /^overview general and leadership$/i, label: 'Overview General and Leadership' },
+    { pattern: /^cards control search$/i, label: 'Cards Control Search' },
+    { pattern: /^and workers$/i, label: 'and Workers' },
+    { pattern: /^items stages$/i, label: 'Items Stages' },
+    { pattern: /^report daily$/i, label: 'Report Daily' },
+    { pattern: /^operations site execution$/i, label: 'Operations Site Execution' },
+    { pattern: /^areas work$/i, label: 'Areas Work' },
+  ];
 
   const allDictKeys = Array.from(new Set([
     ...Object.keys(dictionaries.ar || {}),
@@ -449,44 +466,87 @@ function main() {
     const enVal = dictionaries.en[k] || '';
     const urVal = dictionaries.ur[k] || '';
 
-    if (enVal && enVal.toLowerCase().includes('system item')) systemItemEnCount++;
-    if (enVal && arabicRegex.test(enVal)) untranslatedEnCount++;
-    if (urVal && arVal) {
-      if (urVal.trim() === arVal.trim() && arabicRegex.test(arVal) && arVal.trim() !== '؟') {
+    // 1. System Item check in EN
+    if (enVal && enVal.toLowerCase().includes('system item')) {
+      systemItemEnCount++;
+    }
+
+    // 2. Blacklist check in EN
+    if (enVal) {
+      for (const bl of enBlacklist) {
+        if (bl.pattern.test(enVal.trim())) {
+          blacklistEnViolations.push({ key: k, value: enVal, term: bl.label });
+          break;
+        }
+      }
+    }
+
+    // 3. Arabic letters in EN
+    if (enVal && arabicRegex.test(enVal)) {
+      untranslatedEnCount++;
+    }
+
+    // 4. Urdu checks: trailing "کے لیے/کے لئے" or identical to Arabic
+    if (urVal) {
+      if (urVal.trim().endsWith('کے لیے') || urVal.trim().endsWith('کے لئے')) {
+        trailingUrduCount++;
+      }
+      if (arVal && urVal.trim() === arVal.trim() && arabicRegex.test(arVal) && arVal.trim() !== '؟') {
         untranslatedUrCount++;
       } else if (urVal.trim().length > 10 && !urduDistinctRegex.test(urVal) && arabicRegex.test(urVal)) {
         untranslatedUrCount++;
       }
     }
-    if (arVal && hasDisallowedLatin(arVal)) wrongArCount++;
+
+    // 5. Wrong AR
+    if (arVal && hasDisallowedLatin(arVal)) {
+      wrongArCount++;
+    }
   }
 
   if (systemItemEnCount > 0) {
     hasErrors = true;
     console.log(`❌ [system_item_en]: Found ${systemItemEnCount} keys in en.json containing "System Item".`);
   } else {
-    console.log('✅ [en.json]: 0 "System Item" placeholder values.');
+    console.log('✅ [system_item_en]: 0 "System Item" placeholder values.');
+  }
+
+  if (blacklistEnViolations.length > 0) {
+    hasErrors = true;
+    console.log(`❌ [blacklist_en]: Found ${blacklistEnViolations.length} broken/literal string violations in en.json:`);
+    blacklistEnViolations.slice(0, 10).forEach(v => {
+      console.log(`   - [${v.key}]: "${v.value}" (Matched: "${v.term}")`);
+    });
+  } else {
+    console.log('✅ [blacklist_en]: 0 blacklisted/broken English strings.');
   }
 
   if (untranslatedEnCount > 0) {
     hasErrors = true;
     console.log(`❌ [untranslated_en]: Found ${untranslatedEnCount} keys in en.json containing Arabic text.`);
   } else {
-    console.log('✅ [en.json]: 0 untranslated Arabic strings.');
+    console.log('✅ [untranslated_en]: 0 untranslated Arabic strings in en.json.');
+  }
+
+  if (trailingUrduCount > 0) {
+    hasErrors = true;
+    console.log(`❌ [trailing_urdu]: Found ${trailingUrduCount} keys in ur.json ending with "کے لیے/کے لئے".`);
+  } else {
+    console.log('✅ [trailing_urdu]: 0 trailing "کے لیے/کے لئے" in ur.json.');
   }
 
   if (untranslatedUrCount > 0) {
     hasErrors = true;
     console.log(`❌ [untranslated_ur]: Found ${untranslatedUrCount} keys in ur.json lacking authentic Urdu characters.`);
   } else {
-    console.log('✅ [ur.json]: 0 untranslated strings (100% Urdu parity).');
+    console.log('✅ [untranslated_ur]: 0 untranslated strings (100% Urdu parity).');
   }
 
   if (wrongArCount > 0) {
     hasErrors = true;
     console.log(`❌ [wrong_ar]: Found ${wrongArCount} keys in ar.json containing foreign Latin text.`);
   } else {
-    console.log('✅ [ar.json]: 0 invalid Latin strings.');
+    console.log('✅ [wrong_ar]: 0 invalid Latin strings in ar.json.');
   }
 
   if (hasErrors) {
