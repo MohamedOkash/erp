@@ -3,7 +3,16 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express, { Request, Response } from 'express';
-import { AppModule } from '../apps/api/src/app.module';
+
+// Ensure AppModule is loaded from the compiled dist directory or source
+let AppModule: any;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  AppModule = require('../apps/api/dist/src/app.module').AppModule;
+} catch {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  AppModule = require('../apps/api/src/app.module').AppModule;
+}
 
 const server = express();
 let isAppInitialized = false;
