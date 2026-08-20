@@ -4,20 +4,26 @@ import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express, { Request, Response } from 'express';
 
-// Ensure AppModule is loaded from the compiled dist directory or source
-let AppModule: any;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  AppModule = require('../apps/api/dist/src/app.module').AppModule;
-} catch {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  AppModule = require('../apps/api/src/app.module').AppModule;
-}
-
 const server = express();
 let isAppInitialized = false;
+let bootstrapError: any = null;
 
 async function bootstrap() {
+  if (isAppInitialized) return;
+
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is not set in environment variables');
+  }
+
+  let AppModule: any;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    AppModule = require('../apps/api/dist/src/app.module').AppModule;
+  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    AppModule = require('../apps/api/src/app.module').AppModule;
+  }
+
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
   app.setGlobalPrefix('api/v1');
@@ -45,8 +51,32 @@ async function bootstrap() {
 }
 
 export default async function handler(req: Request, res: Response) {
-  if (!isAppInitialized) {
-    await bootstrap();
+  try {
+    if (bootstrapError) {
+      throw bootstrapError;
+    }
+
+    if (!isAppInitialized) {
+      try {
+        await bootstrap();
+      } catch (err: any) {
+        bootstrapError = err;
+        console.error('[Vercel Serverless Bootstrap Error]:', err);
+        return res.status(500).json({
+          statusCode: 500,
+          error: err?.message || 'Serverless Bootstrap Initialization Failed',
+          stack: err?.stack ? err.stack.split('\n').slice(0, 5) : [],
+        });
+      }
+    }
+
+    server(req, res);
+  } catch (err: any) {
+    console.error('[Vercel Serverless Request Error]:', err);
+    return res.status(500).json({
+      statusCode: 500,
+      error: err?.message || 'Internal Serverless Execution Error',
+      stack: err?.stack ? err.stack.split('\n').slice(0, 5) : [],
+    });
   }
-  server(req, res);
 }

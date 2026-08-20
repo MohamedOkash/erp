@@ -3,7 +3,7 @@ const dotenv = require(path.join(__dirname, '../apps/api/node_modules/dotenv'));
 dotenv.config({ path: path.join(__dirname, '../apps/api/.env') });
 
 const { Client } = require(path.join(__dirname, '../apps/api/node_modules/pg'));
-const bcrypt = require(path.join(__dirname, '../apps/api/node_modules/bcrypt'));
+const bcrypt = require(path.join(__dirname, '../apps/api/node_modules/bcryptjs'));
 
 async function setAdminPassword() {
   const newPassword = process.argv[2] || 'Admin@2026!Secure';

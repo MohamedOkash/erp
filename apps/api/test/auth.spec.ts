@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { PGlite } from '@electric-sql/pglite';
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/database/database.service';
